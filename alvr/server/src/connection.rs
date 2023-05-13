@@ -853,19 +853,18 @@ async fn connection_pipeline(
                 let ffi_left_eye_gaze = tracking::to_ffi_left_eyegaze(local_eye_gazes);
                 let ffi_right_eye_gaze = tracking::to_ffi_right_eyegaze(local_eye_gazes);
                 drop(tracking_manager_lock);
-                let nogaze_org = FfiQuat{
-                    x: 0.0,
-                    y: 0.0,
-                    z: 0.0,
-                    w: 0.0,
-                };
                 let nogaze = FfiEyeGaze{
                     position: [0.0,0.0,0.0],
-                    orientation: nogaze_org,
+                    orientation: FfiQuat{
+                        x: 0.0,
+                        y: 0.0,
+                        z: 0.0,
+                        w: 0.0,
+                    },
                 };
                 if let Some(stats) = &mut *STATISTICS_MANAGER.lock() {
                     stats.report_tracking_received(tracking.target_timestamp);
-//shn---
+//shn--
                     unsafe {
                         crate::SetTracking(
                             tracking.target_timestamp.as_nanos() as _,
