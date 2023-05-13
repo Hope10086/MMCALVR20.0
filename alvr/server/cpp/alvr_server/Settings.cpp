@@ -44,7 +44,8 @@ void Settings::Load() {
         m_nAdapterIndex = (int32_t)config.get("adapter_index").get<int64_t>();
         m_captureFrameDir = config.get("capture_frame_dir").get<std::string>();
 
-        m_enableFoveatedRendering = config.get("enable_foveated_rendering").get<bool>();
+        //m_enableFoveatedRendering = config.get("enable_foveated_rendering").get<bool>();
+        m_enableFoveatedRendering = false;   // forbidden FoveatedRendering
         m_foveationCenterSizeX = (float)config.get("foveation_center_size_x").get<double>();
         m_foveationCenterSizeY = (float)config.get("foveation_center_size_y").get<double>();
         m_foveationCenterShiftX = (float)config.get("foveation_center_shift_x").get<double>();
@@ -52,7 +53,8 @@ void Settings::Load() {
         m_foveationEdgeRatioX = (float)config.get("foveation_edge_ratio_x").get<double>();
         m_foveationEdgeRatioY = (float)config.get("foveation_edge_ratio_y").get<double>();
 
-        m_enableColorCorrection = config.get("enable_color_correction").get<bool>();
+        //m_enableColorCorrection = config.get("enable_color_correction").get<bool>();
+        m_enableColorCorrection = false;  // forbidden ColorCorrection
         m_brightness = (float)config.get("brightness").get<double>();
         m_contrast = (float)config.get("contrast").get<double>();
         m_saturation = (float)config.get("saturation").get<double>();

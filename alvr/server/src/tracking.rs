@@ -1,4 +1,4 @@
-use crate::{to_ffi_quat, FfiDeviceMotion, FfiHandSkeleton};
+use crate::{to_ffi_quat, FfiDeviceMotion, FfiHandSkeleton,FfiEyeGaze};
 use alvr_common::{
     glam::{EulerRot, Quat, Vec3},
     DeviceMotion, Pose, HEAD_ID, LEFT_HAND_ID, RIGHT_HAND_ID,
@@ -351,4 +351,28 @@ pub fn to_local_eyes(
         raw_global_eyes[0].map(|e| raw_global_head.inverse() * e),
         raw_global_eyes[1].map(|e| raw_global_head.inverse() * e),
     ]
+}
+
+// shn
+pub fn to_ffi_left_eyegaze(eyegaze: [Option<Pose>; 2]) -> Option<FfiEyeGaze> {
+    if let [Some(pose1), Some(_pose2)] = eyegaze {
+        Some(FfiEyeGaze {
+            position: [pose1.position[0], pose1.position[1], pose1.position[2]],
+            orientation: to_ffi_quat(pose1.orientation),
+        })
+    } else {
+        None
+    }
+}
+
+
+pub fn to_ffi_right_eyegaze(eyegaze: [Option<Pose>; 2]) -> Option<FfiEyeGaze> {
+    if let [Some(_pose1), Some(pose2)] = eyegaze {
+        Some(FfiEyeGaze {
+            position: [pose2.position[0], pose2.position[1], pose2.position[2]],
+            orientation: to_ffi_quat(pose2.orientation),
+        })
+    } else {
+        None
+    }
 }

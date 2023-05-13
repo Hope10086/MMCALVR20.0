@@ -8,7 +8,7 @@ use crate::{
     tracking::{self, TrackingManager},
     FfiButtonValue, FfiFov, FfiViewsConfig, VideoPacket, BITRATE_MANAGER, CONTROL_CHANNEL_SENDER,
     DECODER_CONFIG, DISCONNECT_CLIENT_NOTIFIER, HAPTICS_SENDER, IS_ALIVE, RESTART_NOTIFIER,
-    SERVER_DATA_MANAGER, STATISTICS_MANAGER, VIDEO_RECORDING_FILE, VIDEO_SENDER,
+    SERVER_DATA_MANAGER, STATISTICS_MANAGER, VIDEO_RECORDING_FILE, VIDEO_SENDER, bindings::{FfiEyeGaze, FfiQuat},
 };
 use alvr_audio::AudioDevice;
 use alvr_common::{
@@ -807,6 +807,9 @@ async fn connection_pipeline(
                     .map(|(_, m)| tracking::to_local_eyes(m.pose, tracking.face_data.eye_gazes))
                     .unwrap_or_default();
 
+                //let  ffieye_gazes = tracking::convert_array(local_eye_gazes);
+              
+
                 if settings.logging.log_tracking {
                     alvr_events::send_event(EventType::Tracking(Box::new(TrackingEvent {
                         head_motion: motions
@@ -825,6 +828,7 @@ async fn connection_pipeline(
                         ],
                         hand_skeletons: [left_hand_skeleton, right_hand_skeleton],
                         eye_gazes: local_eye_gazes,
+                        //eye_gazes: ffieye_gazes,
                         fb_face_expression: tracking.face_data.fb_face_expression.clone(),
                         htc_eye_expression: tracking.face_data.htc_eye_expression.clone(),
                         htc_lip_expression: tracking.face_data.htc_lip_expression.clone(),
@@ -841,12 +845,24 @@ async fn connection_pipeline(
                 let ffi_motions = motions
                     .into_iter()
                     .map(|(id, motion)| tracking::to_ffi_motion(id, motion))
-                    .collect::<Vec<_>>();//shn--
+                    .collect::<Vec<_>>();
                 let ffi_left_hand_skeleton = left_hand_skeleton.map(tracking::to_ffi_skeleton);
                 let ffi_right_hand_skeleton = right_hand_skeleton.map(tracking::to_ffi_skeleton);
-                let ffi_eyegaze = local_eye_gazes ;
+                //shn--
+                //let  ffieye_gazes = local_eye_gazes.map(tracking::convert_array)();
+                let ffi_left_eye_gaze = tracking::to_ffi_left_eyegaze(local_eye_gazes);
+                let ffi_right_eye_gaze = tracking::to_ffi_right_eyegaze(local_eye_gazes);
                 drop(tracking_manager_lock);
-
+                let nogaze_org = FfiQuat{
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                    w: 0.0,
+                };
+                let nogaze = FfiEyeGaze{
+                    position: [0.0,0.0,0.0],
+                    orientation: nogaze_org,
+                };
                 if let Some(stats) = &mut *STATISTICS_MANAGER.lock() {
                     stats.report_tracking_received(tracking.target_timestamp);
 //shn---
@@ -867,6 +883,18 @@ async fn connection_pipeline(
                                 ptr::null()
                             },
                             track_controllers,
+                            if let Some(lefteyegaze) = &ffi_left_eye_gaze{
+                                lefteyegaze
+                            } else {
+                                &nogaze
+                            },
+                            if let Some(righteyegaze) = &ffi_right_eye_gaze {
+                                righteyegaze
+                            }
+                            else {
+                                
+                                &nogaze
+                            },
                         )
                     };
                 }

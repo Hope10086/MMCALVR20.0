@@ -25,7 +25,6 @@
 #ifdef __linux__
 vr::HmdMatrix34_t GetRawZeroPose();
 #endif
-
 static void load_debug_privilege(void) {
 #ifdef _WIN32
     const DWORD flags = TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY;
@@ -240,7 +239,9 @@ void SetTracking(unsigned long long targetTimestampNs,
                  int motionsCount,
                  const FfiHandSkeleton *leftHand,
                  const FfiHandSkeleton *rightHand,
-                 unsigned int controllersTracked) {
+                 unsigned int controllersTracked,
+                 const FfiEyeGaze *leftEyeGaze,
+                 const FfiEyeGaze *rightEyeGaze) {
     for (int i = 0; i < motionsCount; i++) {
         if (deviceMotions[i].deviceID == HEAD_ID && g_driver_provider.hmd) {
             g_driver_provider.hmd->OnPoseUpdated(targetTimestampNs, deviceMotions[i]);
@@ -255,6 +256,25 @@ void SetTracking(unsigned long long targetTimestampNs,
             }
         }
     }
+    // Info("targetTimestampNs %llu motionsCount %d \n",targetTimestampNs,motionsCount);
+    // Info("LeftEyeGaze: (%f %f %f),(%f %f %f %f)\n"
+    // ,leftEyeGaze->position[0]
+    // ,leftEyeGaze->position[1]
+    // ,leftEyeGaze->position[2]
+    // ,leftEyeGaze->orientation.x
+    // ,leftEyeGaze->orientation.y
+    // ,leftEyeGaze->orientation.z
+    // ,leftEyeGaze->orientation.w
+    // );
+    // Info("RightEyeGaze: (%f %f %f),(%f %f %f %f)\n"
+    // ,rightEyeGaze->position[0]
+    // ,rightEyeGaze->position[1]
+    // ,rightEyeGaze->position[2]
+    // ,rightEyeGaze->orientation.x
+    // ,rightEyeGaze->orientation.y
+    // ,rightEyeGaze->orientation.z
+    // ,rightEyeGaze->orientation.w
+    // );
 }
 
 void VideoErrorReportReceive() {
