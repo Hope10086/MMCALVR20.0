@@ -4,7 +4,11 @@
 
 #include "driverlog.h"
 #include "bindings.h"
-
+#include <iostream>
+#include <string>
+#include <windows.h>
+using namespace std;
+static FILE* fpLog = NULL;
 void _log(const char *format, va_list args, void (*logFn)(const char *), bool driverLog = false)
 {
 	char buf[1024];
@@ -85,5 +89,42 @@ void LogPeriod(const char *tag, const char *format, ...)
 
 	LogPeriodically(tag, buf);
 
+	va_end(args);
+}
+
+
+void OpenLog(const char* fileName) {
+
+   if(fpLog ==nullptr) {
+         fpLog = _fsopen(fileName, "at+", _SH_DENYNO);
+    }
+}
+void CloseLog() {
+    if (fpLog != nullptr) {
+        fclose(fpLog);
+        fpLog = nullptr;
+    }
+}
+void LogFileUpDate() {
+     //LogGetLocalTime();
+    CloseLog();
+	string LogFile= "D:\\AX\\Logs\\Debug\\A_Debug20test.txt";
+    OpenLog(LogFile.c_str());
+    
+}
+void _logSV(const char* format, va_list args, string Type)
+{   
+	LogFileUpDate();
+    char buf[1024];
+	//string sys_timeType=sys_time+Type;    
+    vsnprintf(buf, sizeof(buf), format, args);
+    //fprintf(fpLog, sys_timeType.c_str());
+    fprintf(fpLog, buf);
+}
+void TxtPrint(const char *format, ...)
+{   string Info_Type = "Info:";
+	va_list args;
+	va_start(args, format);
+	_logSV(format, args, Info_Type);
 	va_end(args);
 }

@@ -9,6 +9,7 @@
 #include "ViveTrackerProxy.h"
 #include "bindings.h"
 #include <cfloat>
+#include "include/openvr_math.h"    
 
 #ifdef _WIN32
 #include "platform/win32/CEncoder.h"
@@ -20,6 +21,7 @@
 
 const vr::HmdMatrix34_t MATRIX_IDENTITY = {
     {{1.0, 0.0, 0.0, 0.0}, {0.0, 1.0, 0.0, 0.0}, {0.0, 0.0, 1.0, 0.0}}};
+
 
 vr::HmdRect2_t fov_to_projection(FfiFov fov) {
     auto proj_bounds = vr::HmdRect2_t{};
@@ -40,6 +42,9 @@ Hmd::Hmd()
     this->views_config.ipd_m = 0.063;
     this->views_config.fov[0] = dummy_fov;
     this->views_config.fov[1] = dummy_fov;
+
+    leftcfov  = { -0.942478,0.698132,0.733038,-0.942478};
+    rightcfov = { -0.698132,0.942478,0.733038,-0.942478};
 
     m_pose = vr::DriverPose_t{};
     m_pose.poseIsValid = true;
@@ -192,7 +197,7 @@ void *Hmd::GetComponent(const char *component_name_and_version) {
 
 vr::DriverPose_t Hmd::GetPose() { return m_pose; }
 
-void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion) {
+void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiEyeGaze LeftGaze,FfiEyeGaze RightGaze) {
     if (this->object_id == vr::k_unTrackedDeviceIndexInvalid) {
         return;
     }
@@ -211,9 +216,96 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion) {
     pose.vecPosition[1] = motion.position[1];
     pose.vecPosition[2] = motion.position[2];
 
-    m_pose = pose;
+    m_pose = pose;// don't change it
+    
+    if (false)  // check out eyegaze if correct
+    {  Info("Source: HMD.cpp OnPoseUpdated\n");
+       Info("targetTimestampNs %llu  \n",targetTimestampNs);
+       Info("LeftEyeGaze: (%f %f %f),(%f %f %f %f)\n"
+       ,LeftGaze.position[0]
+       ,LeftGaze.position[1]
+       ,LeftGaze.position[2]
+       ,LeftGaze.orientation.w
+       ,LeftGaze.orientation.x
+       ,LeftGaze.orientation.y
+       ,LeftGaze.orientation.z
+       );
+    }
+   
+    
+    if (true)   // Quat to Vector , Vector to angule,center_offset
+    {   
+        FfiGazeOPOffset GazeOffset[2]; 
+        vr::HmdQuaternion_t LeftGazeQuat = HmdQuaternion_Init(
+        LeftGaze.orientation.w,
+        LeftGaze.orientation.x,
+        LeftGaze.orientation.y,
+        LeftGaze.orientation.z
+        );
+        vr::HmdQuaternion_t RightGazeQuat = HmdQuaternion_Init(
+        RightGaze.orientation.w,    
+        RightGaze.orientation.x,    
+        RightGaze.orientation.y,    
+        RightGaze.orientation.z  
+        );
+        vr::HmdVector3d_t ZAix = {0.0, 0.0, -1.0};//ZAix is (0,0,1)or(0,0,-1)
+        vr::HmdVector3d_t LeftGazeVector;
+        vr::HmdVector3d_t RightGazeVector;
+        if (!LeftGaze.orientation.w || !RightGaze.orientation.w)  //when eye gaze is null w =0 , so  Gaze is center
+        {
+             LeftGazeVector  = ZAix;
+             RightGazeVector = ZAix;
+        }
+        else
+        {
+             LeftGazeVector  = vrmath::quaternionRotateVector(LeftGazeQuat,ZAix,false);
+             RightGazeVector = vrmath::quaternionRotateVector(RightGazeQuat,ZAix,false);
+        }
+        // check out  LeftGazeVector  
+        // Info("LeftGazeVector : (%f,%f,%f)\n"
+        // ,LeftGazeVector.v[0]
+        // ,LeftGazeVector.v[1]
+        // ,LeftGazeVector.v[2]);
+         //  to Rad and log Anglue
+         float LeftGazeRad_X = atanf(-1.0*LeftGazeVector.v[0]/LeftGazeVector.v[2]); 
+         float LeftGazeRad_Y = atanf(-1.0*LeftGazeVector.v[1]/LeftGazeVector.v[2]);
+         float RightGazeRad_X = atanf(-1.0*RightGazeVector.v[0]/RightGazeVector.v[2]);
+         float RightGazeRad_Y = atanf(-1.0*RightGazeVector.v[1]/RightGazeVector.v[2]);
+         float RadToAnglue = (180.0/3.14159265358979323846f);
+        //  Info(" Gaze Anglue in camera space\n (%lf,%lf)  (%lf,%lf)\n"
+        // ,LeftGazeRad_X*RadToAnglue
+        // ,LeftGazeRad_Y*RadToAnglue
+        // ,RightGazeRad_X*RadToAnglue
+        // ,RightGazeRad_Y*RadToAnglue
+        //  );// the rad is useless
 
-    m_poseHistory->OnPoseUpdated(targetTimestampNs, motion);
+         //  just for Direct coordinate system x:right y down(*-1.0) z useless depthz =1.0
+        // Info("leftfov up = ",leftcfov.up);//
+         GazeOffset[0].x = 1.0*(tanf(LeftGazeRad_X)+tanf(-leftcfov.left))/(tanf(leftcfov.right)+tanf(-leftcfov.left));
+         GazeOffset[0].y = 1.0*(tanf(-LeftGazeRad_Y)+tanf(leftcfov.up))/(tanf(-leftcfov.down)+tanf(leftcfov.up));
+
+         GazeOffset[1].x = 1.0*(tanf(RightGazeRad_X)+tanf(-rightcfov.left))/(tanf(rightcfov.right)+tanf(-rightcfov.left));
+         GazeOffset[1].y = 1.0*(tanf(-RightGazeRad_Y)+tanf(rightcfov.up))/(tanf(-rightcfov.down)+tanf(rightcfov.up));
+
+        if (GazeOffset[0].x<= 0 || GazeOffset[0].y<=0 || GazeOffset[1].x<=0 || GazeOffset[1].y <= 0)
+        {
+            Info("Error:calculate GazeOffset in DirectX11 Screen CoorDinate \n");
+            m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,{0.5, 0.5},{0.5, 0.5});
+        }
+        else
+        {
+            //Info("GazeOffset= (%lf,%lf) (%lf,%lf)\n",GazeOffset[0].x, GazeOffset[0].y, GazeOffset[1].x, GazeOffset[1].y);
+            m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,GazeOffset[0],GazeOffset[1]);
+        }
+        
+    }
+    else
+    {   // unenable offset =0
+        m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,{0.0, 0.0},{0.0, 0.0});
+    }
+    
+
+  //  m_poseHistory->OnPoseUpdated(targetTimestampNs, motion);
 
     vr::VRServerDriverHost()->TrackedDevicePoseUpdated(
         this->object_id, pose, sizeof(vr::DriverPose_t));
@@ -283,6 +375,11 @@ void Hmd::SetViewsConfig(FfiViewsConfig config) {
 
     auto left_proj = fov_to_projection(config.fov[0]);
     auto right_proj = fov_to_projection(config.fov[1]);
+    
+    leftcfov  = config.fov[0];
+    rightcfov = config.fov[1];
+    Info("Decive LFov %f %f %f %f \n",leftcfov.left,leftcfov.right, leftcfov.up, leftcfov.down);
+    Info("Decive RFov %f %f %f %f \n",rightcfov.left,rightcfov.right, rightcfov.up, rightcfov.down);
 
     vr::VRServerDriverHost()->SetDisplayProjectionRaw(object_id, left_proj, right_proj);
 

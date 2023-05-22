@@ -31,7 +31,7 @@ class Hmd : public TrackedDevice, public vr::ITrackedDeviceServerDriver, vr::IVR
     virtual void DebugRequest(const char *, char *, uint32_t) {}
     virtual vr::DriverPose_t GetPose();
 
-    void OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion);
+    void OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiEyeGaze LeftGaze,FfiEyeGaze RightGaze);
 
     void StartStreaming();
 
@@ -62,6 +62,7 @@ class Hmd : public TrackedDevice, public vr::ITrackedDeviceServerDriver, vr::IVR
 
   private:
     FfiViewsConfig views_config;
+    FfiFov leftcfov, rightcfov;
 
     bool m_baseComponentsInitialized;
     bool m_streamComponentsInitialized;

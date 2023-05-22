@@ -76,13 +76,17 @@
 		}
 
 		bool CEncoder::CopyToStaging(ID3D11Texture2D *pTexture[][2], vr::VRTextureBounds_t bounds[][2], int layerCount, bool recentering
-			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText)
+			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText,  FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset)
 		{
 			m_presentationTime = presentationTime;
 			m_targetTimestampNs = targetTimestampNs;
-			m_FrameRender->Startup();
+			//Info("Source file:CEncoder.cpp\n");
+			//Info("Recive GazeOffset = (%lf,%lf) (%lf,%lf)\n",leftGazeOffset.x, leftGazeOffset.y, rightGazeOffset.x, rightGazeOffset.y);
+			m_GazeOffset[0] = leftGazeOffset;
+			m_GazeOffset[1] = rightGazeOffset;
 
-			m_FrameRender->RenderFrame(pTexture, bounds, layerCount, recentering, message, debugText);
+			m_FrameRender->Startup();
+			m_FrameRender->RenderFrame(pTexture, bounds, layerCount, recentering, message, debugText, m_GazeOffset[0], m_GazeOffset[1]);
 			return true;
 		}
 

@@ -117,12 +117,16 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 		// Detect FrameIndex of submitted frame by pPose.
 		// This is important part to achieve smooth headtracking.
 		// We search for history of TrackingInfo and find the TrackingInfo which have nearest matrix value.
-
+            
 		auto pose = m_poseHistory->GetBestPoseMatch(*pPose);
 		if (pose) {
 			// found the frameIndex
 			m_prevTargetTimestampNs = m_targetTimestampNs;
 			m_targetTimestampNs = pose->targetTimestampNs;
+			
+
+			m_GazeOffset[0] = pose->NormalGazeOffset[0];
+			m_GazeOffset[1] = pose->NormalGazeOffset[1];
 
 			m_prevFramePoseRotation = m_framePoseRotation;
 			m_framePoseRotation.x = pose->motion.orientation.x;
@@ -256,9 +260,20 @@ void OvrDirectModeComponent::CopyTexture(uint32_t layerCount) {
 		std::string debugText;
 
 		uint64_t submitFrameIndex = m_targetTimestampNs;
+		//Info("Source File : OvrDirectModeComponent.cpp \n");
+		
+        if( m_GazeOffset[0].x == 0 || m_GazeOffset[1].x == 0 || abs(m_GazeOffset[0].x)>1 || abs(m_GazeOffset[0].y)>1 || abs(m_GazeOffset[1].x)>1 || abs(m_GazeOffset[1].y)>1 )
+		{
 
+          Info("GazeOffset is error set to 0");
+		  m_GazeOffset[0].x = m_GazeOffset[0].y =0.5;// screen center
+		  m_GazeOffset[1] = m_GazeOffset[0];
+		}
+		else{
+		  //Info("GazeOffset Send to Encoder:(%f,%f) (%f,%f)\n",m_GazeOffset[0].x, m_GazeOffset[0].y, m_GazeOffset[1].x, m_GazeOffset[1].y);
+		}
 		// Copy entire texture to staging so we can read the pixels to send to remote device.
-		m_pEncoder->CopyToStaging(pTexture, bounds, layerCount,false, presentationTime, submitFrameIndex,"", debugText);
+		m_pEncoder->CopyToStaging(pTexture, bounds, layerCount,false, presentationTime, submitFrameIndex,"", debugText, m_GazeOffset[0],m_GazeOffset[1]);
 
 		m_pD3DRender->GetContext()->Flush();
 	}

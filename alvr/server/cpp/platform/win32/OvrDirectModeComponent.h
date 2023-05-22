@@ -55,4 +55,5 @@ private:
 	vr::HmdQuaternion_t m_framePoseRotation;
 	uint64_t m_targetTimestampNs;
 	uint64_t m_prevTargetTimestampNs;
+	FfiGazeOPOffset m_GazeOffset[2];
 };

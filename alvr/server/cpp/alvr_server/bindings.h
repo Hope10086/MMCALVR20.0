@@ -32,6 +32,12 @@ struct FfiEyeGaze
     float position[3];
     FfiQuat orientation;
 };
+struct FfiGazeOPOffset
+{
+    double x;
+    double y;
+};
+
 enum FfiOpenvrPropertyType {
     Bool,
     Float,

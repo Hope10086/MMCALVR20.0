@@ -47,7 +47,7 @@ public:
 	virtual ~FrameRender();
 
 	bool Startup();
-	bool RenderFrame(ID3D11Texture2D *pTexture[][2], vr::VRTextureBounds_t bounds[][2], int layerCount, bool recentering, const std::string& message, const std::string& debugText);
+	bool RenderFrame(ID3D11Texture2D *pTexture[][2], vr::VRTextureBounds_t bounds[][2], int layerCount, bool recentering, const std::string& message, const std::string& debugText, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze);
 	void GetEncodingResolution(uint32_t *width, uint32_t *height);
 
 	ComPtr<ID3D11Texture2D> GetTexture();
@@ -76,6 +76,11 @@ private:
 	ComPtr<ID3D11Resource> m_messageBGTexture;
 	ComPtr<ID3D11ShaderResourceView> m_messageBGResourceView;
 
+	void CreateGazepointTexture(D3D11_TEXTURE2D_DESC m_srcDesc);
+	ComPtr<ID3D11Texture2D> GazepointTexture;
+	//UINT m_GazepointWidth = 1024;  //
+	//UINT m_GazepointHeight = 1024;
+	long int begaincount = 0;
 	struct SimpleVertex
 	{
 		DirectX::XMFLOAT3 Pos;
