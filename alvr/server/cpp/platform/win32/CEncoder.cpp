@@ -30,9 +30,10 @@
 			Exception swException;
 			if (Settings::Instance().m_force_sw_encoding) {
 				try {
-					Debug("Try to use VideoEncoderSW.\n");
+					Info("Try to use VideoEncoderSW.\n");
 					m_videoEncoder = std::make_shared<VideoEncoderSW>(d3dRender, encoderWidth, encoderHeight);
 					m_videoEncoder->Initialize();
+					
 					return;
 				}
 				catch (Exception e) {
@@ -50,7 +51,7 @@
 			catch (Exception e) {
 				vceException = e;
 			}
-			try {
+			try { //shn
 				Debug("Try to use VideoEncoderNVENC.\n");
 				m_videoEncoder = std::make_shared<VideoEncoderNVENC>(d3dRender, encoderWidth, encoderHeight);
 				m_videoEncoder->Initialize();
@@ -103,7 +104,7 @@
 
 				if (m_FrameRender->GetTexture())
 				{
-					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion());
+					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1] );
 				}
 
 				m_encodeFinished.Set();

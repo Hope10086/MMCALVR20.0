@@ -368,7 +368,7 @@ bool FrameRender::RenderFrame(ID3D11Texture2D *pTexture[][2], vr::VRTextureBound
 		D3D11_TEXTURE2D_DESC srcDesc;
 		textures[0]->GetDesc(&srcDesc);
 		TxtPrint("texture[%d/%d]: %dx%d  \n", i,layerCount,srcDesc.Width, srcDesc.Height);
-		  if ( true && begaincount > 72*60*1 )
+		  if ( false && begaincount > 72*60*1 )
 		{
 			// Test Eye Tracking Visualization screen  piexl coordinate
             //Here, we do not consider the case that the fixation point falls on the edge of the screen, on the one hand, 
@@ -405,11 +405,11 @@ bool FrameRender::RenderFrame(ID3D11Texture2D *pTexture[][2], vr::VRTextureBound
 		     m_pD3DRender->GetContext()->CopySubresourceRegion(textures[0],0,GazePoint[0].x-W/2,GazePoint[0].y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
 		     m_pD3DRender->GetContext()->CopySubresourceRegion(textures[1],0,GazePoint[1].x-W/2,GazePoint[1].y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
 		}
-		  else {
+		//   else {
 
-			Info("begaincount=%ld\n",begaincount);
+		// 	Info("begaincount=%ld\n",begaincount);
 
-		  }
+		//   }
 		
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};

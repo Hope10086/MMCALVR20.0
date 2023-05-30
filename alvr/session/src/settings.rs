@@ -987,7 +987,7 @@ pub fn session_settings_default() -> SettingsDefault {
                 }
             },
             foveated_rendering: SwitchDefault {
-                enabled: true,
+                enabled: false,
                 content: FoveatedRenderingDescDefault {
                     center_size_x: 0.4,
                     center_size_y: 0.35,
@@ -1002,7 +1002,7 @@ pub fn session_settings_default() -> SettingsDefault {
             },
             dynamic_oculus_foveation: true,
             color_correction: SwitchDefault {
-                enabled: true,
+                enabled: false,
                 content: ColorCorrectionDescDefault {
                     brightness: 0.,
                     contrast: 0.,

@@ -95,7 +95,7 @@ pub fn prepare_windows_deps(skip_admin_priv: bool) {
     }
 
     prepare_x264_windows();
-    //prepare_ffmpeg_windows();
+    prepare_ffmpeg_windows();
 }
 
 pub fn build_ffmpeg_linux(nvenc_flag: bool) {

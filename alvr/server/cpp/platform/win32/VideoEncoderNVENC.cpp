@@ -1,9 +1,12 @@
 #include "VideoEncoderNVENC.h"
 #include "NvCodecUtils.h"
-
+#include <math.h>
 #include "alvr_server/Logger.h"
 #include "alvr_server/Settings.h"
 #include "alvr_server/Utils.h"
+
+int Cap_EMPHASIS;
+bool Enable_H264 = false;
 
 VideoEncoderNVENC::VideoEncoderNVENC(std::shared_ptr<CD3DRender> pD3DRender
 	, int width, int height)
@@ -84,7 +87,7 @@ void VideoEncoderNVENC::Shutdown()
 	}
 }
 
-void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR)
+void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze)
 {
 	auto params = GetDynamicEncoderParams();
 	if (params.updated) {
@@ -104,12 +107,68 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 
 	ID3D11Texture2D *pInputTexture = reinterpret_cast<ID3D11Texture2D*>(encoderInputFrame->inputPtr);
 	m_pD3DRender->GetContext()->CopyResource(pInputTexture, pTexture);
+    
+	D3D11_TEXTURE2D_DESC encDesc;
+	pTexture->GetDesc(&encDesc);
 
 	NV_ENC_PIC_PARAMS picParams = {};
 	if (insertIDR) {
 		Debug("Inserting IDR frame.\n");
 		picParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR;
 	}
+	if (true)
+	{    
+		int macrosize = 32;
+		if (Enable_H264)
+		{
+			macrosize = 16;
+		}
+	
+		picParams.qpDeltaMapSize = (encDesc.Width/macrosize)*(encDesc.Height/macrosize);
+		picParams.qpDeltaMap = (int8_t*)malloc(picParams.qpDeltaMapSize * sizeof(int8_t));     
+		// for (int i = 0; i < picParams.qpDeltaMapSize; i++)
+		// {
+		// 	picParams.qpDeltaMap[i] = NV_ENC_EMPHASIS_MAP_LEVEL_0;
+		// }
+		// for (int i = 0; i < picParams.qpDeltaMapSize/2; i++)
+		// {
+		// 	picParams.qpDeltaMap[i] = NV_ENC_EMPHASIS_MAP_LEVEL_4;
+		// }
+		// calcuate  Marco's location 
+		// UINT leftgazeMac_X  = ((NDCLeftGaze.x)*encDesc.Width/2)/macrosize ;
+		// UINT leftgazeMac_Y  = ((NDCLeftGaze.y)*encDesc.Height)/macrosize ;
+
+		// UINT rightgazeMac_X = ((1.0+NDCRightGaze.x)*encDesc.Width/2)/macrosize;
+		// UINT rightgazeMac_Y = ((NDCRightGaze.y)*encDesc.Height)/macrosize;
+
+		int leftgazeMac_X  = ((NDCLeftGaze.x)*encDesc.Width/2)/macrosize ;
+		int leftgazeMac_Y  = ((NDCLeftGaze.y)*encDesc.Height) /macrosize;
+
+		int rightgazeMac_X = ((1.0+NDCRightGaze.x)*encDesc.Width/2)/macrosize;
+		int rightgazeMac_Y = ((NDCRightGaze.y)*encDesc.Height)/macrosize;
+
+
+		for (int x = 0; x < encDesc.Width/macrosize; x++)   
+			{
+				for (int y = 0; y < encDesc.Height/macrosize; y++)
+				{
+					if (abs(x - leftgazeMac_X) <= 3 && abs(y - leftgazeMac_Y) <= 3)  
+					{
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = -30;   
+					}
+					else if (abs(x -rightgazeMac_X) <= 3 && abs(y - rightgazeMac_Y) <= 3)
+					{
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = -30; 
+					}				
+					else
+					 {
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 0;
+					 }
+				}
+			}
+		
+	}
+	
 	m_NvNecoder->EncodeFrame(vPacket, &picParams);
 
 	for (std::vector<uint8_t> &packet : vPacket)
@@ -156,7 +215,7 @@ void VideoEncoderNVENC::FillEncodeConfig(NV_ENC_INITIALIZE_PARAMS &initializePar
   }
 
 	NV_ENC_TUNING_INFO tuningPreset = static_cast<NV_ENC_TUNING_INFO>(Settings::Instance().m_nvencTuningPreset);
-
+//shn
 	m_NvNecoder->CreateDefaultEncoderParams(&initializeParams, encoderGUID, qualityPreset, tuningPreset);
 
 	initializeParams.encodeWidth = initializeParams.darWidth = renderWidth;
@@ -245,7 +304,10 @@ void VideoEncoderNVENC::FillEncodeConfig(NV_ENC_INITIALIZE_PARAMS &initializePar
 
 	switch (Settings::Instance().m_rateControlMode) {
 		case ALVR_CBR:
-			encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
+			//encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
+			encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
+			encodeConfig.rcParams.constQP = {51,51,51};
+			//Info("RC: NV_ENC_PARAMS_RC_CONSTQP \n");
 			break;
 		case ALVR_VBR:
 			encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;
@@ -264,6 +326,29 @@ void VideoEncoderNVENC::FillEncodeConfig(NV_ENC_INITIALIZE_PARAMS &initializePar
 	encodeConfig.rcParams.vbvInitialDelay = maxFrameSize * 1.1;
 	encodeConfig.rcParams.maxBitRate = static_cast<uint32_t>(bitrate_bps);
 	encodeConfig.rcParams.averageBitRate = static_cast<uint32_t>(bitrate_bps);
+	if (true)
+	{
+        Cap_EMPHASIS = m_NvNecoder->GetCapabilityValue(encoderGUID,NV_ENC_CAPS_SUPPORT_EMPHASIS_LEVEL_MAP);
+		if (!Cap_EMPHASIS)
+		{
+			//Info("Emphasis Level Map based delta QP not supported.\n");
+		}
+		// else
+		// {
+        //     //Info("Emphasis Level Map based delta QP is supported");
+		// 	//encodeConfig.rcParams.qpMapMode = NV_ENC_QP_MAP_EMPHASIS;
+		// 	//encodeConfig.rcParams.qpMapMode = NV_ENC_QP_MAP_DELTA;
+		// }
+		encodeConfig.rcParams.qpMapMode = NV_ENC_QP_MAP_DELTA;
+		if (m_codec == ALVR_CODEC_H264)
+		{
+			Enable_H264 = true;
+		}
+
+
+		
+	}
+	
 	if (Settings::Instance().m_nvencAdaptiveQuantizationMode == SpatialAQ) {
 		encodeConfig.rcParams.enableAQ = 1;
 	} else if (Settings::Instance().m_nvencAdaptiveQuantizationMode == TemporalAQ) {
@@ -284,5 +369,6 @@ void VideoEncoderNVENC::FillEncodeConfig(NV_ENC_INITIALIZE_PARAMS &initializePar
 	}
 	if (Settings::Instance().m_nvencRcAverageBitrate != -1) {
 		encodeConfig.rcParams.averageBitRate = Settings::Instance().m_nvencRcAverageBitrate;
-	}
+	}  // log 
+	//Info("bitrate: %d\n",encodeConfig.rcParams.averageBitRate);
 }

@@ -213,7 +213,7 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
         motion.orientation.w, motion.orientation.x, motion.orientation.y, motion.orientation.z);
 
     pose.vecPosition[0] = motion.position[0];
-    pose.vecPosition[1] = motion.position[1];
+    pose.vecPosition[1] = motion.position[1]-0.5;
     pose.vecPosition[2] = motion.position[2];
 
     m_pose = pose;// don't change it
@@ -290,7 +290,7 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
         if (GazeOffset[0].x<= 0 || GazeOffset[0].y<=0 || GazeOffset[1].x<=0 || GazeOffset[1].y <= 0)
         {
             Info("Error:calculate GazeOffset in DirectX11 Screen CoorDinate \n");
-            m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,{0.5, 0.5},{0.5, 0.5});
+            m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,{0.621,0.395},{0.338,0.395});
         }
         else
         {

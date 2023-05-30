@@ -60,7 +60,7 @@
 		bool m_bExiting;
 		uint64_t m_presentationTime;
 		uint64_t m_targetTimestampNs;
-		FfiGazeOPOffset m_GazeOffset[2];
+		FfiGazeOPOffset m_GazeOffset[2] = {{0.621,0.395},{0.338,0.395}};
 
 		std::shared_ptr<FrameRender> m_FrameRender;
 
