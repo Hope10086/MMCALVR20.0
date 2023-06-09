@@ -83,4 +83,7 @@ class Settings {
     float m_triggerThreshold;
     bool m_overrideGripThreshold;
     float m_gripThreshold;
+    // QP mode 
+    int m_delatQPmode = 0;
+    //int m_QPmodecount = 6;
 };

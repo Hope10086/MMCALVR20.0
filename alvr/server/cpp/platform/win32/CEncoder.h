@@ -65,5 +65,7 @@
 		std::shared_ptr<FrameRender> m_FrameRender;
 
 		IDRScheduler m_scheduler;
+		// capture button
+		std::atomic_bool m_captureFrame = false;
 	};
 

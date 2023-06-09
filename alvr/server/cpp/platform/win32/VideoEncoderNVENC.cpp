@@ -117,12 +117,50 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		picParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR;
 	}
 	if (true)
-	{    
+	{    		
 		int macrosize = 32;
 		if (Enable_H264)
 		{
 			macrosize = 16;
 		}
+
+		int Roi_qpDelta = -24; //51-24=27
+		int nRoi_qpDelta = 0;
+		int Roi_Size = 4;
+		switch (Settings::Instance().m_delatQPmode)
+		{
+		case 0:
+		    Roi_qpDelta = -24;
+			nRoi_qpDelta = 0;
+			break;
+		case 1:	
+			Roi_qpDelta = -24;  //51-24 = 27
+			nRoi_qpDelta = -5;  //51-5 = 46
+			break;
+		case 2:
+			Roi_qpDelta = -24;
+			nRoi_qpDelta = -10; //41				
+			break;
+		case 3:
+			Roi_qpDelta = -24;
+			nRoi_qpDelta = -15;	//36			
+			break;
+		case 4:
+			Roi_qpDelta = -24;
+			nRoi_qpDelta = -20;	//31			
+			break;		
+		default:
+			Roi_qpDelta = -24;
+			nRoi_qpDelta = 0;
+			break;
+		}
+		int countx = Roi_Size*(float(encDesc.Width)/float(2*1024));
+		int county = Roi_Size*(float(encDesc.Height)/float(1024));
+		Info("Delta QP Mode: %d  \n", Settings::Instance().m_delatQPmode);
+		Info("Roi MacroSize(single) = %dX%d \n", countx,county);
+		Info("Roi QP = %d Roi QP =%d \n", 51+Roi_qpDelta, 51+nRoi_qpDelta);
+
+
 	
 		picParams.qpDeltaMapSize = (encDesc.Width/macrosize)*(encDesc.Height/macrosize);
 		picParams.qpDeltaMap = (int8_t*)malloc(picParams.qpDeltaMapSize * sizeof(int8_t));     
@@ -147,22 +185,21 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		int rightgazeMac_X = ((1.0+NDCRightGaze.x)*encDesc.Width/2)/macrosize;
 		int rightgazeMac_Y = ((NDCRightGaze.y)*encDesc.Height)/macrosize;
 
-
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{
 				for (int y = 0; y < encDesc.Height/macrosize; y++)
 				{
-					if (abs(x - leftgazeMac_X) <= 3 && abs(y - leftgazeMac_Y) <= 3)  
+					if (abs(x - leftgazeMac_X) <= countx && abs(y - leftgazeMac_Y) <= county   && x < (encDesc.Width/macrosize)/2)  
 					{
-						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = -30;   
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = Roi_qpDelta; 																		  
 					}
-					else if (abs(x -rightgazeMac_X) <= 3 && abs(y - rightgazeMac_Y) <= 3)
-					{
-						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = -30; 
+					else if (abs(x -rightgazeMac_X) <= countx && abs(y - rightgazeMac_Y) <= county && x >= (encDesc.Width/macrosize)/2 )
+					{						
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = Roi_qpDelta; 	
 					}				
 					else
 					 {
-						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 0;
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = nRoi_qpDelta;
 					 }
 				}
 			}
@@ -308,6 +345,7 @@ void VideoEncoderNVENC::FillEncodeConfig(NV_ENC_INITIALIZE_PARAMS &initializePar
 			encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
 			encodeConfig.rcParams.constQP = {51,51,51};
 			//Info("RC: NV_ENC_PARAMS_RC_CONSTQP \n");
+			// shn
 			break;
 		case ALVR_VBR:
 			encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;

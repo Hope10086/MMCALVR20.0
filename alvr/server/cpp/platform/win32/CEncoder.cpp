@@ -101,7 +101,13 @@
 				m_newFrameReady.Wait();
 				if (m_bExiting)
 					break;
-
+				if (m_captureFrame)
+					{
+						m_captureFrame = false;
+						// 
+						Info("m_captureFrame has been set");
+						Settings::Instance().m_delatQPmode =(Settings::Instance().m_delatQPmode+1)%5 ;
+					}
 				if (m_FrameRender->GetTexture())
 				{
 					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1] );
@@ -143,4 +149,6 @@
 		}
 
 		void CEncoder::CaptureFrame() {
+			m_captureFrame = true;
+
 		}
