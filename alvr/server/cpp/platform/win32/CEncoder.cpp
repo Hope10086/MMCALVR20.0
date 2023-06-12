@@ -106,7 +106,7 @@
 						m_captureFrame = false;
 						// 
 						Info("m_captureFrame has been set");
-						Settings::Instance().m_delatQPmode =(Settings::Instance().m_delatQPmode+1)%5 ;
+						Settings::Instance().m_delatQPmode =(Settings::Instance().m_delatQPmode+1)%40 ;
 					}
 				if (m_FrameRender->GetTexture())
 				{

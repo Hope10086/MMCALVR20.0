@@ -126,39 +126,41 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 
 		int Roi_qpDelta = -24; //51-24=27
 		int nRoi_qpDelta = 0;
-		int Roi_Size = 4;
-		switch (Settings::Instance().m_delatQPmode)
-		{
-		case 0:
-		    Roi_qpDelta = -24;
-			nRoi_qpDelta = 0;
-			break;
-		case 1:	
-			Roi_qpDelta = -24;  //51-24 = 27
-			nRoi_qpDelta = -5;  //51-5 = 46
-			break;
-		case 2:
-			Roi_qpDelta = -24;
-			nRoi_qpDelta = -10; //41				
-			break;
-		case 3:
-			Roi_qpDelta = -24;
-			nRoi_qpDelta = -15;	//36			
-			break;
-		case 4:
-			Roi_qpDelta = -24;
-			nRoi_qpDelta = -20;	//31			
-			break;		
-		default:
-			Roi_qpDelta = -24;
-			nRoi_qpDelta = 0;
-			break;
-		}
-		int countx = Roi_Size*(float(encDesc.Width)/float(2*1024));
-		int county = Roi_Size*(float(encDesc.Height)/float(1024));
-		Info("Delta QP Mode: %d  \n", Settings::Instance().m_delatQPmode);
-		Info("Roi MacroSize(single) = %dX%d \n", countx,county);
+		int Roi_Size = Settings::Instance().m_delatQPmode;
+		// switch (Settings::Instance().m_delatQPmode)
+		// {
+		// case 0:
+		//     Roi_qpDelta = -24;
+		// 	nRoi_qpDelta = 0;
+		// 	break;
+		// case 1:	
+		// 	Roi_qpDelta = -24;  //51-24 = 27
+		// 	nRoi_qpDelta = -5;  //51-5 = 46
+		// 	break;
+		// case 2:
+		// 	Roi_qpDelta = -24;
+		// 	nRoi_qpDelta = -10; //41				
+		// 	break;
+		// case 3:
+		// 	Roi_qpDelta = -24;
+		// 	nRoi_qpDelta = -15;	//36			
+		// 	break;
+		// case 4:
+		// 	Roi_qpDelta = -24;
+		// 	nRoi_qpDelta = -20;	//31			
+		// 	break;		
+		// default:
+		// 	Roi_qpDelta = -24;
+		// 	nRoi_qpDelta = 0;
+		// 	break;
+		// }
+		int countx = Roi_Size*(float(encDesc.Width)/float(2*1792));
+		int county = Roi_Size*(float(encDesc.Height)/float(1920));
+		//Info("Delta QP Mode: %d  \n", Settings::Instance().m_delatQPmode);
+		//Info("Roi MacroSize(single) = %dX%d \n", countx,county);
 		Info("Roi QP = %d Roi QP =%d \n", 51+Roi_qpDelta, 51+nRoi_qpDelta);
+		float angle = (2*atanf((2*Roi_Size+1)*16/812.4644))*(180/3.1415926);
+		Info("Roi Size = %f °\n", angle);
 
 
 	
