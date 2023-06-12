@@ -174,7 +174,11 @@ impl DataSources {
                                 ServerRequest::CaptureFrame
                                 | ServerRequest::InsertIdr
                                 | ServerRequest::StartRecording
-                                | ServerRequest::StopRecording => {
+                                | ServerRequest::StopRecording
+                                | ServerRequest::QpModeset 
+                                | ServerRequest::RoiSizeset
+                                | ServerRequest::QpModezero
+                                | ServerRequest::RoiSizezero => {
                                     warn!("Cannot perform action, streamer is not connected.")
                                 }
                                 ServerRequest::RestartSteamvr | ServerRequest::ShutdownSteamvr => {

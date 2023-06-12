@@ -54,6 +54,14 @@
 
 		void CaptureFrame();
 
+		void QpModeset();
+
+		void RoiSizeset();
+
+		void QpModezero();
+
+		void RoiSizezero();
+		
 	private:
 		CThreadEvent m_newFrameReady, m_encodeFinished;
 		std::shared_ptr<VideoEncoder> m_videoEncoder;
@@ -67,5 +75,9 @@
 		IDRScheduler m_scheduler;
 		// capture button
 		std::atomic_bool m_captureFrame = false;
+		std::atomic_bool m_qpmodeset = false;
+		std::atomic_bool m_roisizeset = false;
+		std::atomic_bool m_qpmodezero = false;
+		std::atomic_bool m_roisizezero = false;
 	};
 

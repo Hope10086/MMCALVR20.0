@@ -363,3 +363,35 @@ void CaptureFrame() {
     }
 #endif
 }
+
+
+void QpModeset(){
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->QpModeset();
+    }
+#endif
+
+}
+
+void RoiSizeset() {
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->RoiSizeset();
+    }
+#endif
+}
+void QpModezero() {
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->QpModezero();
+    }
+#endif
+}
+void RoiSizezero() {
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->RoiSizezero();
+    }
+#endif
+}

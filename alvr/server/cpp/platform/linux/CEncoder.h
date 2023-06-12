@@ -21,6 +21,8 @@ class CEncoder : public CThread {
     void InsertIDR();
     bool IsConnected() { return m_connected; }
     void CaptureFrame();
+    void QpModeset();
+    void RoiSizeset();
 
   private:
     void GetFds(int client, int (*fds)[6]);
@@ -32,4 +34,7 @@ class CEncoder : public CThread {
     int m_fds[6];
     bool m_connected = false;
     std::atomic_bool m_captureFrame = false;
+    std::atomic_bool m_roisize = false;
+    std::atomic_bool m_qpmodeset = false;
+    std::atomic_bool m_roisize = false;
 };

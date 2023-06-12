@@ -103,11 +103,35 @@
 					break;
 				if (m_captureFrame)
 					{
-						m_captureFrame = false;
-						// 
-						Info("m_captureFrame has been set");
-						Settings::Instance().m_delatQPmode =(Settings::Instance().m_delatQPmode+1)%40 ;
+						m_captureFrame = false; 
+						Info("m_captureFrame has been set");						
 					}
+				if (m_qpmodeset)
+				{
+				        m_qpmodeset = false;
+						Settings::Instance().m_delatQPmode =(Settings::Instance().m_delatQPmode+1)%29 ;
+				}
+				if (m_roisizeset)
+				{
+					    m_roisizeset =false;
+						Settings::Instance().m_RoiSize = (Settings::Instance().m_RoiSize+1)%40 ;
+				}
+				if (m_qpmodezero)
+				{
+					    m_qpmodezero  = false;
+					    Settings::Instance().m_delatQPmode = 0;
+
+				}
+				if (m_roisizezero)
+				{
+					    m_roisizezero = false; 
+						Settings::Instance().m_RoiSize = 0;
+
+				}
+				
+				
+				
+				
 				if (m_FrameRender->GetTexture())
 				{
 					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1] );
@@ -150,5 +174,9 @@
 
 		void CEncoder::CaptureFrame() {
 			m_captureFrame = true;
-
 		}
+
+		void CEncoder::QpModeset() { m_qpmodeset = true;}
+		void CEncoder::RoiSizeset() { m_roisizeset =true;}
+		void CEncoder::QpModezero() { m_qpmodezero = true;}
+		void CEncoder::RoiSizezero() { m_roisizezero = true;}

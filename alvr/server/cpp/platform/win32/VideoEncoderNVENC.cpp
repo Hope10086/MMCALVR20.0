@@ -7,6 +7,8 @@
 
 int Cap_EMPHASIS;
 bool Enable_H264 = false;
+int m_QpMode;
+int m_RoiSize;
 
 VideoEncoderNVENC::VideoEncoderNVENC(std::shared_ptr<CD3DRender> pD3DRender
 	, int width, int height)
@@ -123,10 +125,9 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		{
 			macrosize = 16;
 		}
-
-		int Roi_qpDelta = -24; //51-24=27
-		int nRoi_qpDelta = 0;
-		int Roi_Size = Settings::Instance().m_delatQPmode;
+		int Roi_qpDelta = -30; //51-30=21  // may be changed in switch
+		int nRoi_qpDelta = -Settings::Instance().m_delatQPmode;
+		int Roi_Size = Settings::Instance().m_RoiSize;
 		// switch (Settings::Instance().m_delatQPmode)
 		// {
 		// case 0:
@@ -154,16 +155,15 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		// 	nRoi_qpDelta = 0;
 		// 	break;
 		// }
-		int countx = Roi_Size*(float(encDesc.Width)/float(2*1792));
-		int county = Roi_Size*(float(encDesc.Height)/float(1920));
+		int countx = Roi_Size*(float(encDesc.Width)/float(2*2592));
+		//int county = Roi_Size*(float(encDesc.Height)/float(1920));
+		int county = countx;
 		//Info("Delta QP Mode: %d  \n", Settings::Instance().m_delatQPmode);
 		//Info("Roi MacroSize(single) = %dX%d \n", countx,county);
 		Info("Roi QP = %d Roi QP =%d \n", 51+Roi_qpDelta, 51+nRoi_qpDelta);
-		float angle = (2*atanf((2*Roi_Size+1)*16/812.4644))*(180/3.1415926);
-		Info("Roi Size = %f °\n", angle);
-
-
-	
+		float ZDepth = 2592/(tanf(0.942478)+tanf(0.698132));
+		float angle = (2*atanf((2*Roi_Size+1)*16/ZDepth))*(180/3.1415926);
+		Info("Roi Size = %f °  %dx%d (ctu) \n", angle, 2*countx+1, 2*county+1);
 		picParams.qpDeltaMapSize = (encDesc.Width/macrosize)*(encDesc.Height/macrosize);
 		picParams.qpDeltaMap = (int8_t*)malloc(picParams.qpDeltaMapSize * sizeof(int8_t));     
 		// for (int i = 0; i < picParams.qpDeltaMapSize; i++)

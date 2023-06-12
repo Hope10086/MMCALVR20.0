@@ -126,6 +126,10 @@ async fn http_api(
                     }
                     ServerRequest::CaptureFrame => unsafe { crate::CaptureFrame() },
                     ServerRequest::InsertIdr => unsafe { crate::RequestIDR() },
+                    ServerRequest::QpModeset => unsafe { crate::QpModeset()},
+                    ServerRequest::RoiSizeset => unsafe {crate::RoiSizeset()},
+                    ServerRequest::QpModezero => unsafe {crate::QpModezero()},
+                    ServerRequest::RoiSizezero => unsafe {crate::RoiSizezero()},
                     ServerRequest::StartRecording => crate::create_recording_file(),
                     ServerRequest::StopRecording => *VIDEO_RECORDING_FILE.lock() = None,
                     ServerRequest::FirewallRules(action) => {
