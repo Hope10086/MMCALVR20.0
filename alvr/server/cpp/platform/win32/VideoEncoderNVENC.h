@@ -4,6 +4,7 @@
 #include "shared/d3drender.h"
 #include "VideoEncoder.h"
 #include "NvEncoderD3D11.h"
+#include "ScreenGrab11.h"	
 
 enum AdaptiveQuantizationMode {
 	SpatialAQ = 1,

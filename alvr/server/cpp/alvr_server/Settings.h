@@ -87,4 +87,6 @@ class Settings {
     int m_RoiSize = 0;
     // QP mode 
     int m_delatQPmode = 0;
+    //capture 
+    bool m_capturePicture = false;
 };

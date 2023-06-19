@@ -108,16 +108,42 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	const NvEncInputFrame* encoderInputFrame = m_NvNecoder->GetNextInputFrame();
 
 	ID3D11Texture2D *pInputTexture = reinterpret_cast<ID3D11Texture2D*>(encoderInputFrame->inputPtr);
-	m_pD3DRender->GetContext()->CopyResource(pInputTexture, pTexture);
+	//m_pD3DRender->GetContext()->CopyResource(pInputTexture, pTexture);
     
 	D3D11_TEXTURE2D_DESC encDesc;
 	pTexture->GetDesc(&encDesc);
+	// capture pictures sequence
+	if (Settings::Instance().m_capturePicture)
+	{
+		D3D11_BOX srcRegion;
+	   	srcRegion.left   = 0;
+	    srcRegion.right  = encDesc.Width/2;
+	    srcRegion.top    = 0;
+	    srcRegion.bottom = encDesc.Height;
+	    srcRegion.front  = 0;
+	    srcRegion.back   = 1;
+		m_pD3DRender->GetContext()->CopySubresourceRegion(pInputTexture,0,0,0,0,pTexture,0,&srcRegion);
+	}
+	else
+	{
+		m_pD3DRender->GetContext()->CopyResource(pInputTexture, pTexture);
 
+	}
+	if (Settings::Instance().m_capturePicture)
+	{
+	wchar_t buf[1024];	
+	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%dx%d-%llu.dds", inputDesc.Width,inputDesc.Height,targetTimestampNs);
+	    _snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%llu.dds",targetTimestampNs);
+	    HRESULT hr = DirectX::SaveDDSTextureToFile(m_pD3DRender->GetContext(), pInputTexture, buf);
+        if(FAILED (hr))
+        Info("Failed to save DDS texture  %llu to file",targetTimestampNs);
+	}
 	NV_ENC_PIC_PARAMS picParams = {};
 	if (insertIDR) {
 		Debug("Inserting IDR frame.\n");
 		picParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR;
 	}
+	// qp changed 
 	if (true)
 	{    		
 		int macrosize = 32;

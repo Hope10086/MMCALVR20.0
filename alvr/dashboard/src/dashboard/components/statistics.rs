@@ -309,7 +309,7 @@ impl StatisticsTab {
             ui[1].label(&format!(
                 "{} packets ({} packets/s)",
                 statistics.video_packets_total, statistics.video_packets_per_sec
-            ));
+            ));// shn
 
             ui[0].label("Total sent:");
             ui[1].label(&format!("{} MB", statistics.video_mbytes_total));

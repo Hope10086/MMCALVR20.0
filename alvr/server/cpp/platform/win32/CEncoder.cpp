@@ -103,8 +103,12 @@
 					break;
 				if (m_captureFrame)
 					{
+						// capture pictures sequence 
+				        Settings::Instance().m_capturePicture ^= m_captureFrame;
+				        // capture signal picture
+				        //Settings::Instance().m_capturePicture ^= m_captureFrame;
 						m_captureFrame = false; 
-						Info("m_captureFrame has been set");						
+						//Info("m_captureFrame has been set");						
 					}
 				if (m_qpmodeset)
 				{
@@ -127,11 +131,7 @@
 					    m_roisizezero = false; 
 						Settings::Instance().m_RoiSize = 0;
 
-				}
-				
-				
-				
-				
+				}		
 				if (m_FrameRender->GetTexture())
 				{
 					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1] );
