@@ -58,9 +58,23 @@
 
 		void RoiSizeset();
 
+		void CentreSizeset();
+
+		void CentreSizereset();
+
 		void QpModezero();
 
 		void RoiSizezero();
+
+		void COF0set();
+
+		void COF1set();
+
+		void COF0reset();
+
+		void COF1reset();
+
+		void QPDistribution();
 		
 	private:
 		CThreadEvent m_newFrameReady, m_encodeFinished;
@@ -77,7 +91,14 @@
 		std::atomic_bool m_captureFrame = false;
 		std::atomic_bool m_qpmodeset = false;
 		std::atomic_bool m_roisizeset = false;
+		std::atomic_bool m_centresizeset = false;
+		std::atomic_bool m_centresizereset = false;
 		std::atomic_bool m_qpmodezero = false;
 		std::atomic_bool m_roisizezero = false;
+		std::atomic_bool m_cof0set = false;
+		std::atomic_bool m_cof1set = false;
+		std::atomic_bool m_cof0reset = false;
+		std::atomic_bool m_cof1reset = false;
+		std::atomic_bool m_QPDistribution = false;
 	};
 

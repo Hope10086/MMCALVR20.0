@@ -381,6 +381,24 @@ void RoiSizeset() {
     }
 #endif
 }
+
+void CentreSizeset() {
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->CentreSizeset();
+    }
+#endif
+}
+
+void CentreSizereset() {
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->CentreSizereset();
+    }
+#endif
+}
+
+
 void QpModezero() {
     #ifndef __APPLE__
     if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
@@ -393,5 +411,54 @@ void RoiSizezero() {
     if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
         g_driver_provider.hmd->m_encoder->RoiSizezero();
     }
+#endif
+}
+
+void COF0set() {
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->COF0set();
+    }
+#endif
+}
+
+void COF1set() {
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->COF1set();
+    }
+#endif
+}
+
+void COF0reset() {
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->COF0reset();
+    }
+#endif
+}
+
+void COF1reset() {
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->COF1reset();
+    }
+#endif
+}
+void QPDistribution() {
+    #ifndef __APPLE__
+    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
+        g_driver_provider.hmd->m_encoder->QPDistribution();
+    }
+#endif
+}
+void RecordGaze(){
+    #ifndef __APPLE__
+    Settings::Instance().m_recordGaze = true;
+#endif
+}
+void StopRecordGaze(){
+    #ifndef __APPLE__
+    Settings::Instance().m_recordGaze = false;
 #endif
 }

@@ -177,8 +177,15 @@ impl DataSources {
                                 | ServerRequest::StopRecording
                                 | ServerRequest::QpModeset 
                                 | ServerRequest::RoiSizeset
+                                | ServerRequest::CentreSizeset
+                                | ServerRequest::CentreSizereset
                                 | ServerRequest::QpModezero
-                                | ServerRequest::RoiSizezero => {
+                                | ServerRequest::RoiSizezero
+                                | ServerRequest::COF0set
+                                | ServerRequest::COF1set
+                                | ServerRequest::COF0reset
+                                | ServerRequest::COF1reset
+                                | ServerRequest::QPDistribution=> {
                                     warn!("Cannot perform action, streamer is not connected.")
                                 }
                                 ServerRequest::RestartSteamvr | ServerRequest::ShutdownSteamvr => {

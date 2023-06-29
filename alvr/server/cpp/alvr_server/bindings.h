@@ -161,8 +161,17 @@ extern "C" void SetButton(unsigned long long path, FfiButtonValue value);
 extern "C" void CaptureFrame();
 extern "C" void QpModeset();
 extern "C" void RoiSizeset();
+extern "C" void CentreSizeset();
+extern "C" void CentreSizereset();
 extern "C" void QpModezero();
 extern "C" void RoiSizezero();
+extern "C" void COF0set();
+extern "C" void COF1set();
+extern "C" void COF0reset();
+extern "C" void COF1reset();
+extern "C" void QPDistribution();
+extern "C" void RecordGaze();
+extern "C" void StopRecordGaze();
 
 // NalParsing.cpp
 void ParseFrameNals(

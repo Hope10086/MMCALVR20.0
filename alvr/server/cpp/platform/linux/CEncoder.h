@@ -23,6 +23,14 @@ class CEncoder : public CThread {
     void CaptureFrame();
     void QpModeset();
     void RoiSizeset();
+    void CentreSizeset();
+    void CentreSizereset();
+    void COF0set();
+    void COF1set();
+    void COF0reset();
+    void COF1reset();
+    void QPDistribution();
+
 
   private:
     void GetFds(int client, int (*fds)[6]);
@@ -37,4 +45,9 @@ class CEncoder : public CThread {
     std::atomic_bool m_roisize = false;
     std::atomic_bool m_qpmodeset = false;
     std::atomic_bool m_roisize = false;
+    std::atomic_bool m_cof0set= false;
+    std::atomic_bool m_cof1set= false;
+    std::atomic_bool m_cof0reset= false;
+    std::atomic_bool m_cof1reset= false;
+    std::atomic_bool m_QPDistribution= false;
 };

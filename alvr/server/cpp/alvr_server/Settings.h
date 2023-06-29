@@ -85,8 +85,16 @@ class Settings {
     float m_gripThreshold;
     // Roi Size 
     int m_RoiSize = 0;
+    // CentreSize
+    int m_centresize=0;
     // QP mode 
     int m_delatQPmode = 0;
+    //拟合系数delta
+    float m_cof0delta=0;
+    float m_cof1delta=0;
+    //拟合模式切换（三种，0：阶跃；1：方形辐射；2：圆形辐射）
+    int m_QPDistribution=0;
     //capture 
     bool m_capturePicture = false;
+    bool m_recordGaze = false;
 };

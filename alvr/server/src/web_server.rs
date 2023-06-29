@@ -128,11 +128,19 @@ async fn http_api(
                     ServerRequest::InsertIdr => unsafe { crate::RequestIDR() },
                     ServerRequest::QpModeset => unsafe { crate::QpModeset()},
                     ServerRequest::RoiSizeset => unsafe {crate::RoiSizeset()},
+                    ServerRequest::CentreSizeset => unsafe {crate::CentreSizeset()},
+                    ServerRequest::CentreSizereset => unsafe {crate::CentreSizereset()},
                     ServerRequest::QpModezero => unsafe {crate::QpModezero()},
                     ServerRequest::RoiSizezero => unsafe {crate::RoiSizezero()},
-                    ServerRequest::StartRecording => crate::create_recording_file(),
-                    ServerRequest::StopRecording => *VIDEO_RECORDING_FILE.lock() = None,
-                    ServerRequest::FirewallRules(action) => {
+                    ServerRequest::COF0set => unsafe {crate::COF0set()},
+                    ServerRequest::COF1set => unsafe {crate::COF1set()},
+                    ServerRequest::COF0reset => unsafe {crate::COF0reset()},
+                    ServerRequest::COF1reset => unsafe {crate::COF1reset()},
+                    ServerRequest::QPDistribution => unsafe {crate::QPDistribution()},
+                    ServerRequest::StartRecording => unsafe {crate::create_recording_file();crate::RecordGaze()},
+                    //ServerRequest::StopRecording => *VIDEO_RECORDING_FILE.lock() = None,
+                    ServerRequest::StopRecording =>  unsafe {crate::StopRecordGaze();*VIDEO_RECORDING_FILE.lock() = None},
+                    ServerRequest::FirewallRules(action) => {   
                         if alvr_server_io::firewall_rules(action).is_ok() {
                             info!("Setting firewall rules succeeded!");
                         } else {

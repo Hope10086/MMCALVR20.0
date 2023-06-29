@@ -120,6 +120,17 @@
 					    m_roisizeset =false;
 						Settings::Instance().m_RoiSize = (Settings::Instance().m_RoiSize+1)%40 ;
 				}
+				if (m_centresizeset)
+				{
+					    m_centresizeset =false;
+						Settings::Instance().m_centresize = (Settings::Instance().m_centresize+1)%40 ;
+				}
+				if (m_centresizereset)
+				{
+					    m_centresizereset =false;
+						Settings::Instance().m_centresize = 0 ;
+				}
+
 				if (m_qpmodezero)
 				{
 					    m_qpmodezero  = false;
@@ -132,6 +143,33 @@
 						Settings::Instance().m_RoiSize = 0;
 
 				}		
+				if(m_cof0set)
+				{
+					m_cof0set=false;
+					Settings::Instance().m_cof0delta = Settings::Instance().m_cof0delta-0.5;
+				}
+				if(m_cof1set)
+				{
+					m_cof1set=false;
+					Settings::Instance().m_cof1delta = Settings::Instance().m_cof1delta-0.5;
+				}
+				if(m_cof0reset)
+				{
+					m_cof0reset=false;
+					Settings::Instance().m_cof0delta=0;
+				}
+				if(m_cof1reset)
+				{
+					m_cof1reset=false;
+					Settings::Instance().m_cof1delta=0;
+				}
+				if(m_QPDistribution)
+				{
+					m_QPDistribution=false;
+					Settings::Instance().m_QPDistribution=(Settings::Instance().m_QPDistribution+1)%3;  //三种模式
+				}
+
+
 				if (m_FrameRender->GetTexture())
 				{
 					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1] );
@@ -178,5 +216,12 @@
 
 		void CEncoder::QpModeset() { m_qpmodeset = true;}
 		void CEncoder::RoiSizeset() { m_roisizeset =true;}
+		void CEncoder::CentreSizeset() { m_centresizeset =true;}
+		void CEncoder::CentreSizereset() { m_centresizereset =true;}
 		void CEncoder::QpModezero() { m_qpmodezero = true;}
 		void CEncoder::RoiSizezero() { m_roisizezero = true;}
+		void CEncoder::COF0set() { m_cof0set = true;}
+		void CEncoder::COF1set() { m_cof1set = true;}
+		void CEncoder::COF0reset() {  m_cof0reset = true;}
+		void CEncoder::COF1reset() {  m_cof1reset = true;}
+		void CEncoder::QPDistribution() {  m_QPDistribution = true;}

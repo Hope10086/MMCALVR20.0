@@ -7,8 +7,20 @@
 
 int Cap_EMPHASIS;
 bool Enable_H264 = false;
-int m_QpMode = 0;
-int m_RoiSize = 0;
+int m_QpModechange = 0;
+int m_RoiSizechange = 0;
+float m_cof0change=0;
+float m_cof1change=0;
+int m_QPDistribution_change=4;
+int m_centresize_change=4;
+
+
+//float cof0=0.3836,cof1=26.3290;   //watch: QP=cof0*FOV+cof1
+//float cof0=0.435,cof1=29.9997;   //play: QP=0.435*FOV+29.9997
+float cof0=27.54,cof1=0.01004;
+
+#define QP_Radial 1   //根据拟合函数辐射状分布QP值 QP=0.3836*FOV+26.3290(FOV为度数，注：度数和pi转换)
+#define QP_Radial_square 1  //一个FOV角对应一个正方形
 
 VideoEncoderNVENC::VideoEncoderNVENC(std::shared_ptr<CD3DRender> pD3DRender
 	, int width, int height)
@@ -113,7 +125,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	D3D11_TEXTURE2D_DESC encDesc;
 	pTexture->GetDesc(&encDesc);
 	// capture pictures sequence
-	if (Settings::Instance().m_capturePicture)
+	if (false /*Settings::Instance().m_capturePicture */)
 	{
 		D3D11_BOX srcRegion;
 	   	srcRegion.left   = 0;
@@ -129,11 +141,14 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		m_pD3DRender->GetContext()->CopyResource(pInputTexture, pTexture);
 
 	}
+//SK 输出DDS
 	if (Settings::Instance().m_capturePicture)
 	{
 	wchar_t buf[1024];	
 	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%dx%d-%llu.dds", inputDesc.Width,inputDesc.Height,targetTimestampNs);
-	    _snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%llu.dds",targetTimestampNs);
+	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%llu.dds",targetTimestampNs);
+	    _snwprintf_s(buf, sizeof(buf), L"E:\\alvrdata\\ScreenDDS\\%llu.dds",targetTimestampNs);
+		
 	    HRESULT hr = DirectX::SaveDDSTextureToFile(m_pD3DRender->GetContext(), pInputTexture, buf);
         if(FAILED (hr))
         Info("Failed to save DDS texture  %llu to file",targetTimestampNs);
@@ -160,62 +175,154 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		//Info("Delta QP Mode: %d  \n", Settings::Instance().m_delatQPmode);
 		//Info("Roi MacroSize(single) = %dX%d \n", countx,county);		
 		float ZDepth = 2592/(tanf(0.942478)+tanf(0.698132));
-		float angle = (2*atanf((2*Roi_Size+1)*16/ZDepth))*(180/3.1415926);
-		if (m_QpMode != Settings::Instance().m_delatQPmode)
+		float angle = (2*atanf((2*Roi_Size+1)*16/ZDepth))*(180/(4*atanf(1)));
+		if (m_QpModechange != Settings::Instance().m_delatQPmode)
 		{
-			m_QpMode = Settings::Instance().m_delatQPmode;
+			m_QpModechange = Settings::Instance().m_delatQPmode;
 			Info("Roi QP = %d Roi QP =%d \n", 51+Roi_qpDelta, 51+nRoi_qpDelta);
 		}
-		if (m_RoiSize != Settings::Instance().m_RoiSize)
+		if (m_RoiSizechange != Settings::Instance().m_RoiSize)
 		{
-			m_RoiSize = Settings::Instance().m_RoiSize;
+			m_RoiSizechange = Settings::Instance().m_RoiSize;
 			Info("Roi Size = %f °  %dx%d (ctu) \n", angle, 2*countx+1, 2*county+1);
 		}
 		picParams.qpDeltaMapSize = (encDesc.Width/macrosize)*(encDesc.Height/macrosize);
 		picParams.qpDeltaMap = (int8_t*)malloc(picParams.qpDeltaMapSize * sizeof(int8_t));     
-		// for (int i = 0; i < picParams.qpDeltaMapSize; i++)
-		// {
-		// 	picParams.qpDeltaMap[i] = NV_ENC_EMPHASIS_MAP_LEVEL_0;
-		// }
-		// for (int i = 0; i < picParams.qpDeltaMapSize/2; i++)
-		// {
-		// 	picParams.qpDeltaMap[i] = NV_ENC_EMPHASIS_MAP_LEVEL_4;
-		// }
-		// calcuate  Marco's location 
-		// UINT leftgazeMac_X  = ((NDCLeftGaze.x)*encDesc.Width/2)/macrosize ;
-		// UINT leftgazeMac_Y  = ((NDCLeftGaze.y)*encDesc.Height)/macrosize ;
-
-		// UINT rightgazeMac_X = ((1.0+NDCRightGaze.x)*encDesc.Width/2)/macrosize;
-		// UINT rightgazeMac_Y = ((NDCRightGaze.y)*encDesc.Height)/macrosize;
 
 		int leftgazeMac_X  = ((NDCLeftGaze.x)*encDesc.Width/2)/macrosize ;
 		int leftgazeMac_Y  = ((NDCLeftGaze.y)*encDesc.Height) /macrosize;
 
 		int rightgazeMac_X = ((1.0+NDCRightGaze.x)*encDesc.Width/2)/macrosize;
 		int rightgazeMac_Y = ((NDCRightGaze.y)*encDesc.Height)/macrosize;
+		if (Settings::Instance().m_recordGaze)
+		{
+			TxtPrint("%lf %lf %lf %lf\n",NDCLeftGaze.x,NDCLeftGaze.y,NDCRightGaze.x+1,NDCRightGaze.y);
+		}		
+		float distance=0;
+		float FOV=0;   //单位°
+		int expect_qp=51;
+		float cof0_final=cof0+Settings::Instance().m_cof0delta;   //调整之后的cof0
+		float cof1_final=cof1+Settings::Instance().m_cof1delta;   //调整之后的cof1
+		if (m_cof0change != cof0_final)
+		{
+			m_cof0change = cof0_final;
+			Info("cof0: %f",cof0_final);
+		}
+		if (m_cof1change != cof1_final)
+		{
+			m_cof1change = cof1_final;
+			Info("cof1: %f",cof1_final);
+		}
+		if (m_QPDistribution_change != Settings::Instance().m_QPDistribution)
+		{
+			m_QPDistribution_change=Settings::Instance().m_QPDistribution;
+			Info("distribution mode: %d",m_QPDistribution_change);  
+		}
+		
+		int centresize=Settings::Instance().m_centresize;   //centre*2
+		if(m_centresize_change!=Settings::Instance().m_centresize)
+		{
+			m_centresize_change=Settings::Instance().m_centresize;
+			Info("Centre Size: %d×%d",2*m_centresize_change+1, 2*m_centresize_change+1);  
+		}
 
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{
 				for (int y = 0; y < encDesc.Height/macrosize; y++)
 				{
-					if (abs(x - leftgazeMac_X) <= countx && abs(y - leftgazeMac_Y) <= county   && x < (encDesc.Width/macrosize)/2)  
+
+                   if(Settings::Instance().m_QPDistribution==1)  // 方形辐射
+				   {
+						if (abs(x - leftgazeMac_X) <= centresize && abs(y - leftgazeMac_Y) <= centresize && x < (encDesc.Width/macrosize)/2)  //左眼中心21qp区域
+						{
+							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
+							continue;																  
+						}
+						else if(abs(x -rightgazeMac_X) <= centresize && abs(y - rightgazeMac_Y) <= centresize && x >= (encDesc.Width/macrosize)/2 )//右眼中心21qp区域
+						{
+							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
+							continue;
+						}
+
+						if (x < (encDesc.Width/macrosize)/2)    //左眼
+						{						
+							distance=(((abs(x*macrosize-leftgazeMac_X*macrosize)) > (abs(y*macrosize-leftgazeMac_Y*macrosize))) ? (abs(x*macrosize-leftgazeMac_X*macrosize)) : (abs(y*macrosize-leftgazeMac_Y*macrosize)));
+						}
+					  	else if(x >= (encDesc.Width/macrosize)/2)   //右眼
+						{
+							distance=(((abs(x*macrosize-rightgazeMac_X*macrosize)) > (abs(y*macrosize-rightgazeMac_Y*macrosize))) ? (abs(x*macrosize-rightgazeMac_X*macrosize)) : (abs(y*macrosize-rightgazeMac_Y*macrosize)));
+						}
+						FOV=2*atanf(distance/ZDepth)*180/(4*atanf(1));
+						//expect_qp=floor(cof0_final*FOV+cof1_final);    //linear
+						expect_qp=floor(cof0_final*exp(cof1_final*FOV));        //exp
+						if(expect_qp<21)  //限制QP范围
+						{
+							expect_qp=21;
+						}
+						if(expect_qp>=43)
+						{
+							expect_qp=43;
+						}
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = expect_qp-51; 
+						
+
+				   }
+                   else if(Settings::Instance().m_QPDistribution==2)    //圆形辐射
+				   {
+						if (abs(x - leftgazeMac_X) <= centresize && abs(y - leftgazeMac_Y) <= centresize && x < (encDesc.Width/macrosize)/2)  //左眼中心21qp区域
+						{
+							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
+							continue;																  
+						}
+						else if(abs(x -rightgazeMac_X) <= centresize && abs(y - rightgazeMac_Y) <= centresize && x >= (encDesc.Width/macrosize)/2 )//右眼中心21qp区域
+						{
+							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
+							continue;
+						}
+
+						if (x < (encDesc.Width/macrosize)/2)    //左眼
+						{						
+							distance=sqrt(pow(x*macrosize-leftgazeMac_X*macrosize,2)+pow(y*macrosize-leftgazeMac_Y*macrosize,2));
+						}
+						else if(x >= (encDesc.Width/macrosize)/2)   //右眼
+						{
+							distance=sqrt(pow(x*macrosize-rightgazeMac_X*macrosize,2)+pow(y*macrosize-rightgazeMac_Y*macrosize,2));
+						}
+						FOV=2*atanf(distance/ZDepth)*180/(4*atanf(1));
+						//expect_qp=floor(cof0_final*FOV+cof1_final);   //linear
+						expect_qp=floor(cof0_final*exp(cof1_final*FOV));        //exp
+						if(expect_qp<21)  //限制QP范围
+						{
+							expect_qp=21;
+						}
+						if(expect_qp>=43)
+						{
+							expect_qp=43;
+						}
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = expect_qp-51; 
+				   }
+				   else if(Settings::Instance().m_QPDistribution==0)  //阶跃（只有ROI_QP和NROI_QP两个值）
+				   {
+					  if (abs(x - leftgazeMac_X) <= countx && abs(y - leftgazeMac_Y) <= county   && x < (encDesc.Width/macrosize)/2)  //左眼
 					{
 						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = Roi_qpDelta; 																		  
 					}
-					else if (abs(x -rightgazeMac_X) <= countx && abs(y - rightgazeMac_Y) <= county && x >= (encDesc.Width/macrosize)/2 )
+					  else if (abs(x -rightgazeMac_X) <= countx && abs(y - rightgazeMac_Y) <= county && x >= (encDesc.Width/macrosize)/2 )  //右眼
 					{						
 						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = Roi_qpDelta; 	
 					}				
-					else
+					  else
 					 {
 						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = nRoi_qpDelta;
 					 }
+				   }
 				}
 			}
 		
 	}
-	
 	m_NvNecoder->EncodeFrame(vPacket, &picParams);
+
+	free(picParams.qpDeltaMap);
 
 	for (std::vector<uint8_t> &packet : vPacket)
 	{
