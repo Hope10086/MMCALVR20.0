@@ -59,7 +59,7 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
             
         }
         if ui[0].button("MaxQP Sub").clicked(){
-            request = Some(ServerRequest::MaxQpAdd);
+            request = Some(ServerRequest::MaxQpSub);
         } 
         if ui[1].button("MAxQp Add").clicked() {   
             request = Some(ServerRequest ::MaxQpAdd);

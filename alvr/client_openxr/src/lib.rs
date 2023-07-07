@@ -305,6 +305,7 @@ fn update_streaming_input(
                 context,
                 &ctx.reference_space.read(),
                 to_xr_time(now),
+                //to_xr_time(target_timestamp),
             ),
             fb_face_expression: interaction::get_fb_face_expression(context, to_xr_time(now)),
             htc_eye_expression: interaction::get_htc_eye_expression(context),
