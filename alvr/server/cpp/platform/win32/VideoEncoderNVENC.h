@@ -11,6 +11,8 @@ enum AdaptiveQuantizationMode {
 	TemporalAQ = 2
 };
 
+
+
 // Video encoder for NVIDIA NvEnc.
 class VideoEncoderNVENC : public VideoEncoder
 {
@@ -37,4 +39,14 @@ private:
 	int m_renderWidth;
 	int m_renderHeight;
 	int m_bitrateInMBits;
+	// history value 
+   uint64_t hist_targetTimestampNs = 0;
+   int hist_leftgazeMac_X = 0 ;
+   int hist_leftgazeMac_Y  = 0;
+   int hist_rightgazeMac_X  = 0;
+   int hist_rightgazeMac_Y  = 0;
+   double hist_leftgazeMac_Vx  = 0;
+   double hist_leftgazeMac_Vy  = 0;
+   double hist_rightgazeMac_Vx  = 0;
+   double hist_rightgazeMac_Vy  = 0;
 };

@@ -89,6 +89,7 @@ class Settings {
     int m_centresize=0;
     // QP mode 
     int m_delatQPmode = 0;
+    int m_MaxQp = 51;
     //拟合系数delta
     float m_cof0delta=0;
     float m_cof1delta=0;
@@ -97,4 +98,6 @@ class Settings {
     //capture 
     bool m_capturePicture = false;
     bool m_recordGaze = false;
+    //gaze visual 
+    bool m_gazevisual = false ;
 };

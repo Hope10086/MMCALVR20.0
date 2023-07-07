@@ -108,7 +108,9 @@ void CloseLog() {
 void LogFileUpDate() {
      //LogGetLocalTime();
     CloseLog();
+	//string LogFile= "E:\\alvrdata\\TxtPrintf\\A_EyeGazeHistory.txt";
 	string LogFile= "D:\\AX\\Logs\\Debug\\A_Debug20test.txt";
+	//string LogFile= ".\\A_Debug20test.txt";
     OpenLog(LogFile.c_str());
     
 }

@@ -20,9 +20,6 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[3].button("Stop recording").clicked() {
             request = Some(ServerRequest::StopRecording);
         }
-    });
-
-    ui.columns(4, |ui| {
         if ui[0].button("QpMode set").clicked() {
             request = Some(ServerRequest::QpModeset);
         }
@@ -35,9 +32,6 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[3].button("RoiSize zero").clicked() {
             request = Some(ServerRequest::RoiSizezero);
         }
-    });
-    
-    ui.columns(4, |ui| {
         if ui[0].button("COF0 set").clicked() {
             request = Some(ServerRequest::COF0set);
         }
@@ -50,10 +44,8 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[3].button("COF1 reset").clicked() {
             request = Some(ServerRequest::COF1reset);
         }
-    });
-
-    ui.columns(3, |ui| {
-        if ui[0].button("QP Distribution method").clicked() {
+        
+        if ui[0].button("QP Mode").clicked() {
             request = Some(ServerRequest::QPDistribution);
         }
         if ui[1].button("CentreSize set").clicked() {
@@ -62,6 +54,17 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[2].button("CentreSize reset").clicked() {
             request = Some(ServerRequest::CentreSizereset);
         }
+        if ui[3].button("GazeVisual").clicked() {
+            request = Some(ServerRequest::GazeVisual);
+            
+        }
+        if ui[0].button("MaxQP Sub").clicked(){
+            request = Some(ServerRequest::MaxQpAdd);
+        } 
+        if ui[1].button("MAxQp Add").clicked() {   
+            request = Some(ServerRequest ::MaxQpAdd);
+        }
+
     });
     
 

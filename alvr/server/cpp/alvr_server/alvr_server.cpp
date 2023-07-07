@@ -462,3 +462,35 @@ void StopRecordGaze(){
     Settings::Instance().m_recordGaze = false;
 #endif
 }
+void MaxQpSub(){
+    #ifndef __APPLE__
+    if ( Settings::Instance().m_MaxQp > 21)
+    {
+        Settings::Instance().m_MaxQp = Settings::Instance().m_MaxQp -1;
+    }
+    else
+    {
+        Settings::Instance().m_MaxQp = 21;
+    }    
+#endif
+}
+
+void MaxQpAdd(){
+    #ifndef __APPLE__
+    if ( Settings::Instance().m_MaxQp < 51)
+    {
+        Settings::Instance().m_MaxQp = Settings::Instance().m_MaxQp +1;
+    }
+    else
+    {
+        Settings::Instance().m_MaxQp = 51;
+    }    
+#endif
+}
+
+
+void GazeVisual(){
+   // Window  Nivada GPU 
+   Settings::Instance().m_gazevisual = !Settings::Instance().m_gazevisual;
+
+}

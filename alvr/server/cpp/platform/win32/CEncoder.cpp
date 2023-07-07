@@ -85,7 +85,7 @@
 			//Info("Recive GazeOffset = (%lf,%lf) (%lf,%lf)\n",leftGazeOffset.x, leftGazeOffset.y, rightGazeOffset.x, rightGazeOffset.y);
 			m_GazeOffset[0] = leftGazeOffset;
 			m_GazeOffset[1] = rightGazeOffset;
-
+			//TxtPrint("Frame Render Time %llu ",m_targetTimestampNs);
 			m_FrameRender->Startup();
 			m_FrameRender->RenderFrame(pTexture, bounds, layerCount, recentering, message, debugText, m_GazeOffset[0], m_GazeOffset[1]);
 			return true;

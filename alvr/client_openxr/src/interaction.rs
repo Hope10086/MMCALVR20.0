@@ -647,6 +647,7 @@ pub fn get_eye_gazes(
             [
                 gazes.gaze[0].as_ref().map(|g| to_pose(g.pose)),
                 gazes.gaze[1].as_ref().map(|g| to_pose(g.pose)),
+                //gazes.time[0],
             ]
         } else {
             [None, None]

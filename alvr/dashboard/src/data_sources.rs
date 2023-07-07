@@ -185,7 +185,10 @@ impl DataSources {
                                 | ServerRequest::COF1set
                                 | ServerRequest::COF0reset
                                 | ServerRequest::COF1reset
-                                | ServerRequest::QPDistribution=> {
+                                | ServerRequest::QPDistribution
+                                | ServerRequest::MaxQpSub 
+                                | ServerRequest::MaxQpAdd 
+                                | ServerRequest::GazeVisual=> {
                                     warn!("Cannot perform action, streamer is not connected.")
                                 }
                                 ServerRequest::RestartSteamvr | ServerRequest::ShutdownSteamvr => {

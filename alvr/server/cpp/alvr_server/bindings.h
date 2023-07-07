@@ -172,6 +172,10 @@ extern "C" void COF1reset();
 extern "C" void QPDistribution();
 extern "C" void RecordGaze();
 extern "C" void StopRecordGaze();
+extern "C" void MaxQpSub();
+extern "C" void MaxQpAdd();
+extern "C" void GazeVisual();
+
 
 // NalParsing.cpp
 void ParseFrameNals(
