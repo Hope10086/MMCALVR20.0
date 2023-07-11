@@ -125,14 +125,82 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			m_targetTimestampNs = pose->targetTimestampNs;
 			
 
-			m_GazeOffset[0] = pose->NormalGazeOffset[0];
-			m_GazeOffset[1] = pose->NormalGazeOffset[1];
+			// m_GazeOffset[0] = pose->NormalGazeOffset[0];
+			// m_GazeOffset[1] = pose->NormalGazeOffset[1];
+			// Gaze Pose.Orientation
+			m_preGazeQuat[0] = m_GazeQuat[0];
+			m_preGazeQuat[1] = m_GazeQuat[1];
+			m_GazeQuat[0] = pose->GazeQuat[0];
+			m_GazeQuat[1] = pose->GazeQuat[1];
 
 			m_prevFramePoseRotation = m_framePoseRotation;
 			m_framePoseRotation.x = pose->motion.orientation.x;
 			m_framePoseRotation.y = pose->motion.orientation.y;
 			m_framePoseRotation.z = pose->motion.orientation.z;
 			m_framePoseRotation.w = pose->motion.orientation.w;
+			OVR::Quatf headrot = OVR::Quatf(
+			 	m_framePoseRotation.x,
+			    m_framePoseRotation.y,
+				m_framePoseRotation.z,
+				m_framePoseRotation.w
+          	  );
+
+			m_preheadEuler = m_headEuler; //old euler
+			m_pregazeEuler = m_gazeEuler;
+            QuatToEuler2(headrot.x,headrot.y,headrot.z,headrot.w,m_headEuler.Yaw,m_headEuler.Pitch,m_headEuler.Roll);
+			QuatToEuler2(m_GazeQuat[0].x,m_GazeQuat[0].y,m_GazeQuat[0].z,m_GazeQuat[0].w,m_gazeEuler.Yaw,m_gazeEuler.Pitch,m_gazeEuler.Roll);
+			//TxtGaze("time: %llu hyaw %lf hpitch %lf hroll %lf\n",m_targetTimestampNs ,m_headEuler.Yaw,m_headEuler.Pitch ,m_headEuler.Roll);
+			Info("time: %llu hyaw %lf hpitch %lf hroll %lf\n",m_targetTimestampNs ,m_headEuler.Yaw,m_headEuler.Pitch ,m_headEuler.Roll);
+            dEulert();
+			TxtGaze("time: %llu wh %lf wg %lf we %lf \n",m_targetTimestampNs ,m_wspeed.w_head ,m_wspeed.w_gaze ,m_wspeed.w_eyehaze);
+
+			//  Quat to Vector , Vector to angule,center_offset
+			if (true)   // Quat to Vector , Vector to angule,center_offset
+     		   {   
+       			vr::HmdQuaternion_t LeftGazeQuat = HmdQuaternion_Init(
+       			 m_GazeQuat[0].w,
+       			 m_GazeQuat[0].x,
+       			 m_GazeQuat[0].y,
+       			 m_GazeQuat[0].z
+       			 );
+       			 vr::HmdQuaternion_t RightGazeQuat = HmdQuaternion_Init(
+       			 m_GazeQuat[1].w, 
+       			 m_GazeQuat[1].x, 
+       			 m_GazeQuat[1].y, 
+       			 m_GazeQuat[1].z 
+       			 );
+       			 vr::HmdVector3d_t ZAix = {0.0, 0.0, -1.0};//ZAix is (0,0,1)or(0,0,-1)
+      			 vr::HmdVector3d_t LeftGazeVector;
+       			 vr::HmdVector3d_t RightGazeVector;
+      			  if (!m_GazeQuat[0].w || !m_GazeQuat[1].w)  //when eye gaze is null w =0 , so  Gaze is center
+       				 {
+           			  LeftGazeVector  = ZAix;
+           			  RightGazeVector = ZAix;
+       				 }
+       			 else
+      				  {
+           	 		 LeftGazeVector  = vrmath::quaternionRotateVector(LeftGazeQuat,ZAix,false);
+             		 RightGazeVector = vrmath::quaternionRotateVector(RightGazeQuat,ZAix,false);
+      				  }
+        			 float LeftGazeRad_X = atanf(-1.0*LeftGazeVector.v[0]/LeftGazeVector.v[2]); 
+        			 float LeftGazeRad_Y = atanf(-1.0*LeftGazeVector.v[1]/LeftGazeVector.v[2]);
+         			 float RightGazeRad_X = atanf(-1.0*RightGazeVector.v[0]/RightGazeVector.v[2]);
+        			 float RightGazeRad_Y = atanf(-1.0*RightGazeVector.v[1]/RightGazeVector.v[2]);
+        			 float RadToAnglue = (180.0/3.14159265358979323846f);
+					 // need to change if fov is change
+                     FfiFov leftcfov ={ -0.942478,0.698132,0.733038,-0.942478};
+					 FfiFov rightcfov = { -0.698132,0.942478,0.733038,-0.942478};
+
+        			 m_GazeOffset[0].x = 1.0*(tanf(LeftGazeRad_X)+tanf(-leftcfov.left))/(tanf(leftcfov.right)+tanf(-leftcfov.left));
+        			 m_GazeOffset[0].y = 1.0*(tanf(-LeftGazeRad_Y)+tanf(leftcfov.up))/(tanf(-leftcfov.down)+tanf(leftcfov.up));
+        			 m_GazeOffset[1].x = 1.0*(tanf(RightGazeRad_X)+tanf(-rightcfov.left))/(tanf(rightcfov.right)+tanf(-rightcfov.left));
+        			 m_GazeOffset[1].y = 1.0*(tanf(-RightGazeRad_Y)+tanf(rightcfov.up))/(tanf(-rightcfov.down)+tanf(rightcfov.up));
+
+        			if (m_GazeOffset[0].x<= 0 || m_GazeOffset[0].y<=0 || m_GazeOffset[1].x<=0 || m_GazeOffset[1].y <= 0)
+      				  {
+         			   Info("Error:calculate GazeOffset in DirectX11 Screen CoorDinate \n"); }       
+    }
+
 		}
 		else {
 			m_targetTimestampNs = 0;
@@ -266,8 +334,13 @@ void OvrDirectModeComponent::CopyTexture(uint32_t layerCount) {
 		{
 
           Info("GazeOffset is error set to 0");
-		  m_GazeOffset[0].x = m_GazeOffset[0].y =0.5;// screen center
-		  m_GazeOffset[1] = m_GazeOffset[0];
+		//   m_GazeOffset[0].x = m_GazeOffset[0].y =0.5;// screen center
+		//   m_GazeOffset[1] = m_GazeOffset[0];
+		  m_GazeOffset[0].x = 0.62125;
+		  m_GazeOffset[1].x = 0.37874;
+		  m_GazeOffset[0].y = 0.39547;
+		  m_GazeOffset[1].y = 0.39547;
+		  
 		}
 		else{
 		  //Info("GazeOffset Send to Encoder:(%f,%f) (%f,%f)\n",m_GazeOffset[0].x, m_GazeOffset[0].y, m_GazeOffset[1].x, m_GazeOffset[1].y);
@@ -277,4 +350,59 @@ void OvrDirectModeComponent::CopyTexture(uint32_t layerCount) {
 
 		m_pD3DRender->GetContext()->Flush();
 	}
+}
+
+
+void QuatToEuler(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll) {
+    
+	// Normalize the quaternion
+    double sinr_cosp = +2.0 * (qw * qx + qy * qz);
+    double cosr_cosp = +1.0 - 2.0 * (qx * qx + qy * qy);
+    roll = atan2(sinr_cosp, cosr_cosp)*(180/PI);
+
+    // pitch (y-axis rotation)
+    double sinp = +2.0 * (qw * qy - qz * qx);
+    if (fabs(sinp) >= 1)
+        pitch = copysign(PI / 2, sinp)* (180 / PI); // use 90 degrees if out of range
+    else
+        pitch = asin(sinp)*(180 / PI);
+
+    // yaw (z-axis rotation)
+    double siny_cosp = +2.0 * (qw * qz + qx * qy) ;
+    double cosy_cosp = +1.0 - 2.0 * (qy * qy + qz * qz);
+    yaw = atan2(siny_cosp, cosy_cosp)* (180 / PI);
+    //    return yaw;
+}
+void OvrDirectModeComponent::dEulert(){
+	 double DelatTime =((m_targetTimestampNs-m_prevTargetTimestampNs)/1000000.0); // ms
+	 double DelatHeadYaw = (m_headEuler.Yaw - m_preheadEuler.Yaw)*1000/DelatTime;
+	 double DelatHeadPitch = (m_headEuler.Pitch - m_preheadEuler.Pitch)*1000/DelatTime;
+	 double DelatHeadRoll = (m_headEuler.Roll - m_preheadEuler.Roll)*1000/DelatTime;
+
+	 double DelatGazeYaw = (m_gazeEuler.Yaw - m_pregazeEuler.Yaw)*1000/DelatTime;
+	 double DelatGazePitch = (m_gazeEuler.Pitch - m_pregazeEuler.Pitch)*1000/DelatTime;
+	 double DelatGazeRoll = (m_gazeEuler.Roll - m_pregazeEuler.Roll)*1000/DelatTime;
+
+	 double whead = std::sqrt(DelatHeadYaw*DelatHeadYaw + DelatHeadPitch*DelatHeadPitch + DelatHeadRoll*DelatHeadRoll) ;
+	 double wgaze =  std::sqrt(DelatGazeYaw*DelatGazeYaw + DelatGazePitch*DelatGazePitch + DelatGazeRoll*DelatGazeRoll);
+	 double weyegaze =  std::sqrt((DelatHeadYaw+DelatGazeYaw) * (DelatHeadYaw+DelatGazeYaw) 
+	 + (DelatHeadPitch+DelatGazePitch) * (DelatHeadPitch+DelatGazePitch)
+	 + (DelatHeadRoll+DelatGazeRoll) * (DelatHeadRoll+DelatGazeRoll)
+	 );
+	 m_wspeed.w_head = whead;
+	 m_wspeed.w_gaze = wgaze;
+	 m_wspeed.w_eyehaze = weyegaze;
+
+	//  double wheadY = cos(roll)
+
+}
+
+void QuatToEuler2(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll)
+{
+   
+  	 OVR::Quatf quaternion =OVR::Quatf(qx, qy, qz, qw);
+     OVR::Vector3f direction = quaternion.Rotate(OVR::Vector3f(0.0f, 0.0f, -1.0f));
+	 yaw = std::atan2(-direction.x, direction.z)*(180 / PI); //y Aisx
+	 pitch = std::atan2(-direction.y,direction.z)*(180 / PI);
+	 roll = std::atan2(-direction.y, direction.x)*(180 / PI);
 }

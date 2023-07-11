@@ -25,6 +25,7 @@
 
 #include "openvr_driver.h"
 #include "ALVR-common/packet_types.h"
+#include "include/openvr_math.h"
 
 const float DEG_TO_RAD = (float)(M_PI / 180.);
 

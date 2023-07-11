@@ -6,7 +6,9 @@
 
 #include "alvr_server/Settings.h"
 
-
+#include "alvr_server/include/openvr_math.h"   
+#include "alvr_server/include/OVR_Math.h"   
+#define PI       3.14159265358979323846 
 class OvrDirectModeComponent : public vr::IVRDriverDirectModeComponent
 {
 public:
@@ -35,6 +37,8 @@ public:
 
 	void CopyTexture(uint32_t layerCount);
 
+	void dEulert();
+
 private:
 	std::shared_ptr<CD3DRender> m_pD3DRender;
 	std::shared_ptr<CEncoder> m_pEncoder;
@@ -47,7 +51,9 @@ private:
 		uint32_t pid;
 	};
 	std::map<HANDLE, std::pair<ProcessResource *, int> > m_handleMap;
+   
 
+   
 	static const int MAX_LAYERS = 10;
 	int m_submitLayer;
 	SubmitLayerPerEye_t m_submitLayers[MAX_LAYERS][2];
@@ -56,4 +62,16 @@ private:
 	uint64_t m_targetTimestampNs;
 	uint64_t m_prevTargetTimestampNs;
 	FfiGazeOPOffset m_GazeOffset[2];
+	FfiQuat m_GazeQuat[2];
+	FfiQuat m_preGazeQuat[2];
+	FfiEuler m_headEuler;
+	FfiEuler m_preheadEuler;
+	FfiEuler m_gazeEuler;
+	FfiEuler m_pregazeEuler;
+	FfiAnglespeed m_wspeed;
+
 };
+
+
+void QuatToEuler(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll) ;
+void QuatToEuler2(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll);

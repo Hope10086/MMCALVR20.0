@@ -147,8 +147,8 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	{
 	wchar_t buf[1024];	
 	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%dx%d-%llu.dds", inputDesc.Width,inputDesc.Height,targetTimestampNs);
-	_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%llu.dds",targetTimestampNs);
-	// _snwprintf_s(buf, sizeof(buf), L"E:\\alvrdata\\ScreenDDS\\%llu.dds",targetTimestampNs);
+	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%llu.dds",targetTimestampNs);
+	 _snwprintf_s(buf, sizeof(buf), L"E:\\alvrdata\\ScreenDDS\\%llu.dds",targetTimestampNs);
 		
 	    HRESULT hr = DirectX::SaveDDSTextureToFile(m_pD3DRender->GetContext(), pInputTexture, buf);
         if(FAILED (hr))

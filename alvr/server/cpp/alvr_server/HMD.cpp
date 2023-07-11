@@ -213,7 +213,7 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
         motion.orientation.w, motion.orientation.x, motion.orientation.y, motion.orientation.z);
 
     pose.vecPosition[0] = motion.position[0];
-    pose.vecPosition[1] = motion.position[1]-0.5;
+    pose.vecPosition[1] = motion.position[1];
     pose.vecPosition[2] = motion.position[2];
 
     m_pose = pose;// don't change it
@@ -233,79 +233,67 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
     }
    
     
-    if (true)   // Quat to Vector , Vector to angule,center_offset
-    {   
-        FfiGazeOPOffset GazeOffset[2]; 
-        vr::HmdQuaternion_t LeftGazeQuat = HmdQuaternion_Init(
-        LeftGaze.orientation.w,
-        LeftGaze.orientation.x,
-        LeftGaze.orientation.y,
-        LeftGaze.orientation.z
-        );
-        vr::HmdQuaternion_t RightGazeQuat = HmdQuaternion_Init(
-        RightGaze.orientation.w,    
-        RightGaze.orientation.x,    
-        RightGaze.orientation.y,    
-        RightGaze.orientation.z  
-        );
-        vr::HmdVector3d_t ZAix = {0.0, 0.0, -1.0};//ZAix is (0,0,1)or(0,0,-1)
-        vr::HmdVector3d_t LeftGazeVector;
-        vr::HmdVector3d_t RightGazeVector;
-        if (!LeftGaze.orientation.w || !RightGaze.orientation.w)  //when eye gaze is null w =0 , so  Gaze is center
-        {
-             LeftGazeVector  = ZAix;
-             RightGazeVector = ZAix;
-        }
-        else
-        {
-             LeftGazeVector  = vrmath::quaternionRotateVector(LeftGazeQuat,ZAix,false);
-             RightGazeVector = vrmath::quaternionRotateVector(RightGazeQuat,ZAix,false);
-        }
-        // check out  LeftGazeVector  
-        // Info("LeftGazeVector : (%f,%f,%f)\n"
-        // ,LeftGazeVector.v[0]
-        // ,LeftGazeVector.v[1]
-        // ,LeftGazeVector.v[2]);
-         //  to Rad and log Anglue
-         float LeftGazeRad_X = atanf(-1.0*LeftGazeVector.v[0]/LeftGazeVector.v[2]); 
-         float LeftGazeRad_Y = atanf(-1.0*LeftGazeVector.v[1]/LeftGazeVector.v[2]);
-         float RightGazeRad_X = atanf(-1.0*RightGazeVector.v[0]/RightGazeVector.v[2]);
-         float RightGazeRad_Y = atanf(-1.0*RightGazeVector.v[1]/RightGazeVector.v[2]);
-         float RadToAnglue = (180.0/3.14159265358979323846f);
-        //  Info(" Gaze Anglue in camera space\n (%lf,%lf)  (%lf,%lf)\n"
-        // ,LeftGazeRad_X*RadToAnglue
-        // ,LeftGazeRad_Y*RadToAnglue
-        // ,RightGazeRad_X*RadToAnglue
-        // ,RightGazeRad_Y*RadToAnglue
-        //  );// the rad is useless
+    // if (true)   // Quat to Vector , Vector to angule,center_offset
+    // {   
+    //     FfiGazeOPOffset GazeOffset[2]; 
+    //     vr::HmdQuaternion_t LeftGazeQuat = HmdQuaternion_Init(
+    //     LeftGaze.orientation.w,
+    //     LeftGaze.orientation.x,
+    //     LeftGaze.orientation.y,
+    //     LeftGaze.orientation.z
+    //     );
+    //     vr::HmdQuaternion_t RightGazeQuat = HmdQuaternion_Init(
+    //     RightGaze.orientation.w,    
+    //     RightGaze.orientation.x,    
+    //     RightGaze.orientation.y,    
+    //     RightGaze.orientation.z  
+    //     );
+    //     vr::HmdVector3d_t ZAix = {0.0, 0.0, -1.0};//ZAix is (0,0,1)or(0,0,-1)
+    //     vr::HmdVector3d_t LeftGazeVector;
+    //     vr::HmdVector3d_t RightGazeVector;
+    //     if (!LeftGaze.orientation.w || !RightGaze.orientation.w)  //when eye gaze is null w =0 , so  Gaze is center
+    //     {
+    //          LeftGazeVector  = ZAix;
+    //          RightGazeVector = ZAix;
+    //     }
+    //     else
+    //     {
+    //          LeftGazeVector  = vrmath::quaternionRotateVector(LeftGazeQuat,ZAix,false);
+    //          RightGazeVector = vrmath::quaternionRotateVector(RightGazeQuat,ZAix,false);
+    //     }
+    //      float LeftGazeRad_X = atanf(-1.0*LeftGazeVector.v[0]/LeftGazeVector.v[2]); 
+    //      float LeftGazeRad_Y = atanf(-1.0*LeftGazeVector.v[1]/LeftGazeVector.v[2]);
+    //      float RightGazeRad_X = atanf(-1.0*RightGazeVector.v[0]/RightGazeVector.v[2]);
+    //      float RightGazeRad_Y = atanf(-1.0*RightGazeVector.v[1]/RightGazeVector.v[2]);
+    //      float RadToAnglue = (180.0/3.14159265358979323846f);
 
-         //  just for Direct coordinate system x:right y down(*-1.0) z useless depthz =1.0
-        // Info("leftfov up = ",leftcfov.up);//
-         GazeOffset[0].x = 1.0*(tanf(LeftGazeRad_X)+tanf(-leftcfov.left))/(tanf(leftcfov.right)+tanf(-leftcfov.left));
-         GazeOffset[0].y = 1.0*(tanf(-LeftGazeRad_Y)+tanf(leftcfov.up))/(tanf(-leftcfov.down)+tanf(leftcfov.up));
+    //      //  just for Direct coordinate system x:right y down(*-1.0) z useless depthz =1.0
+    //     // Info("leftfov up = ",leftcfov.up);//
+    //      GazeOffset[0].x = 1.0*(tanf(LeftGazeRad_X)+tanf(-leftcfov.left))/(tanf(leftcfov.right)+tanf(-leftcfov.left));
+    //      GazeOffset[0].y = 1.0*(tanf(-LeftGazeRad_Y)+tanf(leftcfov.up))/(tanf(-leftcfov.down)+tanf(leftcfov.up));
 
-         GazeOffset[1].x = 1.0*(tanf(RightGazeRad_X)+tanf(-rightcfov.left))/(tanf(rightcfov.right)+tanf(-rightcfov.left));
-         GazeOffset[1].y = 1.0*(tanf(-RightGazeRad_Y)+tanf(rightcfov.up))/(tanf(-rightcfov.down)+tanf(rightcfov.up));
+    //      GazeOffset[1].x = 1.0*(tanf(RightGazeRad_X)+tanf(-rightcfov.left))/(tanf(rightcfov.right)+tanf(-rightcfov.left));
+    //      GazeOffset[1].y = 1.0*(tanf(-RightGazeRad_Y)+tanf(rightcfov.up))/(tanf(-rightcfov.down)+tanf(rightcfov.up));
 
-        if (GazeOffset[0].x<= 0 || GazeOffset[0].y<=0 || GazeOffset[1].x<=0 || GazeOffset[1].y <= 0)
-        {
-            Info("Error:calculate GazeOffset in DirectX11 Screen CoorDinate \n");
-            m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,{0.621,0.395},{0.338,0.395});
-        }
-        else
-        {
-            //Info("GazeOffset= (%lf,%lf) (%lf,%lf)\n",GazeOffset[0].x, GazeOffset[0].y, GazeOffset[1].x, GazeOffset[1].y);
-            m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,GazeOffset[0],GazeOffset[1]);
-        }
+    //     if (GazeOffset[0].x<= 0 || GazeOffset[0].y<=0 || GazeOffset[1].x<=0 || GazeOffset[1].y <= 0)
+    //     {
+    //         Info("Error:calculate GazeOffset in DirectX11 Screen CoorDinate \n");
+    //         m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,{0.621,0.395},{0.338,0.395});
+    //     }
+    //     else
+    //     {
+    //         //Info("GazeOffset= (%lf,%lf) (%lf,%lf)\n",GazeOffset[0].x, GazeOffset[0].y, GazeOffset[1].x, GazeOffset[1].y);
+    //         m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,GazeOffset[0],GazeOffset[1]);
+    //     }
         
-    }
-    else
-    {   // unenable offset =0
-        m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,{0.0, 0.0},{0.0, 0.0});
-    }
+    // }
+    // else
+    // {   // unenable offset =0
+    //    m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,{0.0, 0.0},{0.0, 0.0});
+    // }
     
 
-  //  m_poseHistory->OnPoseUpdated(targetTimestampNs, motion);
+    m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,LeftGaze.orientation,RightGaze.orientation);
 
     vr::VRServerDriverHost()->TrackedDevicePoseUpdated(
         this->object_id, pose, sizeof(vr::DriverPose_t));

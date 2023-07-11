@@ -92,41 +92,44 @@ void LogPeriod(const char *tag, const char *format, ...)
 	va_end(args);
 }
 
-
-void OpenLog(const char* fileName) {
-
-   if(fpLog ==nullptr) {
-         fpLog = _fsopen(fileName, "at+", _SH_DENYNO);
-    }
-}
-void CloseLog() {
+void LogFileUpDate(string LogFile) {
+     //LogGetLocalTime();
     if (fpLog != nullptr) {
         fclose(fpLog);
         fpLog = nullptr;
     }
-}
-void LogFileUpDate() {
-     //LogGetLocalTime();
-    CloseLog();
 	//string LogFile= "E:\\alvrdata\\TxtPrintf\\A_EyeGazeHistory.txt";
-	string LogFile= "D:\\AX\\Logs\\Debug\\A_Debug20test.txt";
+	//string LogFile= "D:\\AX\\Logs\\Debug\\A_Debug20test.txt";
 	//string LogFile= ".\\A_Debug20test.txt";
-    OpenLog(LogFile.c_str());
+    if(fpLog ==nullptr) {
+         fpLog = _fsopen(LogFile.c_str(), "at+", _SH_DENYNO);
+    }
     
 }
-void _logSV(const char* format, va_list args, string Type)
-{   
-	LogFileUpDate();
-    char buf[1024];
-	//string sys_timeType=sys_time+Type;    
-    vsnprintf(buf, sizeof(buf), format, args);
-    //fprintf(fpLog, sys_timeType.c_str());
-    fprintf(fpLog, buf);
-}
+
 void TxtPrint(const char *format, ...)
 {   string Info_Type = "Info:";
 	va_list args;
 	va_start(args, format);
-	_logSV(format, args, Info_Type);
+	LogFileUpDate("E:\\alvrdata\\TxtPrintf\\A_TxtPrint1.txt");
+    char buf[1024];
+	//string sys_timeType=sys_time+Info_Type;    
+    vsnprintf(buf, sizeof(buf), format, args);
+    //fprintf(fpLog, sys_timeType.c_str());
+    fprintf(fpLog, buf);
+	va_end(args);
+}
+
+
+void TxtGaze(const char *format, ...)
+{   string Info_Type = "Info:";
+	va_list args;
+	va_start(args, format);
+	LogFileUpDate("E:\\alvrdata\\TxtPrintf\\Gaze_NowHist.txt");
+    char buf[1024];
+	//string sys_timeType=sys_time+Info_Type;    
+    vsnprintf(buf, sizeof(buf), format, args);
+    //fprintf(fpLog, sys_timeType.c_str());
+    fprintf(fpLog, buf);
 	va_end(args);
 }

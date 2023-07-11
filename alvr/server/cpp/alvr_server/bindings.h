@@ -37,7 +37,18 @@ struct FfiGazeOPOffset
     double x;
     double y;
 };
-
+struct FfiEuler
+{
+    float Yaw;
+    float Pitch;
+    float  Roll;
+};
+struct FfiAnglespeed
+   {
+	float w_head;
+	float w_gaze;
+	float w_eyehaze;
+   };
 enum FfiOpenvrPropertyType {
     Bool,
     Float,
