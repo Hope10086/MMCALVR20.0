@@ -250,7 +250,8 @@ fn update_streaming_input(
     // is approximated as the center point between the eyes.
     let head_position = (to_vec3(views[0].pose.position) + to_vec3(views[1].pose.position)) / 2.0;
     let head_orientation = to_quat(views[0].pose.orientation);
-
+    let fixed_position = Vec3::new(0.0,0.7,0.0);
+    let fixed_orientation = Quat::from_xyzw(0.0, 0.0, 0.0, 1.0);
     {
         let mut views_history_lock = ctx.views_history.lock();
 

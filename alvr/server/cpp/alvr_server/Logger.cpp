@@ -111,7 +111,9 @@ void TxtPrint(const char *format, ...)
 {   string Info_Type = "Info:";
 	va_list args;
 	va_start(args, format);
-	LogFileUpDate("E:\\alvrdata\\TxtPrintf\\A_TxtPrint1.txt");
+	//LogFileUpDate("E:\\alvrdata\\TxtPrintf\\A_TxtPrint1.txt");
+	LogFileUpDate("D:\\AX\\Logs\\Debug\\A_TxtPrint12.txt");
+	//LogFileUpDate("C:\\SHN\\ALVREXE\\OutPut\\Log\\A_TxtPrint12.txt");
     char buf[1024];
 	//string sys_timeType=sys_time+Info_Type;    
     vsnprintf(buf, sizeof(buf), format, args);
@@ -120,12 +122,43 @@ void TxtPrint(const char *format, ...)
 	va_end(args);
 }
 
-
 void TxtGaze(const char *format, ...)
 {   string Info_Type = "Info:";
 	va_list args;
 	va_start(args, format);
-	LogFileUpDate("E:\\alvrdata\\TxtPrintf\\Gaze_NowHist.txt");
+	//LogFileUpDate("E:\\alvrdata\\TxtPrintf\\Gaze_NowHist.txt");
+	LogFileUpDate("D:\\AX\\Logs\\Debug\\Gaze_NowHist.txt");
+	//LogFileUpDate("C:\\SHN\\ALVREXE\\OutPut\\Log\\Gaze_NowHist.txt");
+    char buf[1024];
+	//string sys_timeType=sys_time+Info_Type;    
+    vsnprintf(buf, sizeof(buf), format, args);
+    //fprintf(fpLog, sys_timeType.c_str());
+    fprintf(fpLog, buf);
+	va_end(args);
+}
+
+void Txtwspeed(const char *format, ...)
+{   string Info_Type = "Info:";
+	va_list args;
+	va_start(args, format);
+	//LogFileUpDate("E:\\alvrdata\\TxtPrintf\\Gaze_wspeed.txt");
+	LogFileUpDate("D:\\AX\\Logs\\Debug\\Gaze_wspeed.txt");
+	//LogFileUpDate("C:\\SHN\\ALVREXE\\OutPut\\Log\\Gaze_wspeed.txt");
+    char buf[1024];
+	//string sys_timeType=sys_time+Info_Type;    
+    vsnprintf(buf, sizeof(buf), format, args);
+    //fprintf(fpLog, sys_timeType.c_str());
+    fprintf(fpLog, buf);
+	va_end(args);
+}
+
+void TxtNDCGaze(const char *format, ...)
+{   string Info_Type = "Info:";
+	va_list args;
+	va_start(args, format);
+	//LogFileUpDate("E:\\alvrdata\\TxtPrintf\\Gaze_wspeed.txt");
+	LogFileUpDate("D:\\AX\\Logs\\Debug\\NDCGaze_location.txt");
+    //LogFileUpDate("C:\\SHN\\ALVREXE\\OutPut\\Log\\Gaze_wspeed.txt");
     char buf[1024];
 	//string sys_timeType=sys_time+Info_Type;    
     vsnprintf(buf, sizeof(buf), format, args);

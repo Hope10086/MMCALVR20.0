@@ -36,6 +36,7 @@ public:
 	virtual void Present(vr::SharedTextureHandle_t syncTexture);
 
 	void CopyTexture(uint32_t layerCount);
+	void Calculate();
 
 	void dEulert();
 
@@ -64,14 +65,19 @@ private:
 	FfiGazeOPOffset m_GazeOffset[2];
 	FfiQuat m_GazeQuat[2];
 	FfiQuat m_preGazeQuat[2];
+	FfiQuat m_GlobalQuat[2];
+	FfiQuat m_preGlobalQuat[2];
 	FfiEuler m_headEuler;
 	FfiEuler m_preheadEuler;
 	FfiEuler m_gazeEuler;
 	FfiEuler m_pregazeEuler;
+	FfiEuler m_eyeEuler;
+	FfiEuler m_preeyeEuler;
 	FfiAnglespeed m_wspeed;
 
 };
 
 
 void QuatToEuler(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll) ;
+void QuatToAngle(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll);
 void QuatToEuler2(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll);

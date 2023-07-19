@@ -147,8 +147,9 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	{
 	wchar_t buf[1024];	
 	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%dx%d-%llu.dds", inputDesc.Width,inputDesc.Height,targetTimestampNs);
-	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%llu.dds",targetTimestampNs);
-	 _snwprintf_s(buf, sizeof(buf), L"E:\\alvrdata\\ScreenDDS\\%llu.dds",targetTimestampNs);
+	_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%llu.dds",targetTimestampNs);
+	 //_snwprintf_s(buf, sizeof(buf), L"E:\\alvrdata\\ScreenDDS\\%llu.dds",targetTimestampNs);
+	 //_snwprintf_s(buf, sizeof(buf), L"C:\\SHN\\ALVREXE\\OutPut\\SaveDDS\\%llu.dds",targetTimestampNs);
 		
 	    HRESULT hr = DirectX::SaveDDSTextureToFile(m_pD3DRender->GetContext(), pInputTexture, buf);
         if(FAILED (hr))
@@ -230,16 +231,16 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		// log gaze location (Macblock)
 		if (Settings::Instance().m_recordGaze)
 		{
-			TxtPrint("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
+			TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
 			,targetTimestampNs
 			,NDCLeftGaze.x
 			,NDCLeftGaze.y
 			,NDCRightGaze.x+1
 			,NDCRightGaze.y
-			,leftgazeMac_Vx
-			,leftgazeMac_Vy
-			,rightgazeMac_Vx
-			,rightgazeMac_Vy
+			,(NDCLeftGaze.x)*encDesc.Width/2
+			,(NDCLeftGaze.y)*encDesc.Height
+			,(1.0+NDCRightGaze.x)*encDesc.Width/2
+			,(NDCRightGaze.y)*encDesc.Height
 			);
 		}
 		// update  gaze Location(X,Y) Velocity(Vx,Vy) 's History

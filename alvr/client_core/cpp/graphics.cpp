@@ -666,8 +666,14 @@ void ovrRenderer_RenderFrame(ovrRenderer *renderer, const FfiViewInput input[2],
         for (int eye = 0; eye < 2; eye++) {
             auto p = input[eye].position;
             auto o = input[eye].orientation;
+            float posi[3] = {0.0 ,0.6 ,0.0};
+            float ori[4] = {0.0 ,0.0 ,0.0 ,1.0};
+            auto p1 = posi;
+            auto o1 =ori;
             auto trans = glm::translate(glm::mat4(1.0), glm::vec3(p[0], p[1], p[2]));
             auto rot = glm::mat4_cast(glm::quat(o[3], o[0], o[1], o[2]));
+            // auto trans = glm::translate(glm::mat4(1.0), glm::vec3(p1[0],p1[1],p1[2]));
+            // auto rot = glm::mat4_cast(glm::quat(o1[3], o1[0], o1[1], o1[2]));
             auto viewInv = glm::inverse(trans * rot);
 
             auto tanl = tan(input[eye].fovLeft);

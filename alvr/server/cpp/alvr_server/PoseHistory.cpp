@@ -4,13 +4,15 @@
 #include <mutex>
 #include <optional>
 
-void PoseHistory::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiQuat LeftGazeQuat, FfiQuat RightGazeQuat) {
+void PoseHistory::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiQuat LeftGazeQuat, FfiQuat RightGazeQuat ,FfiEyeGaze GLeftGaze ,FfiEyeGaze GRightGaze) {
 	// Put pose history buffer
 	TrackingHistoryFrame history;
 	history.targetTimestampNs = targetTimestampNs;
 	history.motion = motion;
 	history.GazeQuat[0] = LeftGazeQuat;
 	history.GazeQuat[1] = RightGazeQuat;
+	history.GloabGazeQuat[0] = GLeftGaze.orientation;
+	history.GloabGazeQuat[1] = GRightGaze.orientation;
 
 
 	HmdMatrix_QuatToMat(motion.orientation.w,

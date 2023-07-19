@@ -112,7 +112,24 @@ void OvrDirectModeComponent::GetNextSwapTextureSetIndex(vr::SharedTextureHandle_
 void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 {
 	auto pPose = &perEye[0].mHmdPose; // TODO: are both poses the same? Name HMD suggests yes.
-
+    auto m_LeftProjectMat = &perEye[0].mProjection;
+    auto m_RightProjectMat = &perEye[1].mProjection;
+	// if (m_LeftProjectMat)
+	// {
+	// 	TxtPrint("LeftProjectMat \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n "
+	// 	,m_LeftProjectMat->m[0][0] ,m_LeftProjectMat->m[0][1] ,m_LeftProjectMat->m[0][2] ,m_LeftProjectMat->m[0][3] 
+	// 	,m_LeftProjectMat->m[1][0] ,m_LeftProjectMat->m[1][1] ,m_LeftProjectMat->m[1][2] ,m_LeftProjectMat->m[1][3]
+	// 	,m_LeftProjectMat->m[2][0] ,m_LeftProjectMat->m[2][1] ,m_LeftProjectMat->m[2][2] ,m_LeftProjectMat->m[2][3]
+	// 	,m_LeftProjectMat->m[3][0] ,m_LeftProjectMat->m[3][1] ,m_LeftProjectMat->m[3][2] ,m_LeftProjectMat->m[3][3]
+	// 	);
+	// 	TxtPrint("m_RightProjectMat \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n "
+	// 	,m_RightProjectMat->m[0][0] ,m_RightProjectMat->m[0][1] ,m_RightProjectMat->m[0][2] ,m_RightProjectMat->m[0][3] 
+	// 	,m_RightProjectMat->m[1][0] ,m_RightProjectMat->m[1][1] ,m_RightProjectMat->m[1][2] ,m_RightProjectMat->m[1][3]
+	// 	,m_RightProjectMat->m[2][0] ,m_RightProjectMat->m[2][1] ,m_RightProjectMat->m[2][2] ,m_RightProjectMat->m[2][3]
+	// 	,m_RightProjectMat->m[3][0] ,m_RightProjectMat->m[3][1] ,m_RightProjectMat->m[3][2] ,m_RightProjectMat->m[3][3]
+	// 	);
+	// }
+	
 	if (m_submitLayer == 0) {
 		// Detect FrameIndex of submitted frame by pPose.
 		// This is important part to achieve smooth headtracking.
@@ -123,7 +140,6 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// found the frameIndex
 			m_prevTargetTimestampNs = m_targetTimestampNs;
 			m_targetTimestampNs = pose->targetTimestampNs;
-			
 
 			// m_GazeOffset[0] = pose->NormalGazeOffset[0];
 			// m_GazeOffset[1] = pose->NormalGazeOffset[1];
@@ -132,27 +148,19 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			m_preGazeQuat[1] = m_GazeQuat[1];
 			m_GazeQuat[0] = pose->GazeQuat[0];
 			m_GazeQuat[1] = pose->GazeQuat[1];
+            // Global  Gaze Pose.Orientation
+			m_preGlobalQuat[0] = m_GlobalQuat[0];
+			m_preGlobalQuat[1] = m_GlobalQuat[1];
+			m_GlobalQuat[0] = pose->GloabGazeQuat[0];
+			m_GlobalQuat[1] = pose->GloabGazeQuat[1];
 
 			m_prevFramePoseRotation = m_framePoseRotation;
 			m_framePoseRotation.x = pose->motion.orientation.x;
 			m_framePoseRotation.y = pose->motion.orientation.y;
 			m_framePoseRotation.z = pose->motion.orientation.z;
 			m_framePoseRotation.w = pose->motion.orientation.w;
-			OVR::Quatf headrot = OVR::Quatf(
-			 	m_framePoseRotation.x,
-			    m_framePoseRotation.y,
-				m_framePoseRotation.z,
-				m_framePoseRotation.w
-          	  );
 
-			m_preheadEuler = m_headEuler; //old euler
-			m_pregazeEuler = m_gazeEuler;
-            QuatToEuler2(headrot.x,headrot.y,headrot.z,headrot.w,m_headEuler.Yaw,m_headEuler.Pitch,m_headEuler.Roll);
-			QuatToEuler2(m_GazeQuat[0].x,m_GazeQuat[0].y,m_GazeQuat[0].z,m_GazeQuat[0].w,m_gazeEuler.Yaw,m_gazeEuler.Pitch,m_gazeEuler.Roll);
-			//TxtGaze("time: %llu hyaw %lf hpitch %lf hroll %lf\n",m_targetTimestampNs ,m_headEuler.Yaw,m_headEuler.Pitch ,m_headEuler.Roll);
-			Info("time: %llu hyaw %lf hpitch %lf hroll %lf\n",m_targetTimestampNs ,m_headEuler.Yaw,m_headEuler.Pitch ,m_headEuler.Roll);
-            dEulert();
-			TxtGaze("time: %llu wh %lf wg %lf we %lf \n",m_targetTimestampNs ,m_wspeed.w_head ,m_wspeed.w_gaze ,m_wspeed.w_eyehaze);
+            Calculate();
 
 			//  Quat to Vector , Vector to angule,center_offset
 			if (true)   // Quat to Vector , Vector to angule,center_offset
@@ -208,8 +216,8 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 		}
 	}
 	if (m_submitLayer < MAX_LAYERS) {
-		m_submitLayers[m_submitLayer][0] = perEye[0];
 		m_submitLayers[m_submitLayer][1] = perEye[1];
+		m_submitLayers[m_submitLayer][0] = perEye[0];
 		m_submitLayer++;
 	}
 	else {
@@ -375,6 +383,7 @@ void QuatToEuler(float qx, float qy, float qz, float qw, float& yaw, float& pitc
 }
 void OvrDirectModeComponent::dEulert(){
 	 double DelatTime =((m_targetTimestampNs-m_prevTargetTimestampNs)/1000000.0); // ms
+
 	 double DelatHeadYaw = (m_headEuler.Yaw - m_preheadEuler.Yaw)*1000/DelatTime;
 	 double DelatHeadPitch = (m_headEuler.Pitch - m_preheadEuler.Pitch)*1000/DelatTime;
 	 double DelatHeadRoll = (m_headEuler.Roll - m_preheadEuler.Roll)*1000/DelatTime;
@@ -383,26 +392,86 @@ void OvrDirectModeComponent::dEulert(){
 	 double DelatGazePitch = (m_gazeEuler.Pitch - m_pregazeEuler.Pitch)*1000/DelatTime;
 	 double DelatGazeRoll = (m_gazeEuler.Roll - m_pregazeEuler.Roll)*1000/DelatTime;
 
+	 double DelatEyeYaw = (m_eyeEuler.Yaw - m_preeyeEuler.Yaw)*1000/DelatTime;
+	 double DelatEyePitch = (m_eyeEuler.Pitch - m_preeyeEuler.Pitch)*1000/DelatTime;
+	 double DelatEyeRoll = (m_eyeEuler.Roll - m_preeyeEuler.Roll)*1000/DelatTime;
+
 	 double whead = std::sqrt(DelatHeadYaw*DelatHeadYaw + DelatHeadPitch*DelatHeadPitch + DelatHeadRoll*DelatHeadRoll) ;
-	 double wgaze =  std::sqrt(DelatGazeYaw*DelatGazeYaw + DelatGazePitch*DelatGazePitch + DelatGazeRoll*DelatGazeRoll);
-	 double weyegaze =  std::sqrt((DelatHeadYaw+DelatGazeYaw) * (DelatHeadYaw+DelatGazeYaw) 
-	 + (DelatHeadPitch+DelatGazePitch) * (DelatHeadPitch+DelatGazePitch)
-	 + (DelatHeadRoll+DelatGazeRoll) * (DelatHeadRoll+DelatGazeRoll)
-	 );
+	 double wgaze = std::sqrt(DelatGazeYaw*DelatGazeYaw + DelatGazePitch*DelatGazePitch + DelatGazeRoll*DelatGazeRoll);
+	 double weye = std::sqrt(DelatEyeYaw * DelatEyeYaw + DelatEyePitch*DelatEyePitch + DelatEyeRoll *DelatEyeRoll);
 	 m_wspeed.w_head = whead;
 	 m_wspeed.w_gaze = wgaze;
-	 m_wspeed.w_eyehaze = weyegaze;
+	 m_wspeed.w_eye = weye;
 
 	//  double wheadY = cos(roll)
 
 }
 
-void QuatToEuler2(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll)
+void QuatToAngle(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll)
 {
-   
   	 OVR::Quatf quaternion =OVR::Quatf(qx, qy, qz, qw);
      OVR::Vector3f direction = quaternion.Rotate(OVR::Vector3f(0.0f, 0.0f, -1.0f));
 	 yaw = std::atan2(-direction.x, direction.z)*(180 / PI); //y Aisx
 	 pitch = std::atan2(-direction.y,direction.z)*(180 / PI);
 	 roll = std::atan2(-direction.y, direction.x)*(180 / PI);
+}
+
+void QuatToEuler2(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll)
+{
+    OVR::Quatf quaternion =OVR::Quatf(qx, qy, qz, qw);
+	quaternion.GetYawPitchRoll(&yaw,&pitch,&roll);
+	yaw = yaw *(180 / PI);
+	pitch = pitch *(180 / PI);
+	roll = roll  *(180 / PI);
+}
+
+void OvrDirectModeComponent::Calculate(){
+				OVR::Quatf headrot = OVR::Quatf(m_framePoseRotation.x,m_framePoseRotation.y,
+			m_framePoseRotation.z,m_framePoseRotation.w);
+
+			OVR::Quatf local_leftgaze = OVR::Quatf(m_GazeQuat[0].x,m_GazeQuat[0].y,
+			m_GazeQuat[0].z,m_GazeQuat[0].w );
+			OVR::Quatf local_rightgaze = OVR::Quatf(m_GazeQuat[1].x,m_GazeQuat[1].y,
+			m_GazeQuat[1].z,m_GazeQuat[1].w );
+            OVR::Vector3f local_leftgazeVector = local_leftgaze.ToRotationVector();
+            OVR::Vector3f local_rightgazeVector = local_rightgaze.ToRotationVector();
+			OVR::Vector3f local_gazeVector = OVR::Vector3f(
+				(local_leftgazeVector.x + local_rightgazeVector.x)/2,
+				(local_leftgazeVector.y + local_rightgazeVector.y)/2,
+				(local_leftgazeVector.z + local_rightgazeVector.z)/2
+				 );
+			OVR::Quatf local_gaze =OVR::Quatf::FromRotationVector (local_gazeVector);
+
+			//OVR::Quatf eyerot =  (gazerot * headrot) ;
+			//eyerot.Normalize(); //Normalize
+
+			OVR::Quatf global_leftgaze =  OVR::Quatf(m_GlobalQuat[0].x,m_GlobalQuat[0].y, 
+			m_GlobalQuat[0].z, m_GlobalQuat[0].w);
+			OVR::Quatf global_rightgaze =  OVR::Quatf(m_GlobalQuat[1].x,m_GlobalQuat[1].y, 
+			m_GlobalQuat[1].z, m_GlobalQuat[1].w);
+
+			OVR::Vector3f global_leftgazeVector = global_leftgaze.ToRotationVector();
+			OVR::Vector3f global_rightgazeVector = global_rightgaze.ToRotationVector();
+			OVR::Vector3f global_gazeVector = OVR::Vector3f(
+				(global_leftgazeVector.x + global_rightgazeVector.x)/2,
+				(global_leftgazeVector.y + global_rightgazeVector.y)/2,
+				(global_leftgazeVector.z + global_rightgazeVector.z)/2
+			);
+			OVR::Quatf global_gaze = OVR::Quatf::FromRotationVector(global_gazeVector);
+
+			
+			m_preheadEuler = m_headEuler; //old euler
+			m_pregazeEuler = m_gazeEuler;
+			m_preeyeEuler = m_eyeEuler;
+            QuatToEuler2(headrot.x,headrot.y,headrot.z,headrot.w,m_headEuler.Yaw,m_headEuler.Pitch,m_headEuler.Roll);
+			QuatToEuler2(local_gaze.x,local_gaze.y,local_gaze.z,local_gaze.w,m_gazeEuler.Yaw,m_gazeEuler.Pitch,m_gazeEuler.Roll);
+			QuatToEuler2(global_gaze.x,global_gaze.y,global_gaze.z,global_gaze.w,m_eyeEuler.Yaw,m_eyeEuler.Pitch,m_eyeEuler.Roll);
+			//TxtGaze("time: %llu hyaw %lf hpitch %lf hroll %lf\n",m_targetTimestampNs ,m_headEuler.Yaw,m_headEuler.Pitch ,m_headEuler.Roll);
+			//Info("time: %llu yaw %lf pitch %lf roll %lf\n",m_targetTimestampNs ,m_headEuler.Yaw,m_headEuler.Pitch ,m_headEuler.Roll);
+            dEulert();
+			//Info("time: %llu wh %lf wg %lf we %lf \n",m_targetTimestampNs ,m_wspeed.w_head ,m_wspeed.w_gaze ,m_wspeed.w_eye);	
+			if (Settings::Instance().m_gazevisual && Settings::Instance().m_recordGaze)
+			{
+			 Txtwspeed("time: %llu wh %lf wg %lf we %lf \n",m_targetTimestampNs ,m_wspeed.w_head ,m_wspeed.w_gaze ,m_wspeed.w_eye);
+			}	
 }

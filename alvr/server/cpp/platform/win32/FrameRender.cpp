@@ -384,9 +384,9 @@ bool FrameRender::RenderFrame(ID3D11Texture2D *pTexture[][2], vr::VRTextureBound
 	       
             UINT W = srcDesc.Width/32;
 		    UINT H = srcDesc.Height/32; 
-			TxtPrint("Frame Render Gazexy (%lf %lf) \n", NDCLeftGaze.x, NDCLeftGaze.y);
-			TxtPrint("texture[%d/%d]: %dx%d  \n", i,layerCount,srcDesc.Width, srcDesc.Height);
-			TxtPrint("Left gaze point: %d %d\n",GazePoint[0].x, GazePoint[0].y);
+			// TxtPrint("Frame Render Gazexy (%lf %lf) \n", NDCLeftGaze.x, NDCLeftGaze.y);
+			// TxtPrint("texture[%d/%d]: %dx%d  \n", i,layerCount,srcDesc.Width, srcDesc.Height);
+			// TxtPrint("Left gaze point: %d %d\n",GazePoint[0].x, GazePoint[0].y);
 			// TxtPrint("Right gaze point: %d %d\n",GazePoint[1].x, GazePoint[1].y);
           
 		  // Gaze Point Texture Subresource Region

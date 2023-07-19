@@ -47,7 +47,7 @@ struct FfiAnglespeed
    {
 	float w_head;
 	float w_gaze;
-	float w_eyehaze;
+	float w_eye;
    };
 enum FfiOpenvrPropertyType {
     Bool,
@@ -159,7 +159,9 @@ extern "C" void SetTracking(unsigned long long targetTimestampNs,
                             const FfiHandSkeleton *rightHand,
                             unsigned int controllersTracked,
                             const FfiEyeGaze *leftEyeGaze,
-                            const FfiEyeGaze *rightEyeGaze);
+                            const FfiEyeGaze *rightEyeGaze,
+                            const FfiEyeGaze *globalLeftGaze,
+                            const FfiEyeGaze *globalRightGaze);
 extern "C" void VideoErrorReportReceive();
 extern "C" void ShutdownSteamvr();
 

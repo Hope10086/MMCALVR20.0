@@ -243,10 +243,13 @@ void SetTracking(unsigned long long targetTimestampNs,
                  const FfiHandSkeleton *rightHand,
                  unsigned int controllersTracked,
                  const FfiEyeGaze *leftEyeGaze,
-                 const FfiEyeGaze *rightEyeGaze) {
+                 const FfiEyeGaze *rightEyeGaze,
+                 const FfiEyeGaze *globalLeftGaze,
+                 const FfiEyeGaze *globalRightGaze) {
     for (int i = 0; i < motionsCount; i++) {
         if (deviceMotions[i].deviceID == HEAD_ID && g_driver_provider.hmd) {
-            g_driver_provider.hmd->OnPoseUpdated(targetTimestampNs, deviceMotions[i],leftEyeGaze[i],rightEyeGaze[i]);
+            g_driver_provider.hmd->OnPoseUpdated(targetTimestampNs, deviceMotions[i],leftEyeGaze[i],rightEyeGaze[i] ,globalLeftGaze[i] ,globalRightGaze[i]);
+
         } else {
             if (g_driver_provider.left_controller && deviceMotions[i].deviceID == LEFT_HAND_ID) {
                 g_driver_provider.left_controller->onPoseUpdate(

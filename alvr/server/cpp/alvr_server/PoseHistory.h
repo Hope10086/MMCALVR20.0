@@ -14,9 +14,10 @@ public:
 		FfiDeviceMotion motion;
 		vr::HmdMatrix34_t rotationMatrix;
 		FfiQuat GazeQuat[2];
+		FfiQuat GloabGazeQuat[2];
 	};
 
-	void OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion ,FfiQuat LeftGazeQuat, FfiQuat RightGazeQuat);
+	void OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion ,FfiQuat LeftGazeQuat, FfiQuat RightGazeQuat ,FfiEyeGaze GLeftGaze ,FfiEyeGaze GRightGaze);
 
 	std::optional<TrackingHistoryFrame> GetBestPoseMatch(const vr::HmdMatrix34_t &pose) const;
 	// Return the most recent pose known at the given timestamp

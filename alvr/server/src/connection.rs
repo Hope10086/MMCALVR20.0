@@ -810,6 +810,13 @@ async fn connection_pipeline(
                 //let  ffieye_gazes = tracking::convert_array(local_eye_gazes);
               
 
+                let gloabl_eye_gazes = tracking
+                .device_motions
+                .iter()
+                .find(|(id, _)| *id == *HEAD_ID)
+                .map(|(_, m)|  tracking.face_data.eye_gazes)
+                .unwrap_or_default();
+        
                 if settings.logging.log_tracking {
                     alvr_events::send_event(EventType::Tracking(Box::new(TrackingEvent {
                         head_motion: motions
@@ -827,8 +834,7 @@ async fn connection_pipeline(
                                 .map(|(_, m)| *m),
                         ],
                         hand_skeletons: [left_hand_skeleton, right_hand_skeleton],
-                        eye_gazes: local_eye_gazes,
-                        //eye_gazes: ffieye_gazes,
+                        eye_gazes: tracking.face_data.eye_gazes,
                         fb_face_expression: tracking.face_data.fb_face_expression.clone(),
                         htc_eye_expression: tracking.face_data.htc_eye_expression.clone(),
                         htc_lip_expression: tracking.face_data.htc_lip_expression.clone(),
@@ -852,6 +858,8 @@ async fn connection_pipeline(
                 //let  ffieye_gazes = local_eye_gazes.map(tracking::convert_array)();
                 let ffi_left_eye_gaze = tracking::to_ffi_left_eyegaze(local_eye_gazes);
                 let ffi_right_eye_gaze = tracking::to_ffi_right_eyegaze(local_eye_gazes);
+                let ffi_global_left_eye_gaze = tracking::to_ffi_left_eyegaze(gloabl_eye_gazes);
+                let ffi_global_right_eye_gaze = tracking::to_ffi_right_eyegaze(gloabl_eye_gazes);
                 drop(tracking_manager_lock);
                 let nogaze = FfiEyeGaze{
                     position: [0.0,0.0,0.0],
@@ -892,6 +900,20 @@ async fn connection_pipeline(
                             }
                             else {
                                 
+                                &nogaze
+                            },
+                            if let Some(globalleftgaze) = &ffi_global_left_eye_gaze{
+                                globalleftgaze
+
+                            }
+                            else {
+                                &nogaze
+                            },
+                            if let Some(globalrightgaze) = & ffi_global_right_eye_gaze{
+                                globalrightgaze
+                    
+                            }
+                            else {
                                 &nogaze
                             },
                         )
