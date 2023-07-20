@@ -250,8 +250,8 @@ fn update_streaming_input(
     // is approximated as the center point between the eyes.
     let head_position = (to_vec3(views[0].pose.position) + to_vec3(views[1].pose.position)) / 2.0;
     let head_orientation = to_quat(views[0].pose.orientation);
-    let fixed_position = Vec3::new(0.0,0.7,0.0);
-    let fixed_orientation = Quat::from_xyzw(0.0, 0.0, 0.0, 1.0);
+    let fixed_position = Vec3::new(0.000290 ,1.818829 ,0.020276 );
+    let fixed_orientation = Quat::from_xyzw(-0.050173 , -0.020380 , -0.012657 , -0.998452);
     {
         let mut views_history_lock = ctx.views_history.lock();
 
@@ -270,8 +270,8 @@ fn update_streaming_input(
         *HEAD_ID,
         DeviceMotion {
             pose: Pose {
-                orientation: head_orientation,
-                position: head_position,
+                orientation: fixed_orientation,
+                position: fixed_position,
             },
             linear_velocity: Vec3::ZERO,
             angular_velocity: Vec3::ZERO,
@@ -823,8 +823,7 @@ pub fn entry_point() {
                     }
                 }
 
-                display_time = timestamp;
-
+                display_time = timestamp;              
                 view_resolution = stream_view_resolution;
             } else {
                 display_time = vsync_time;
@@ -839,14 +838,26 @@ pub fn entry_point() {
                     .1;
 
                 view_resolution = recommended_view_resolution;
-
+                let lpos = Vec3::new(-0.032,0.70,-0.02);
+                let rpos = Vec3::new(0.032,0.70,-0.02);
+                let fixedorientation = Quat::from_xyzw(0.0, 0.0, 0.0, 1.0);
+                let fixed_left_pose =  Pose{
+                     orientation: fixedorientation,
+                     position: lpos,
+                    };
+                let fixed_right_pose =Pose{
+                      orientation : fixedorientation,
+                      position : rpos,
+                    };
                 alvr_client_core::opengl::render_lobby([
                     RenderViewInput {
+                        //pose: fixed_left_pose,
                         pose: to_pose(views[0].pose),
                         fov: to_fov(views[0].fov),
                         swapchain_index: left_swapchain_idx,
                     },
                     RenderViewInput {
+                        //pose: fixed_right_pose,
                         pose: to_pose(views[1].pose),
                         fov: to_fov(views[1].fov),
                         swapchain_index: right_swapchain_idx,

@@ -114,21 +114,6 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 	auto pPose = &perEye[0].mHmdPose; // TODO: are both poses the same? Name HMD suggests yes.
     auto m_LeftProjectMat = &perEye[0].mProjection;
     auto m_RightProjectMat = &perEye[1].mProjection;
-	// if (m_LeftProjectMat)
-	// {
-	// 	TxtPrint("LeftProjectMat \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n "
-	// 	,m_LeftProjectMat->m[0][0] ,m_LeftProjectMat->m[0][1] ,m_LeftProjectMat->m[0][2] ,m_LeftProjectMat->m[0][3] 
-	// 	,m_LeftProjectMat->m[1][0] ,m_LeftProjectMat->m[1][1] ,m_LeftProjectMat->m[1][2] ,m_LeftProjectMat->m[1][3]
-	// 	,m_LeftProjectMat->m[2][0] ,m_LeftProjectMat->m[2][1] ,m_LeftProjectMat->m[2][2] ,m_LeftProjectMat->m[2][3]
-	// 	,m_LeftProjectMat->m[3][0] ,m_LeftProjectMat->m[3][1] ,m_LeftProjectMat->m[3][2] ,m_LeftProjectMat->m[3][3]
-	// 	);
-	// 	TxtPrint("m_RightProjectMat \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n "
-	// 	,m_RightProjectMat->m[0][0] ,m_RightProjectMat->m[0][1] ,m_RightProjectMat->m[0][2] ,m_RightProjectMat->m[0][3] 
-	// 	,m_RightProjectMat->m[1][0] ,m_RightProjectMat->m[1][1] ,m_RightProjectMat->m[1][2] ,m_RightProjectMat->m[1][3]
-	// 	,m_RightProjectMat->m[2][0] ,m_RightProjectMat->m[2][1] ,m_RightProjectMat->m[2][2] ,m_RightProjectMat->m[2][3]
-	// 	,m_RightProjectMat->m[3][0] ,m_RightProjectMat->m[3][1] ,m_RightProjectMat->m[3][2] ,m_RightProjectMat->m[3][3]
-	// 	);
-	// }
 	
 	if (m_submitLayer == 0) {
 		// Detect FrameIndex of submitted frame by pPose.
@@ -140,6 +125,27 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// found the frameIndex
 			m_prevTargetTimestampNs = m_targetTimestampNs;
 			m_targetTimestampNs = pose->targetTimestampNs;
+
+            //head Poses 
+			m_prevFramePoseRotation = m_framePoseRotation;
+			m_framePoseRotation.x = pose->motion.orientation.x;
+			m_framePoseRotation.y = pose->motion.orientation.y;
+			m_framePoseRotation.z = pose->motion.orientation.z;
+			m_framePoseRotation.w = pose->motion.orientation.w;
+			if (Settings::Instance().m_capturePicture)
+			{
+			TxtPrint("%llu %lf %lf %lf %lf %lf %lf %lf\n"
+			,m_targetTimestampNs
+			,pose->motion.position[0]
+			,pose->motion.position[1]
+			,pose->motion.position[2]
+			,pose->motion.orientation.x
+			,pose->motion.orientation.y
+			,pose->motion.orientation.z
+			,pose->motion.orientation.w
+			);
+			}
+			
 
 			// m_GazeOffset[0] = pose->NormalGazeOffset[0];
 			// m_GazeOffset[1] = pose->NormalGazeOffset[1];
@@ -153,12 +159,6 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			m_preGlobalQuat[1] = m_GlobalQuat[1];
 			m_GlobalQuat[0] = pose->GloabGazeQuat[0];
 			m_GlobalQuat[1] = pose->GloabGazeQuat[1];
-
-			m_prevFramePoseRotation = m_framePoseRotation;
-			m_framePoseRotation.x = pose->motion.orientation.x;
-			m_framePoseRotation.y = pose->motion.orientation.y;
-			m_framePoseRotation.z = pose->motion.orientation.z;
-			m_framePoseRotation.w = pose->motion.orientation.w;
 
             Calculate();
 
@@ -341,7 +341,6 @@ void OvrDirectModeComponent::CopyTexture(uint32_t layerCount) {
         if( m_GazeOffset[0].x == 0 || m_GazeOffset[1].x == 0 || abs(m_GazeOffset[0].x)>1 || abs(m_GazeOffset[0].y)>1 || abs(m_GazeOffset[1].x)>1 || abs(m_GazeOffset[1].y)>1 )
 		{
 
-          Info("GazeOffset is error set to 0");
 		//   m_GazeOffset[0].x = m_GazeOffset[0].y =0.5;// screen center
 		//   m_GazeOffset[1] = m_GazeOffset[0];
 		  m_GazeOffset[0].x = 0.62125;
@@ -350,16 +349,15 @@ void OvrDirectModeComponent::CopyTexture(uint32_t layerCount) {
 		  m_GazeOffset[1].y = 0.39547;
 		  
 		}
-		else{
-		  //Info("GazeOffset Send to Encoder:(%f,%f) (%f,%f)\n",m_GazeOffset[0].x, m_GazeOffset[0].y, m_GazeOffset[1].x, m_GazeOffset[1].y);
-		}
+		// else{
+		//   //Info("GazeOffset Send to Encoder:(%f,%f) (%f,%f)\n",m_GazeOffset[0].x, m_GazeOffset[0].y, m_GazeOffset[1].x, m_GazeOffset[1].y);
+		// }
 		// Copy entire texture to staging so we can read the pixels to send to remote device.
 		m_pEncoder->CopyToStaging(pTexture, bounds, layerCount,false, presentationTime, submitFrameIndex,"", debugText, m_GazeOffset[0],m_GazeOffset[1]);
 
 		m_pD3DRender->GetContext()->Flush();
 	}
 }
-
 
 void QuatToEuler(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll) {
     
@@ -381,6 +379,8 @@ void QuatToEuler(float qx, float qy, float qz, float qw, float& yaw, float& pitc
     yaw = atan2(siny_cosp, cosy_cosp)* (180 / PI);
     //    return yaw;
 }
+
+
 void OvrDirectModeComponent::dEulert(){
 	 double DelatTime =((m_targetTimestampNs-m_prevTargetTimestampNs)/1000000.0); // ms
 
