@@ -100,4 +100,5 @@ class Settings {
     bool m_recordGaze = false;
     //gaze visual 
     bool m_gazevisual = false ;
+    bool newlogpath =true;
 };

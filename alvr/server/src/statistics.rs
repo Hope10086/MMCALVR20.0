@@ -14,7 +14,6 @@ pub struct HistoryFrame {
     frame_present: Instant,
     frame_composed: Instant,
     frame_encoded: Instant,
-    total_pipeline_latency: Duration,
 }
 
 impl Default for HistoryFrame {
@@ -26,7 +25,7 @@ impl Default for HistoryFrame {
             frame_present: now,
             frame_composed: now,
             frame_encoded: now,
-            total_pipeline_latency: Duration::ZERO,
+
         }
     }
 }
@@ -156,8 +155,9 @@ impl StatisticsManager {
             .iter_mut()
             .find(|frame| frame.target_timestamp == client_stats.target_timestamp)
         {
-            frame.total_pipeline_latency = client_stats.total_pipeline_latency;
-
+            let total_pipeline_latency = client_stats.total_pipeline_latency;
+            self.total_pipeline_latency_average
+            .submit_sample(total_pipeline_latency);
             let game_time_latency = frame
                 .frame_present
                 .saturating_duration_since(frame.tracking_received);
@@ -176,7 +176,7 @@ impl StatisticsManager {
             // packet is sent and the last video packet is received for a specific frame.
             // For safety, use saturating_sub to avoid a crash if for some reason the network
             // latency is miscalculated as negative.
-            let network_latency = frame.total_pipeline_latency.saturating_sub(
+            let network_latency = total_pipeline_latency.saturating_sub(
                 game_time_latency
                     + server_compositor_latency
                     + encoder_latency

@@ -105,7 +105,7 @@ void LogFileUpDate(string LogFile) {
 	string fatherpath = g_driverRootDir;
 	string logpath = fatherpath + "\\logs";
 	string ddspath = fatherpath + "\\dds";
-	if(newpath){
+	if(Settings::Instance().newlogpath){
 	  struct stat  dirStat;
       int result  =stat(logpath.c_str(),&dirStat);
 	  if ((result != 0 ))
@@ -118,7 +118,7 @@ void LogFileUpDate(string LogFile) {
 		}
 	}
     
-	 newpath = false;
+	Settings::Instance().newlogpath = false;
 
 	}
 
