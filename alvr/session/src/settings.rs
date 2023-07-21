@@ -828,10 +828,10 @@ pub fn session_settings_default() -> SettingsDefault {
         variant: FrameSizeDefaultVariant::Absolute,
         Scale: 1.0,
         Absolute: FrameSizeAbsoluteDefault {
-            width: 2144,
+            width: 2592,
             height: OptionalDefault {
-                set: false,
-                content: 1072,
+                set: true,
+                content: 2592,
             },
         },
     };
@@ -868,7 +868,7 @@ pub fn session_settings_default() -> SettingsDefault {
             adapter_index: 0,
             transcoding_view_resolution: view_resolution.clone(),
             emulated_headset_view_resolution: view_resolution,
-            preferred_fps: 72.,
+            preferred_fps: 90.,
             max_buffering_frames: 1.5,
             buffering_history_weight: 0.90,
             bitrate: BitrateConfigDefault {
@@ -897,7 +897,7 @@ pub fn session_settings_default() -> SettingsDefault {
                             },
                         },
                     },
-                    variant: BitrateModeDefaultVariant::Adaptive,
+                    variant: BitrateModeDefaultVariant::ConstantMbps,
                 },
                 adapt_to_framerate: SwitchDefault {
                     enabled: true,
@@ -907,7 +907,7 @@ pub fn session_settings_default() -> SettingsDefault {
                 },
             },
             preferred_codec: CodecTypeDefault {
-                variant: CodecTypeDefaultVariant::H264,
+                variant: CodecTypeDefaultVariant::Hevc,
             },
             encoder_config: EncoderConfigDefault {
                 rate_control_mode: RateControlModeDefault {
@@ -915,7 +915,7 @@ pub fn session_settings_default() -> SettingsDefault {
                 },
                 filler_data: false,
                 entropy_coding: EntropyCodingDefault {
-                    variant: EntropyCodingDefaultVariant::Cavlc,
+                    variant: EntropyCodingDefaultVariant::Cabac,
                 },
                 use_10bit: false,
                 nvenc: NvencConfigDefault {
@@ -929,7 +929,7 @@ pub fn session_settings_default() -> SettingsDefault {
                         variant: NvencMultiPassDefaultVariant::QuarterResolution,
                     },
                     adaptive_quantization_mode: NvencAdaptiveQuantizationModeDefault {
-                        variant: NvencAdaptiveQuantizationModeDefaultVariant::Spatial,
+                        variant: NvencAdaptiveQuantizationModeDefaultVariant::Disabled,
                     },
                     low_delay_key_frame_scale: -1,
                     refresh_rate: -1,
@@ -937,7 +937,7 @@ pub fn session_settings_default() -> SettingsDefault {
                     intra_refresh_period: -1,
                     intra_refresh_count: -1,
                     max_num_ref_frames: -1,
-                    gop_length: -1,
+                    gop_length: 32,
                     p_frame_strategy: -1,
                     rate_control_mode: -1,
                     rc_buffer_size: -1,
@@ -998,9 +998,9 @@ pub fn session_settings_default() -> SettingsDefault {
                 },
             },
             oculus_foveation_level: OculusFovetionLevelDefault {
-                variant: OculusFovetionLevelDefaultVariant::HighTop,
+                variant: OculusFovetionLevelDefaultVariant::None,
             },
-            dynamic_oculus_foveation: true,
+            dynamic_oculus_foveation: false,
             color_correction: SwitchDefault {
                 enabled: false,
                 content: ColorCorrectionDescDefault {
@@ -1059,7 +1059,7 @@ pub fn session_settings_default() -> SettingsDefault {
             tracking_ref_only: false,
             enable_vive_tracker_proxy: false,
             face_tracking: SwitchDefault {
-                enabled: false,
+                enabled: true,
                 content: FaceTrackingConfigDefault {
                     sources: FaceTrackingSourcesDefault {
                         eye_tracking_fb: true,
@@ -1151,7 +1151,7 @@ pub fn session_settings_default() -> SettingsDefault {
                 variant: if cfg!(debug_assertions) {
                     LogSeverityDefaultVariant::Info
                 } else {
-                    LogSeverityDefaultVariant::Warning
+                    LogSeverityDefaultVariant::Info
                 },
             },
             show_raw_events: false,

@@ -64,6 +64,7 @@ static FILESYSTEM_LAYOUT: Lazy<Layout> = Lazy::new(|| {
 });
 static SERVER_DATA_MANAGER: Lazy<RwLock<ServerDataManager>> =
     Lazy::new(|| RwLock::new(ServerDataManager::new(&FILESYSTEM_LAYOUT.session())));
+    
 static WEBSERVER_RUNTIME: Lazy<Mutex<Option<Runtime>>> =
     Lazy::new(|| Mutex::new(Runtime::new().ok()));
 
@@ -239,6 +240,7 @@ fn init() {
             conn.current_ip = None;
         }
     }
+    
 
     unsafe {
         g_sessionPath = CString::new(FILESYSTEM_LAYOUT.session().to_string_lossy().to_string())
@@ -253,6 +255,7 @@ fn init() {
         .unwrap()
         .into_raw();
     };
+
 }
 
 /// # Safety
@@ -285,7 +288,8 @@ pub unsafe extern "C" fn HmdDriverFactory(
 
     unsafe extern "C" fn log_error(string_ptr: *const c_char) {
         alvr_common::show_e(CStr::from_ptr(string_ptr).to_string_lossy());
-    }
+    }  
+    
 
     unsafe fn log(level: log::Level, string_ptr: *const c_char) {
         log::log!(level, "{}", CStr::from_ptr(string_ptr).to_string_lossy());

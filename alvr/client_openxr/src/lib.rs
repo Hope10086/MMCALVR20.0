@@ -270,8 +270,8 @@ fn update_streaming_input(
         *HEAD_ID,
         DeviceMotion {
             pose: Pose {
-                orientation: fixed_orientation,
-                position: fixed_position,
+                orientation: head_orientation,
+                position: head_position,
             },
             linear_velocity: Vec3::ZERO,
             angular_velocity: Vec3::ZERO,
@@ -823,7 +823,8 @@ pub fn entry_point() {
                     }
                 }
 
-                display_time = timestamp;              
+                display_time = timestamp;
+
                 view_resolution = stream_view_resolution;
             } else {
                 display_time = vsync_time;
@@ -849,6 +850,7 @@ pub fn entry_point() {
                       orientation : fixedorientation,
                       position : rpos,
                     };
+
                 alvr_client_core::opengl::render_lobby([
                     RenderViewInput {
                         //pose: fixed_left_pose,

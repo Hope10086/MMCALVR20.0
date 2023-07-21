@@ -283,29 +283,6 @@ void SetTracking(unsigned long long targetTimestampNs,
         //   ,leftgazevector.v[1]
         //   ,leftgazevector.v[2]);  
 
-            // Info("targetTimestampNs %llu motionsCount %d \n",targetTimestampNs,motionsCount);
-    // Info("LeftEyeGaze: (%f %f %f),(%f %f %f %f)\n"
-    // ,leftEyeGaze->position[0]
-    // ,leftEyeGaze->position[1]
-    // ,leftEyeGaze->position[2]
-    // ,leftEyeGaze->orientation.x
-    // ,leftEyeGaze->orientation.y
-    // ,leftEyeGaze->orientation.z
-    // ,leftEyeGaze->orientation.w
-    // );
-    // Info("RightEyeGaze: (%f %f %f),(%f %f %f %f)\n"
-    // ,rightEyeGaze->position[0]
-    // ,rightEyeGaze->position[1]
-    // ,rightEyeGaze->position[2]
-    // ,rightEyeGaze->orientation.x
-    // ,rightEyeGaze->orientation.y
-    // ,rightEyeGaze->orientation.z
-    // ,rightEyeGaze->orientation.w
-    // );
-
-
-
-
 }
 
 void VideoErrorReportReceive() {

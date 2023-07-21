@@ -191,6 +191,14 @@ impl Layout {
         self.log_dir.join("crash_log.txt")
     }
 
+    // pub fn tracking_log_dir(&self) -> PathBuf {
+    //     self.log_dir.join("debugpath")        
+    // }
+    
+    // pub fn ddsfiles_dir(&self) ->PathBuf {
+    //     self.log_dir.join("ddsfiles")   
+    // }
+
     pub fn openvr_driver_lib_dir(&self) -> PathBuf {
         let platform = if cfg!(windows) {
             "win64"

@@ -7,6 +7,8 @@
 #include <iostream>
 #include <string>
 #include <windows.h>
+#include <sys/stat.h>
+#include <direct.h>
 using namespace std;
 static FILE* fpLog = NULL;
 void _log(const char *format, va_list args, void (*logFn)(const char *), bool driverLog = false)
@@ -94,15 +96,34 @@ void LogPeriod(const char *tag, const char *format, ...)
 
 void LogFileUpDate(string LogFile) {
      //LogGetLocalTime();
+
+	
     if (fpLog != nullptr) {
         fclose(fpLog);
         fpLog = nullptr;
     }
-	//string LogFile= "E:\\alvrdata\\TxtPrintf\\A_EyeGazeHistory.txt";
-	//string LogFile= "D:\\AX\\Logs\\Debug\\A_Debug20test.txt";
-	//string LogFile= ".\\A_Debug20test.txt";
-    if(fpLog ==nullptr) {
-         fpLog = _fsopen(LogFile.c_str(), "at+", _SH_DENYNO);
+	string fatherpath = g_driverRootDir;
+	string logpath = fatherpath + "\\logs";
+	string ddspath = fatherpath + "\\dds";
+	if(newpath){
+	  struct stat  dirStat;
+      int result  =stat(logpath.c_str(),&dirStat);
+	  if ((result != 0 ))
+	{
+		if (mkdir(logpath.c_str()))
+		{Error("mkdir logs failed");
+		}
+		if (mkdir(ddspath.c_str()) )
+		{Error("mkdir dds failed");
+		}
+	}
+    
+	 newpath = false;
+
+	}
+
+	if(fpLog ==nullptr) {
+         fpLog = _fsopen((logpath+"\\"+LogFile).c_str(), "at+", _SH_DENYNO);
     }
     
 }
@@ -112,7 +133,7 @@ void TxtPrint(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 	//LogFileUpDate("E:\\alvrdata\\TxtPrintf\\A_TxtPrint1.txt");
-	LogFileUpDate("D:\\AX\\Logs\\Debug\\A_TxtPrint12.txt");
+	LogFileUpDate("TxtPrint.txt");
 	//LogFileUpDate("C:\\SHN\\ALVREXE\\OutPut\\Log\\A_TxtPrint12.txt");
     char buf[1024];
 	//string sys_timeType=sys_time+Info_Type;    
@@ -127,7 +148,7 @@ void TxtGaze(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 	//LogFileUpDate("E:\\alvrdata\\TxtPrintf\\Gaze_NowHist.txt");
-	LogFileUpDate("D:\\AX\\Logs\\Debug\\Gaze_NowHist.txt");
+	LogFileUpDate("TxtGaze_NowHist.txt");
 	//LogFileUpDate("C:\\SHN\\ALVREXE\\OutPut\\Log\\Gaze_NowHist.txt");
     char buf[1024];
 	//string sys_timeType=sys_time+Info_Type;    
@@ -142,7 +163,7 @@ void Txtwspeed(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 	//LogFileUpDate("E:\\alvrdata\\TxtPrintf\\Gaze_wspeed.txt");
-	LogFileUpDate("D:\\AX\\Logs\\Debug\\Gaze_wspeed.txt");
+	LogFileUpDate("TxtGaze_wspeed.txt");
 	//LogFileUpDate("C:\\SHN\\ALVREXE\\OutPut\\Log\\Gaze_wspeed.txt");
     char buf[1024];
 	//string sys_timeType=sys_time+Info_Type;    
@@ -157,7 +178,7 @@ void TxtNDCGaze(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 	//LogFileUpDate("E:\\alvrdata\\TxtPrintf\\Gaze_wspeed.txt");
-	LogFileUpDate("D:\\AX\\Logs\\Debug\\NDCGaze_location.txt");
+	LogFileUpDate("TxtNDCGaze_location.txt");
     //LogFileUpDate("C:\\SHN\\ALVREXE\\OutPut\\Log\\Gaze_wspeed.txt");
     char buf[1024];
 	//string sys_timeType=sys_time+Info_Type;    

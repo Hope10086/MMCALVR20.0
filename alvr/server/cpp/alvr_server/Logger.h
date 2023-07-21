@@ -1,8 +1,11 @@
 #pragma once
 
 #include "ALVR-common/exception.h"
+#include <codecvt>
 
 Exception MakeException(const char *format, ...);
+
+bool newpath =true;
 
 void Error(const char *format, ...);
 void Warn(const char *format, ...);

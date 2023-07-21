@@ -18,7 +18,6 @@ const int HUD_TEXTURE_WIDTH = 1280;
 const int HUD_TEXTURE_HEIGHT = 720;
 
 glm::mat4 FixedmvpMatrix[2];
-
 /// Integer version of ovrRectf
 typedef struct Recti_ {
     int x;
@@ -676,7 +675,7 @@ void ovrRenderer_RenderFrame(ovrRenderer *renderer, const FfiViewInput input[2],
             }
             float ori[4] = {0.0 ,0.0 ,0.0 ,1.0};
             auto p1 = posi;
-            auto o1 = ori;
+            auto o1 =ori;
             auto trans = glm::translate(glm::mat4(1.0), glm::vec3(p[0], p[1], p[2]));
             auto rot = glm::mat4_cast(glm::quat(o[3], o[0], o[1], o[2]));
             // auto trans = glm::translate(glm::mat4(1.0), glm::vec3(p1[0],p1[1],p1[2]));
@@ -696,14 +695,14 @@ void ovrRenderer_RenderFrame(ovrRenderer *renderer, const FfiViewInput input[2],
             proj = glm::transpose(proj);
 
             mvpMatrix[eye] = glm::transpose(proj * viewInv);
-            FixedmvpMatrix[eye] = glm::inverse(trans * rot);
         }
-     } else {
+    } else {
         mvpMatrix[0] = glm::mat4(1.0);
         mvpMatrix[1] = glm::mat4(1.0);
-        //mvpMatrix[0] = FixedmvpMatrix[0];
+        FixedmvpMatrix[eye] = glm::inverse(trans * rot);
+         //mvpMatrix[0] = FixedmvpMatrix[0];
         //mvpMatrix[1] = FixedmvpMatrix[1];
-     }
+    }
 
     // Render the eye images.
     for (int eye = 0; eye < 2; eye++) {
