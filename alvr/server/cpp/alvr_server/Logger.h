@@ -15,3 +15,4 @@ void TxtPrint(const char *format, ...);
 void TxtGaze(const char *format, ...);
 void Txtwspeed(const char *format, ...);
 void TxtNDCGaze(const char *format, ...);
+void TxtLatency(const char *format, ...); 

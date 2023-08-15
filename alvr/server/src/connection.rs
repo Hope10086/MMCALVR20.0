@@ -58,7 +58,8 @@ fn align32(value: f32) -> u32 {
 }
 
 // Alternate connection trials with manual IPs and clients discovered on the local network
-pub fn handshake_loop(frame_interval_sender: smpsc::Sender<Duration>) -> IntResult {
+// pub fn handshake_loop(frame_interval_sender: smpsc::Sender<Duration>) -> IntResult {
+ pub fn handshake_loop() -> IntResult {
     let mut welcome_socket = WelcomeSocket::new().map_err(to_int_e!())?;
 
     loop {
@@ -77,8 +78,8 @@ pub fn handshake_loop(frame_interval_sender: smpsc::Sender<Duration>) -> IntResu
             manual_client_ips
         };
 
-        if !manual_client_ips.is_empty()
-            && try_connect(manual_client_ips, frame_interval_sender.clone()).is_ok()
+
+        if !manual_client_ips.is_empty() && try_connect(manual_client_ips).is_ok()
         {
             thread::sleep(RETRY_CONNECT_MIN_INTERVAL);
             continue;
@@ -129,9 +130,8 @@ pub fn handshake_loop(frame_interval_sender: smpsc::Sender<Duration>) -> IntResu
             // do not attempt connection if the client is already connected
             if trusted && !CONNECTED_CLIENT_HOSTNAMES.lock().contains(&client_hostname) {
                 if let Err(e) = try_connect(
-                    [(client_ip, client_hostname.clone())].into_iter().collect(),
-                    frame_interval_sender.clone(),
-                ) {
+                    [(client_ip, client_hostname.clone())].into_iter().collect())
+                     {
                     error!("Handshake error for {client_hostname}: {e}");
                 }
             }
@@ -141,10 +141,7 @@ pub fn handshake_loop(frame_interval_sender: smpsc::Sender<Duration>) -> IntResu
     }
 }
 
-fn try_connect(
-    mut client_ips: HashMap<IpAddr, String>,
-    frame_interval_sender: smpsc::Sender<Duration>,
-) -> IntResult {
+fn try_connect( mut client_ips: HashMap<IpAddr, String>) -> IntResult {
     let runtime = Runtime::new().map_err(to_int_e!())?;
 
     let (mut proto_socket, client_ip) = runtime
@@ -461,7 +458,7 @@ fn try_connect(
                         control_receiver,
                         streaming_caps.microphone_sample_rate,
                         fps,
-                        frame_interval_sender
+                        //frame_interval_sender
                     ) => {
                         warn!("Connection interrupted: {res:?}");
                     },
@@ -522,7 +519,7 @@ async fn connection_pipeline(
     mut control_receiver: ControlSocketReceiver<ClientControlPacket>,
     microphone_sample_rate: u32,
     refresh_rate: f32,
-    frame_interval_sender: smpsc::Sender<Duration>,
+    // frame_interval_sender: smpsc::Sender<Duration>,
 ) -> StrResult {
     let control_sender = Arc::new(Mutex::new(control_sender));
 
@@ -575,10 +572,10 @@ async fn connection_pipeline(
         refresh_rate,
     );
 
-    // todo: dynamic framerate
-    frame_interval_sender
-        .send(Duration::from_secs_f32(1.0 / refresh_rate))
-        .ok();
+    // // todo: dynamic framerate
+    // frame_interval_sender
+    //     .send(Duration::from_secs_f32(1.0 / refresh_rate))
+    //     .ok();
 
     {
         let on_connect_script = settings.connection.on_connect_script;

@@ -1,4 +1,4 @@
-use alvr_common::{prelude::*, DeviceMotion, Pose};
+use alvr_common::{prelude::*, DeviceMotion, Pose,LogEntry};
 use alvr_packets::{AudioDevicesList, ButtonValue};
 use alvr_session::SessionDesc;
 use serde::{Deserialize, Serialize};
@@ -85,5 +85,9 @@ pub struct Event {
 }
 
 pub fn send_event(event_type: EventType) {
+    info!("{}", serde_json::to_string(&event_type).unwrap());
+}
+pub fn send_logs(event_type: EventType){
+
     info!("{}", serde_json::to_string(&event_type).unwrap());
 }

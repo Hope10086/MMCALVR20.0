@@ -1,12 +1,28 @@
-use alvr_common::{SlidingWindowAverage, HEAD_ID, LEFT_HAND_ID, RIGHT_HAND_ID};
+use alvr_common::{SlidingWindowAverage, HEAD_ID, LEFT_HAND_ID, RIGHT_HAND_ID,LogEntry,LogSeverity};
 use alvr_events::{EventType, GraphStatistics, Statistics};
 use alvr_packets::ClientStatistics;
+use serde_json::to_string;
 use std::{
     collections::{HashMap, VecDeque},
     time::{Duration, Instant},
+    ffi::CString,
+    os::raw::c_char, string
 };
 
 const FULL_REPORT_INTERVAL: Duration = Duration::from_millis(500);
+pub fn log_txt_latency(txt_strings: String) {
+    
+    let txt_cstrings = CString::new(txt_strings).expect("CString creation failed");
+    let txt_chart: *const i8 = txt_cstrings.to_bytes_with_nul().as_ptr() as *const i8;
+    unsafe{
+        crate::LogLatency(txt_chart);
+    }
+}
+
+pub fn log_txt(script_string: String ,txt_strings: String) {
+    log_txt_latency(script_string);
+    log_txt_latency(txt_strings);
+}
 
 pub struct HistoryFrame {
     target_timestamp: Duration,
@@ -45,6 +61,8 @@ pub struct StatisticsManager {
     battery_gauges: HashMap<u64, f32>,
     steamvr_pipeline_latency: Duration,
     total_pipeline_latency_average: SlidingWindowAverage<Duration>,
+    last_vsync_time: Instant,
+    frame_interval: Duration,
 }
 
 impl StatisticsManager {
@@ -74,6 +92,8 @@ impl StatisticsManager {
                 Duration::ZERO,
                 max_history_size,
             ),
+            last_vsync_time: Instant::now(),
+            frame_interval: nominal_server_frame_interval,
         }
     }
 
@@ -237,7 +257,29 @@ impl StatisticsManager {
                         .unwrap_or_default()
                         * 100.) as _,
                 }));
+                log_txt(
+                String::from("\n time: "),
+                (frame.target_timestamp.as_secs_f32() *1000.).to_string()
+                    );
+                log_txt(
+                String::from(" decode latency ms:"),
+                (client_stats.video_decode.as_secs_f32() * 1000.).to_string()
+                );
+                log_txt(
+                    String ::from(" encoder latency ms: "), 
+                    (encoder_latency.as_secs_f32() * 1000.).to_string()
+                );
 
+                log_txt(String::from(" server fps: "),
+                 (server_fps).to_string()
+                 );
+                
+ 
+
+                // alvr_events::send_logs(EventType::Log(LogEntry{
+                //     severity: LogSeverity::Info,
+                //     content:(encoder_latency.as_secs_f32() * 1000.).to_string(),
+                // }));
                 self.video_packets_partial_sum = 0;
                 self.video_bytes_partial_sum = 0;
                 self.packets_lost_partial_sum = 0;
@@ -270,4 +312,17 @@ impl StatisticsManager {
         self.steamvr_pipeline_latency
             .saturating_sub(self.total_pipeline_latency_average.get_average())
     }
+
+        // NB: this call is non-blocking, waiting should be done externally
+    pub fn duration_until_next_vsync(&mut self) -> Duration {
+            let now = Instant::now();
+    
+            // update the last vsync if it's too old
+            while self.last_vsync_time + self.frame_interval < now {
+                self.last_vsync_time += self.frame_interval;
+            }
+    
+            (self.last_vsync_time + self.frame_interval).saturating_duration_since(now)
+        }
+
 }

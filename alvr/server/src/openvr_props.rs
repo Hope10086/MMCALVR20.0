@@ -166,9 +166,10 @@ pub extern "C" fn set_device_openvr_props(device_id: u64) {
 
             // Manually send VSync events on direct mode.
             // ref:https://github.com/ValveSoftware/virtual_display/issues/1
+            //// We let SteamVR handle VSyncs. We just wait in PostPresent().
             set_prop(
                 DriverDirectModeSendsVsyncEvents,
-                OpenvrPropValue::Bool(true),
+                OpenvrPropValue::Bool(false),
             );
         }
         set_prop(DeviceProvidesBatteryStatus, OpenvrPropValue::Bool(true));
