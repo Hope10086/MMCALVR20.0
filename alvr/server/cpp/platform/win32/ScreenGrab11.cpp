@@ -591,6 +591,7 @@ namespace
         {
             *outNumRows = static_cast<size_t>(numRows);
         }
+        Info("numBytes rowBytes numRows: %lld %lld %lld \n", numBytes, rowBytes, numRows);
 
         return S_OK;
     }

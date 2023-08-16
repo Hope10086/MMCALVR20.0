@@ -18,6 +18,8 @@
 #include "shared/d3drender.h"
 #include "openvr_driver.h"
 #include "FFR.h"
+#include <chrono>	
+//#include "ScreenGrab11.h"	
 
 #define GPU_PRIORITY_VAL 7
 
@@ -51,6 +53,15 @@ public:
 	void GetEncodingResolution(uint32_t *width, uint32_t *height);
 
 	ComPtr<ID3D11Texture2D> GetTexture();
+	HRESULT CpuCopyTexture(ID3D11Texture2D *pTexture);
+	HRESULT GetSurfaceInfo(
+		_In_ size_t width,
+        _In_ size_t height,
+        _In_ DXGI_FORMAT fmt,
+        _Out_opt_ size_t* outNumBytes,
+        _Out_opt_ size_t* outRowBytes,
+        _Out_opt_ size_t* outNumRows);
+	size_t BitsPerPixel(_In_ DXGI_FORMAT fmt);
 private:
 	std::shared_ptr<CD3DRender> m_pD3DRender;
 	ComPtr<ID3D11Texture2D> m_pStagingTexture;
@@ -81,6 +92,7 @@ private:
 	//UINT m_GazepointWidth = 1024;  //
 	//UINT m_GazepointHeight = 1024;
 	long int begaincount = 0;
+	long int cpureadcount = 0;
 	struct SimpleVertex
 	{
 		DirectX::XMFLOAT3 Pos;
@@ -89,6 +101,11 @@ private:
 	};
 	// Parameter for Draw method. 2-triangles for both eyes.
 	static const int VERTEX_INDEX_COUNT = 12;
+
+	// shn Copy tfrom GPU to CPU
+	ComPtr<ID3D11Texture2D> m_stagingTexture;
+	D3D11_TEXTURE2D_DESC m_stagingTextureDesc;
+	D3D11_MAPPED_SUBRESOURCE m_stagingTextureMap;
 
 	std::unique_ptr<d3d_render_utils::RenderPipeline> m_colorCorrectionPipeline;
 	bool enableColorCorrection;
