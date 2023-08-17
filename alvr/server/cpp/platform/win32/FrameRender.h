@@ -3,6 +3,10 @@
 #include <string>
 #include <memory>
 #include <stdint.h>
+#include <chrono>	
+#include <iostream>
+#include <thread>
+#include <vector>
 
 #include <d3d11.h>
 #include <wrl.h>
@@ -18,7 +22,7 @@
 #include "shared/d3drender.h"
 #include "openvr_driver.h"
 #include "FFR.h"
-#include <chrono>	
+
 //#include "ScreenGrab11.h"	
 
 #define GPU_PRIORITY_VAL 7
@@ -62,6 +66,7 @@ public:
         _Out_opt_ size_t* outRowBytes,
         _Out_opt_ size_t* outNumRows);
 	size_t BitsPerPixel(_In_ DXGI_FORMAT fmt);
+	void Memcpythread( uint8_t *dptr_tmp , const uint8_t *sptr_tmp ,size_t rowCount ,size_t rowBytes, size_t msize ,bool endflag);
 private:
 	std::shared_ptr<CD3DRender> m_pD3DRender;
 	ComPtr<ID3D11Texture2D> m_pStagingTexture;

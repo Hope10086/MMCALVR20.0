@@ -28,7 +28,7 @@ bool FrameRender::Startup()
 		if (cpureadcount  != 0)
 		{
 			//Info("cpuread %d",cpureadcount);
-           auto CopyStart = std::chrono::steady_clock::now();
+           //auto Copy_Start = std::chrono::steady_clock::now();
 			HRESULT hr = CpuCopyTexture(m_pStagingTexture.Get());
 			if (FAILED(hr))
 			{
@@ -36,8 +36,8 @@ bool FrameRender::Startup()
 		    return false;
 			}
 			auto CopyEnd = std::chrono::steady_clock::now();
-			auto CopyLast = std::chrono::duration_cast<std::chrono::microseconds>(CopyEnd - CopyStart);
-			Info("CopyTexture To Cpu Cost %ld \n",CopyLast);
+			//auto CopyLast = std::chrono::duration_cast<std::chrono::microseconds>(Copy_End - Copy_Start);
+			//Info("CopyTexture To Cpu Cost %ld \n",CopyLast);
 		}
 		return true;
 	}
@@ -597,6 +597,9 @@ void FrameRender::GetEncodingResolution(uint32_t *width, uint32_t *height) {
 }
 
 HRESULT FrameRender::CpuCopyTexture(ID3D11Texture2D *pTexture) {
+    // Time start
+	auto time_start = std::chrono::steady_clock::now();
+
 	//Create  m_stagingTexture
 	D3D11_TEXTURE2D_DESC desc;
 	pTexture->GetDesc(&desc);
@@ -616,6 +619,9 @@ HRESULT FrameRender::CpuCopyTexture(ID3D11Texture2D *pTexture) {
 	//TexPassBack::CaptureTexture(m_pD3DRender->GetDevice(),m_stagingTexture.Get(),m_stagingTextureDesc,m_stagingTexture);
     // CopyResource from pTexture to stage
 	m_pD3DRender->GetContext()->CopyResource(m_stagingTexture.Get(), pTexture);
+	//time 
+	auto time_stagcopy = std::chrono::steady_clock::now();
+	auto duration_gpucopy = std::chrono::duration_cast<std::chrono::microseconds>(time_stagcopy - time_start);
     //Get surface information for a particular format
     size_t rowPitch, slicePitch, rowCount;
     HRESULT hr = GetSurfaceInfo(desc.Width, desc.Height, desc.Format, &slicePitch, &rowPitch, &rowCount);
@@ -644,17 +650,78 @@ HRESULT FrameRender::CpuCopyTexture(ID3D11Texture2D *pTexture) {
     const size_t msize = std::min<size_t>(rowPitch, m_stagingTextureMap.RowPitch);
 	//const size_t msize = rowPitch;
 
-    for (size_t h = 0; h < rowCount; ++h)
-    {
-         memcpy_s(dptr, rowPitch, sptr, msize);
-         sptr = sptr + m_stagingTextureMap.RowPitch;
-         dptr = dptr +  rowPitch;
-    }
+	unsigned concurrent_count = std::thread::hardware_concurrency();
+	
+	int thread_nums = (concurrent_count % 4)*4 ;
+	if (thread_nums == 0)
+	{
+		thread_nums = (concurrent_count % 2)*2;
+	}
+	
+	Info("thread_nums %d \n",concurrent_count);
+
+	if (thread_nums > 1) 
+	{
+		// Per thread row counts 
+		size_t rowCount_thr = rowCount / thread_nums;
+
+
+        // threadbytes: Per thread  sum Bytes
+		size_t threadbytes = slicePitch / thread_nums;// Which is to better? rowbyte_thr*Rowcount or slicePitch / thread_nums 
+		
+		//ptr move
+		std::vector<std::thread> copythreads;
+		uint8_t *dptr_thr[32];
+		const uint8_t* sptr_thr[32];
+		bool endflag[32] ;
+		for (size_t i = 0; i < thread_nums; i++)
+		{
+			endflag[i] = false;
+			dptr_thr[i] = dptr + i * threadbytes;
+			sptr_thr[i] = sptr + i * threadbytes;
+			copythreads.emplace_back(&FrameRender::Memcpythread,this,dptr_thr[i],sptr_thr[i],rowCount_thr,rowPitch,rowPitch,std::ref(endflag[i]));
+		}
+
+		for (size_t i = 0; i < thread_nums; i++)
+		{
+			copythreads[i].join();
+		}
+		bool endflag_allthr = false;
+ 
+		for (size_t i = 0; i < thread_nums; i++)
+		{
+			endflag_allthr = endflag_allthr & endflag[i];
+		}
+		
+		if (endflag_allthr)
+		{
+			Info("All Threads Success!\n");
+		}
+		
+	}
+	else
+	{  
+		Memcpythread(dptr,sptr,rowCount,rowPitch,msize,false);
+	}
 	//Info("%x  -- %x --",desc.Format , desc.ArraySize);
 	//Info("slicePitch: %lld rowPitch: %lld rowCount: %lld  in mycopy \n",slicePitch,rowPitch,rowCount);
 	m_pD3DRender->GetContext()->Unmap(m_stagingTexture.Get(),0);
+    auto time_endcopy = std::chrono::steady_clock::now(); 
+	auto duration_cpucopy = std::chrono::duration_cast<std::chrono::microseconds>(time_endcopy - time_stagcopy);
+    Info("duration_gpucopy %d" ,duration_gpucopy );
+    Info("duration_cpucopy %d " ,duration_cpucopy );
 }
 
+void FrameRender::Memcpythread( uint8_t *dptr_tmp , const uint8_t *sptr_tmp ,size_t rowCount ,size_t rowBytes, size_t msize ,bool endflag)
+{
+	for (size_t i = 0; i < rowCount; ++i)
+	{
+		memcpy_s(dptr_tmp, rowBytes, sptr_tmp, msize);
+		dptr_tmp = dptr_tmp + rowBytes;
+		sptr_tmp = sptr_tmp + msize;		
+	}
+	endflag = true;
+}
 
 HRESULT FrameRender::GetSurfaceInfo(
 	_In_ size_t width,

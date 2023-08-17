@@ -266,11 +266,11 @@ impl StatisticsManager {
                 (client_stats.video_decode.as_secs_f32() * 1000.).to_string()
                 );
                 log_txt(
-                    String ::from(" encoder latency ms: "), 
+                    String ::from(" encoder_latency_ms: "), 
                     (encoder_latency.as_secs_f32() * 1000.).to_string()
                 );
 
-                log_txt(String::from(" server fps: "),
+                log_txt(String::from(" server_fps: "),
                  (server_fps).to_string()
                  );
                 
