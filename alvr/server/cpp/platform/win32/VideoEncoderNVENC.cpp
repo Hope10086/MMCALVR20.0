@@ -135,8 +135,8 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	//SK
 	if (Settings::Instance().m_gazevisual )
 	{
-            UINT W = encDesc.Width/32;
-		    UINT H = encDesc.Height/32*2; 
+            UINT W = encDesc.Width/64;
+		    UINT H = encDesc.Height/64*2; 
 			struct GazePoint
 	       {  UINT x;
 	         UINT y;
@@ -647,7 +647,7 @@ void VideoEncoderNVENC::CreateGazepointTexture(D3D11_TEXTURE2D_DESC m_srcDesc)
 	    gazeDesc.CPUAccessFlags = 0;
 	    gazeDesc.MiscFlags = 0;
 	    gazeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;//绑定为常量缓冲区，可以与任何其他绑定标志组合
-        //初始化纹理数据 
+        //
 	    const UINT pixelSize = 4; // 
         const UINT rowPitch = gazeDesc.Width* pixelSize;
         const UINT textureSize = rowPitch * gazeDesc.Height;
@@ -657,10 +657,10 @@ void VideoEncoderNVENC::CreateGazepointTexture(D3D11_TEXTURE2D_DESC m_srcDesc)
           for (UINT x = 0; x < gazeDesc.Width; ++x)
           {
             UINT pixelIndex = y * rowPitch / sizeof(float) + x * pixelSize / sizeof(float);
-            pixels[pixelIndex + 0] = 0.0f; // 红色通道
+            pixels[pixelIndex + 0] = 1.0f; // 红色通道
             pixels[pixelIndex + 1] = 0.0f; // 绿色通道
-            pixels[pixelIndex + 2] = 1.0f; // 蓝色通道
-            pixels[pixelIndex + 3] = 0.5f; // 透明度通道
+            pixels[pixelIndex + 2] = 0.0f; // 蓝色通道
+            pixels[pixelIndex + 3] = 0.0f; // 透明度通道
           }
         }
 		D3D11_SUBRESOURCE_DATA initData = {};
