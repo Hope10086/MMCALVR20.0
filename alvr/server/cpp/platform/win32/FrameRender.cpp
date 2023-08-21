@@ -25,7 +25,7 @@ FrameRender::~FrameRender()
 bool FrameRender::Startup()
 {
 	if (m_pStagingTexture) {
-		if (false)
+		if (  Settings::Instance().m_QPDistribution == 2)
 		{
 			//Info("cpuread %d",cpureadcount);
            //auto Copy_Start = std::chrono::steady_clock::now();
@@ -35,7 +35,7 @@ bool FrameRender::Startup()
 			Error("CpuCopyTexture Failed  %p %ls\n", hr, GetErrorStr(hr).c_str());
 		    return false;
 			}
-			//auto Copy_End = std::chrono::steady_clock::now();
+			auto CopyEnd = std::chrono::steady_clock::now();
 			//auto CopyLast = std::chrono::duration_cast<std::chrono::microseconds>(Copy_End - Copy_Start);
 			//Info("CopyTexture To Cpu Cost %ld \n",CopyLast);
 		}
@@ -383,6 +383,50 @@ bool FrameRender::RenderFrame(ID3D11Texture2D *pTexture[][2], vr::VRTextureBound
 
 		D3D11_TEXTURE2D_DESC srcDesc;
 		textures[0]->GetDesc(&srcDesc);
+		  if (Settings::Instance().m_gazevisual )
+		{
+			// Test Eye Tracking Visualization screen  piexl coordinate
+            //Here, we do not consider the case that the fixation point falls on the edge of the screen, on the one hand, 
+		    //because our visualization block itself is small, and on the other hand, 
+		    //the available data show that the eye tracking range is in the middle range of the plane center.
+	       struct GazePoint
+	       {  UINT x;
+	         UINT y;
+	       } GazePoint[2];
+			GazePoint[0].x = NDCLeftGaze.x * srcDesc.Width;
+		    GazePoint[0].y = NDCLeftGaze.y * srcDesc.Height;
+		    GazePoint[1].x = NDCRightGaze.x * srcDesc.Width;
+		    GazePoint[1].y = NDCRightGaze.y * srcDesc.Height;
+	       
+            UINT W = srcDesc.Width/32;
+		    UINT H = srcDesc.Height/32; 
+			// TxtPrint("Frame Render Gazexy (%lf %lf) \n", NDCLeftGaze.x, NDCLeftGaze.y);
+			// TxtPrint("texture[%d/%d]: %dx%d  \n", i,layerCount,srcDesc.Width, srcDesc.Height);
+			// TxtPrint("Left gaze point: %d %d\n",GazePoint[0].x, GazePoint[0].y);
+			// TxtPrint("Right gaze point: %d %d\n",GazePoint[1].x, GazePoint[1].y);
+          
+		  // Gaze Point Texture Subresource Region
+		    UINT ScreenCenter_X = 0.5*srcDesc.Width; 
+		    UINT ScreenCenter_y = 0.5*srcDesc.Height; 
+            D3D11_BOX sourceRegion;
+	        sourceRegion.left  = 0;
+	        sourceRegion.right = W;
+	        sourceRegion.top   = 0;
+	        sourceRegion.bottom = H;
+	        sourceRegion.front = 0;
+	        sourceRegion.back  = 1;
+			//TxtPrint(" begin to creat Gazepoint Texture \n");
+			 CreateGazepointTexture(srcDesc);
+			// //m_pD3DRender->GetContext()->CopySubresourceRegion(textures[0],0,ScreenCenter_X-W/2,ScreenCenter_y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
+			// //m_pD3DRender->GetContext()->CopySubresourceRegion(textures[1],0,ScreenCenter_X-W/2,ScreenCenter_y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
+		     m_pD3DRender->GetContext()->CopySubresourceRegion(textures[0],0,GazePoint[0].x-W/2,GazePoint[0].y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
+		     m_pD3DRender->GetContext()->CopySubresourceRegion(textures[1],0,GazePoint[1].x-W/2,GazePoint[1].y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
+		}
+		//   else {
+
+		// 	Info("begaincount=%ld\n",begaincount);
+
+		//   }
 		
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
@@ -495,6 +539,46 @@ bool FrameRender::RenderFrame(ID3D11Texture2D *pTexture[][2], vr::VRTextureBound
 	return true;
 }
 
+void FrameRender::CreateGazepointTexture(D3D11_TEXTURE2D_DESC m_srcDesc)
+{
+	    D3D11_TEXTURE2D_DESC gazeDesc;
+	    gazeDesc.Width = m_srcDesc.Width;
+	    gazeDesc.Height = m_srcDesc.Height;	
+	    gazeDesc.Format = m_srcDesc.Format;
+	    gazeDesc.Usage = D3D11_USAGE_DEFAULT;
+	    gazeDesc.MipLevels = 1;
+	    gazeDesc.ArraySize = 1;
+	    gazeDesc.SampleDesc.Count = 1;
+	    gazeDesc.CPUAccessFlags = 0;
+	    gazeDesc.MiscFlags = 0;
+	    gazeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;//绑定为常量缓冲区，可以与任何其他绑定标志组合
+        //初始化纹理数据 
+	    const UINT pixelSize = 4; // 
+        const UINT rowPitch = gazeDesc.Width* pixelSize;
+        const UINT textureSize = rowPitch * gazeDesc.Height;
+        std::vector<float> pixels(textureSize / sizeof(float));
+        for (UINT y = 0; y < gazeDesc.Height; ++y)
+        {
+          for (UINT x = 0; x < gazeDesc.Width; ++x)
+          {
+            UINT pixelIndex = y * rowPitch / sizeof(float) + x * pixelSize / sizeof(float);
+            pixels[pixelIndex + 0] = 0.0f; // 红色通道
+            pixels[pixelIndex + 1] = 0.0f; // 绿色通道
+            pixels[pixelIndex + 2] = 1.0f; // 蓝色通道
+            pixels[pixelIndex + 3] = 0.5f; // 透明度通道
+          }
+        }
+		D3D11_SUBRESOURCE_DATA initData = {};
+        initData.pSysMem = pixels.data();
+        initData.SysMemPitch = rowPitch;
+        initData.SysMemSlicePitch = textureSize;
+		//创建2D纹理对象
+	    HRESULT hr = m_pD3DRender->GetDevice()->CreateTexture2D(&gazeDesc,&initData,&GazepointTexture);
+		if (FAILED(hr))
+		{
+		   Info("CreateTexture2D failed :GazepointTexture hr = %x\n", hr);
+		}		
+}
 
 ComPtr<ID3D11Texture2D> FrameRender::GetTexture()
 {
