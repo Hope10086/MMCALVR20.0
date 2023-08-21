@@ -189,10 +189,21 @@ void TxtNDCGaze(const char *format, ...)
 }
 
 void TxtLatency(const char *format, ...)
-{   string Info_Type = "Info:";
+{   
 	va_list args;
 	va_start(args, format);
 	LogFileUpDate("TxtLatency.txt");
+    char buf[1024];  
+    vsnprintf(buf, sizeof(buf), format, args);
+    fprintf(fpLog, buf);
+	va_end(args);
+}
+
+void ThreadLatency(const char *format, ...)
+{   
+	va_list args;
+	va_start(args, format);
+	LogFileUpDate("ThreadLatency.txt");
     char buf[1024];  
     vsnprintf(buf, sizeof(buf), format, args);
     fprintf(fpLog, buf);

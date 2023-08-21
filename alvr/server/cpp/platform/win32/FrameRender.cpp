@@ -25,7 +25,7 @@ FrameRender::~FrameRender()
 bool FrameRender::Startup()
 {
 	if (m_pStagingTexture) {
-		if (cpureadcount  != 0)
+		if (  Settings::Instance().m_QPDistribution == 2)
 		{
 			//Info("cpuread %d",cpureadcount);
            //auto Copy_Start = std::chrono::steady_clock::now();
@@ -652,15 +652,15 @@ HRESULT FrameRender::CpuCopyTexture(ID3D11Texture2D *pTexture) {
 
 	unsigned concurrent_count = std::thread::hardware_concurrency();
 	
-	int thread_nums = (concurrent_count % 4)*4 ;
+	int thread_nums = (concurrent_count / 4)*4  ;
 	if (thread_nums == 0)
 	{
-		thread_nums = (concurrent_count % 2)*2;
+		thread_nums = 2;
 	}
 	
-	Info("thread_nums %d \n",concurrent_count);
+	//Info("thread_nums %d \n",concurrent_count);
 
-	if (thread_nums > 1) 
+	if (false ) 
 	{
 		// Per thread row counts 
 		size_t rowCount_thr = rowCount / thread_nums;
@@ -679,7 +679,7 @@ HRESULT FrameRender::CpuCopyTexture(ID3D11Texture2D *pTexture) {
 			endflag[i] = false;
 			dptr_thr[i] = dptr + i * threadbytes;
 			sptr_thr[i] = sptr + i * threadbytes;
-			copythreads.emplace_back(&FrameRender::Memcpythread,this,dptr_thr[i],sptr_thr[i],rowCount_thr,rowPitch,rowPitch,std::ref(endflag[i]));
+			copythreads.emplace_back(&FrameRender::Memcpythread,this,i,dptr_thr[i],sptr_thr[i],rowCount_thr,rowPitch,rowPitch,std::ref(endflag[i]));
 		}
 
 		for (size_t i = 0; i < thread_nums; i++)
@@ -688,38 +688,59 @@ HRESULT FrameRender::CpuCopyTexture(ID3D11Texture2D *pTexture) {
 		}
 		bool endflag_allthr = false;
  
-		for (size_t i = 0; i < thread_nums; i++)
-		{
-			endflag_allthr = endflag_allthr & endflag[i];
-		}
+		// for (size_t i = 0; i < thread_nums; i++)
+		// {
+		// 	endflag_allthr = endflag_allthr & endflag[i];
+		// }
 		
-		if (endflag_allthr)
-		{
-			Info("All Threads Success!\n");
-		}
+		// if (endflag_allthr)
+		// {
+		// 	Info("All Threads Success!\n");
+		// }
 		
 	}
 	else
 	{  
-		Memcpythread(dptr,sptr,rowCount,rowPitch,msize,false);
+		Memcpythread(9,dptr,sptr,rowCount,rowPitch,msize,false);
 	}
 	//Info("%x  -- %x --",desc.Format , desc.ArraySize);
 	//Info("slicePitch: %lld rowPitch: %lld rowCount: %lld  in mycopy \n",slicePitch,rowPitch,rowCount);
 	m_pD3DRender->GetContext()->Unmap(m_stagingTexture.Get(),0);
     auto time_endcopy = std::chrono::steady_clock::now(); 
 	auto duration_cpucopy = std::chrono::duration_cast<std::chrono::microseconds>(time_endcopy - time_stagcopy);
-    Info("duration_gpucopy %d" ,duration_gpucopy );
-    Info("duration_cpucopy %d " ,duration_cpucopy );
+    //Info("duration_gpucopy %d" ,duration_gpucopy );
+    //Info("duration_cpucopy %d " ,duration_cpucopy );
+	ThreadLatency("duration_cpucopy %d \n",duration_cpucopy);
 }
 
-void FrameRender::Memcpythread( uint8_t *dptr_tmp , const uint8_t *sptr_tmp ,size_t rowCount ,size_t rowBytes, size_t msize ,bool endflag)
+void FrameRender::Memcpythread( size_t thread_ID  ,uint8_t *dptr_tmp , const uint8_t *sptr_tmp ,size_t rowCount ,size_t rowBytes, size_t msize ,bool endflag)
 {
-	for (size_t i = 0; i < rowCount; ++i)
+	if (thread_ID == 0)
 	{
+		auto threadtime_start = std::chrono::steady_clock::now();
+		for (size_t i = 0; i < rowCount; ++i)
+	    {
 		memcpy_s(dptr_tmp, rowBytes, sptr_tmp, msize);
 		dptr_tmp = dptr_tmp + rowBytes;
 		sptr_tmp = sptr_tmp + msize;		
+	    }
+		auto threadtime_end = std::chrono::steady_clock::now();
+		auto duration_threadcpy = std::chrono::duration_cast<std::chrono::microseconds>(threadtime_end - threadtime_start);
+		Info("threadID %d duration %d\n",thread_ID ,duration_threadcpy);
 	}
+	else
+	{
+		for (size_t i = 0; i < rowCount; ++i)
+	    {
+		memcpy_s(dptr_tmp, rowBytes, sptr_tmp, msize);
+		dptr_tmp = dptr_tmp + rowBytes;
+		sptr_tmp = sptr_tmp + msize;		
+	    }
+	}
+	
+
+
+
 	endflag = true;
 }
 
