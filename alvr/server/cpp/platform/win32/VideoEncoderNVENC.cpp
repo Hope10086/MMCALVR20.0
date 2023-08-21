@@ -5,6 +5,9 @@
 #include "alvr_server/Settings.h"
 #include "alvr_server/Utils.h"
 
+#include <wrl/client.h>
+using Microsoft::WRL::ComPtr;
+
 int Cap_EMPHASIS;
 bool Enable_H264 = false;
 int m_QpModechange = 0;
@@ -14,6 +17,9 @@ float m_cof0change=0;
 float m_cof1change=0;
 int m_QPDistribution_change=4;
 int m_centresize_change=4;
+
+//SK
+ComPtr<ID3D11Texture2D> GazepointTexture;  //降低可视化时延，只需要create一个black纹理图
 
 
 //float cof0=0.3836,cof1=26.3290;   //watch: QP=cof0*FOV+cof1
@@ -125,6 +131,37 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
     
 	D3D11_TEXTURE2D_DESC encDesc;
 	pTexture->GetDesc(&encDesc);
+
+	//SK
+	if (Settings::Instance().m_gazevisual )
+	{
+            UINT W = encDesc.Width/32;
+		    UINT H = encDesc.Height/32*2; 
+			struct GazePoint
+	       {  UINT x;
+	         UINT y;
+	       } GazePoint[2];
+			GazePoint[0].x = (NDCLeftGaze.x)*encDesc.Width/2;
+		    GazePoint[0].y = NDCLeftGaze.y * encDesc.Height;
+		    GazePoint[1].x = (1.0+NDCRightGaze.x)*encDesc.Width/2;
+		    GazePoint[1].y = NDCRightGaze.y * encDesc.Height;
+            D3D11_BOX sourceRegion;
+	        sourceRegion.left  = 0;
+	        sourceRegion.right = W;
+	        sourceRegion.top   = 0;
+	        sourceRegion.bottom = H;
+	        sourceRegion.front = 0;
+	        sourceRegion.back  = 1;
+			if(GazepointTexture==NULL)  //降低延迟
+			{
+			CreateGazepointTexture(encDesc);
+			}
+			m_pD3DRender->GetContext()->CopySubresourceRegion(pTexture,0,GazePoint[0].x-W/2,GazePoint[0].y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
+		    m_pD3DRender->GetContext()->CopySubresourceRegion(pTexture,0,GazePoint[1].x-W/2,GazePoint[1].y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
+	}
+
+   //SK
+
 	// capture pictures sequence
 	if (false /*Settings::Instance().m_capturePicture */)
 	{
@@ -595,4 +632,45 @@ void VideoEncoderNVENC::FillEncodeConfig(NV_ENC_INITIALIZE_PARAMS &initializePar
 		encodeConfig.rcParams.averageBitRate = Settings::Instance().m_nvencRcAverageBitrate;
 	}  // log 
 	//Info("bitrate: %d\n",encodeConfig.rcParams.averageBitRate);
+}
+
+void VideoEncoderNVENC::CreateGazepointTexture(D3D11_TEXTURE2D_DESC m_srcDesc)
+{
+	    D3D11_TEXTURE2D_DESC gazeDesc;
+	    gazeDesc.Width = m_srcDesc.Width;
+	    gazeDesc.Height = m_srcDesc.Height;	
+	    gazeDesc.Format = m_srcDesc.Format;
+	    gazeDesc.Usage = D3D11_USAGE_DEFAULT;
+	    gazeDesc.MipLevels = 1;
+	    gazeDesc.ArraySize = 1;
+	    gazeDesc.SampleDesc.Count = 1;
+	    gazeDesc.CPUAccessFlags = 0;
+	    gazeDesc.MiscFlags = 0;
+	    gazeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;//绑定为常量缓冲区，可以与任何其他绑定标志组合
+        //初始化纹理数据 
+	    const UINT pixelSize = 4; // 
+        const UINT rowPitch = gazeDesc.Width* pixelSize;
+        const UINT textureSize = rowPitch * gazeDesc.Height;
+        std::vector<float> pixels(textureSize / sizeof(float));
+        for (UINT y = 0; y < gazeDesc.Height; ++y)
+        {
+          for (UINT x = 0; x < gazeDesc.Width; ++x)
+          {
+            UINT pixelIndex = y * rowPitch / sizeof(float) + x * pixelSize / sizeof(float);
+            pixels[pixelIndex + 0] = 0.0f; // 红色通道
+            pixels[pixelIndex + 1] = 0.0f; // 绿色通道
+            pixels[pixelIndex + 2] = 1.0f; // 蓝色通道
+            pixels[pixelIndex + 3] = 0.5f; // 透明度通道
+          }
+        }
+		D3D11_SUBRESOURCE_DATA initData = {};
+        initData.pSysMem = pixels.data();
+        initData.SysMemPitch = rowPitch;
+        initData.SysMemSlicePitch = textureSize;
+		//创建2D纹理对象
+	    HRESULT hr = m_pD3DRender->GetDevice()->CreateTexture2D(&gazeDesc,&initData,&GazepointTexture);
+		if (FAILED(hr))
+		{
+		   Info("CreateTexture2D failed :GazepointTexture hr = %x\n", hr);
+		}		
 }
