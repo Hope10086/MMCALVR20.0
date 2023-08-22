@@ -188,6 +188,10 @@ impl DataSources {
                                 | ServerRequest::QPDistribution
                                 | ServerRequest::MaxQpSub 
                                 | ServerRequest::MaxQpAdd 
+                                | ServerRequest::TDmode
+                                | ServerRequest::TDDelatQP
+                                | ServerRequest::SpeedThresholdadd
+                                | ServerRequest::SpeedThresholdsub
                                 | ServerRequest::GazeVisual=> {
                                     warn!("Cannot perform action, streamer is not connected.")
                                 }

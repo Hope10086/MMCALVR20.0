@@ -140,9 +140,13 @@ async fn http_api(
                     ServerRequest::MaxQpSub => unsafe {crate::MaxQpSub()},
                     ServerRequest::MaxQpAdd => unsafe {crate::MaxQpAdd()},
                     ServerRequest::GazeVisual=>unsafe {crate::GazeVisual()},
-                    ServerRequest::StartRecording => unsafe {crate::create_recording_file();crate::RecordGaze()},
-                    //ServerRequest::StopRecording => *VIDEO_RECORDING_FILE.lock() = None,
-                    ServerRequest::StopRecording =>  unsafe {crate::StopRecordGaze();*VIDEO_RECORDING_FILE.lock() = None;crate::RequestIDR()},
+                    ServerRequest::TDmode=>unsafe {crate::TDmode()},
+                    ServerRequest::TDDelatQP => unsafe {crate::TDDelatQP()},
+                    ServerRequest::SpeedThresholdadd=>unsafe {crate::SpeedThresholdadd()},
+                    ServerRequest::SpeedThresholdsub=>unsafe {crate::SpeedThresholdsub()},
+                    ServerRequest::StartRecording => unsafe {crate::create_recording_file();crate::RequestIDR()},
+                    ServerRequest::StopRecording => *VIDEO_RECORDING_FILE.lock() = None,
+                    //ServerRequest::StopRecording =>  unsafe {crate::StopRecordGaze();*VIDEO_RECORDING_FILE.lock() = None;crate::RequestIDR()},
                     ServerRequest::FirewallRules(action) => {   
                         if alvr_server_io::firewall_rules(action).is_ok() {
                             info!("Setting firewall rules succeeded!");

@@ -17,9 +17,12 @@ float m_cof0change=0;
 float m_cof1change=0;
 int m_QPDistribution_change=4;
 int m_centresize_change=4;
+float m_speedthreshold_change=0;
 
 //SK
 ComPtr<ID3D11Texture2D> GazepointTexture;  //降低可视化时延，只需要create一个black纹理图
+
+FfiAnglespeed m_prewspeed={0,0,0};
 
 
 //float cof0=0.3836,cof1=26.3290;   //watch: QP=cof0*FOV+cof1
@@ -108,8 +111,15 @@ void VideoEncoderNVENC::Shutdown()
 	}
 }
 
-void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze)
+void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, FfiAnglespeed wspeed)
 {
+	if(wspeed.w_eye!=0)
+	{
+		m_prewspeed=wspeed;
+	}
+
+	//Info("%f %f %f   pre:%f %f %f",wspeed.w_head,wspeed.w_gaze,wspeed.w_eye,m_prewspeed.w_head,m_prewspeed.w_gaze,m_prewspeed.w_eye);
+
 	auto params = GetDynamicEncoderParams();
 	if (params.updated) {
 		m_bitrateInMBits = params.bitrate_bps / 1'000'000;
@@ -297,6 +307,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
         //
 		float distance=0;
 		float FOV=0;   //Dgree °
+		int td_delatqp = 0;	
 		int expect_qp=51;
 		int max_qp = Settings::Instance().m_MaxQp;
 		if (m_QPMaxchange != max_qp)
@@ -329,6 +340,18 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 			Info("Centre Size: %d×%d",2*m_centresize_change+1, 2*m_centresize_change+1);  
 		}
 
+		if(m_speedthreshold_change != Settings::Instance().m_speedthreshold)
+		{
+			m_speedthreshold_change = Settings::Instance().m_speedthreshold;
+			Info("Speed Threshold: %f",m_speedthreshold_change);  
+		}
+
+
+		if(Settings::Instance().m_tdmode && (m_prewspeed.w_eye >= Settings::Instance().m_speedthreshold))   //Eye movement speed exceeds the threshold
+		{
+        td_delatqp = Settings::Instance().m_tddelatQP;
+		}  
+
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{
 				for (int y = 0; y < encDesc.Height/macrosize; y++)
@@ -347,24 +370,24 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 							continue;
 						}
 
-						if (x < (encDesc.Width/macrosize)/2)    //左眼
+						if (x < (encDesc.Width/macrosize)/2)    //left view
 						{						
 							distance=(((abs(x*macrosize-leftgazeMac_X*macrosize)) > (abs(y*macrosize-leftgazeMac_Y*macrosize))) ? (abs(x*macrosize-leftgazeMac_X*macrosize)) : (abs(y*macrosize-leftgazeMac_Y*macrosize)));
 						}
-					  	else if(x >= (encDesc.Width/macrosize)/2)   //右眼
+					  	else if(x >= (encDesc.Width/macrosize)/2)   //right view
 						{
 							distance=(((abs(x*macrosize-rightgazeMac_X*macrosize)) > (abs(y*macrosize-rightgazeMac_Y*macrosize))) ? (abs(x*macrosize-rightgazeMac_X*macrosize)) : (abs(y*macrosize-rightgazeMac_Y*macrosize)));
 						}
 						FOV=2*atanf(distance/ZDepth)*180/(4*atanf(1));
 						//expect_qp=floor(cof0_final*FOV+cof1_final);    //linear
-						expect_qp=floor(cof0_final*exp(cof1_final*FOV));        //exp
-						if(expect_qp<21)  //限制QP范围
+						expect_qp = floor(cof0_final*exp(cof1_final*FOV)) + td_delatqp;        //exp
+						if(expect_qp < 21)  //QP Limit
 						{
-							expect_qp=21;
+							expect_qp = 21;
 						}
-						if(expect_qp>=max_qp)
+						if(expect_qp >= max_qp + td_delatqp)
 						{
-							expect_qp=max_qp;
+							expect_qp = max_qp + td_delatqp;
 						}
 						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = expect_qp-51; 
 						
@@ -383,11 +406,11 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 							continue;
 						}
 
-						if (x < (encDesc.Width/macrosize)/2)    //左眼
+						if (x < (encDesc.Width/macrosize)/2)    //left eye
 						{						
 							distance=sqrt(pow(x*macrosize-leftgazeMac_X*macrosize,2)+pow(y*macrosize-leftgazeMac_Y*macrosize,2));
 						}
-						else if(x >= (encDesc.Width/macrosize)/2)   //右眼
+						else if(x >= (encDesc.Width/macrosize)/2)   //right eye
 						{
 							distance=sqrt(pow(x*macrosize-rightgazeMac_X*macrosize,2)+pow(y*macrosize-rightgazeMac_Y*macrosize,2));
 						}

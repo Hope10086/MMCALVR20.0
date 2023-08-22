@@ -117,7 +117,7 @@ void VideoEncoderSW::Shutdown() {
 	Debug("Successfully shutdown VideoEncoderSW.\n");
 }
 
-void VideoEncoderSW::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze) {
+void VideoEncoderSW::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze,FfiAnglespeed wspeed) {
 	// Handle bitrate changes
 	auto params = GetDynamicEncoderParams();
 	if (params.updated) {

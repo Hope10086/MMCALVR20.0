@@ -61,8 +61,22 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[0].button("MaxQP Sub").clicked(){
             request = Some(ServerRequest::MaxQpSub);
         } 
-        if ui[1].button("MAxQp Add").clicked() {   
+        if ui[1].button("MaxQp Add").clicked() {   
             request = Some(ServerRequest ::MaxQpAdd);
+        }
+        if ui[2].button("TD Mode").clicked() {   
+            request = Some(ServerRequest ::TDmode);
+        }
+
+        if ui[0].button("Speed Threshold add").clicked() {   
+            request = Some(ServerRequest ::SpeedThresholdadd);
+        }
+        if ui[1].button("Speed Threshold sub").clicked() {   
+            request = Some(ServerRequest ::SpeedThresholdsub);
+        }
+        if ui[2].button("TD QP").clicked() {
+            request = Some(ServerRequest ::TDDelatQP)
+            
         }
 
     });

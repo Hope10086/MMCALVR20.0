@@ -189,6 +189,10 @@ extern "C" void RecordGaze();
 extern "C" void StopRecordGaze();
 extern "C" void MaxQpSub();
 extern "C" void MaxQpAdd();
+extern "C" void TDmode();
+extern "C" void SpeedThresholdadd();
+extern "C" void SpeedThresholdsub();
+extern "C" void TDDelatQP();
 extern "C" void GazeVisual();
 extern "C" void LogLatency(const char *stringPtr, ...) ;
 
