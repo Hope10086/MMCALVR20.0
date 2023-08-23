@@ -26,7 +26,7 @@ public:
 	void Initialize();
 	void Shutdown();
 
-	void Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR,FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, FfiAnglespeed wspeed);
+	void Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR,FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze);
 private:
 	void FillEncodeConfig(NV_ENC_INITIALIZE_PARAMS &initializeParams, int refreshRate, int renderWidth, int renderHeight, uint64_t bitrate_bps);
 	void CreateGazepointTexture(D3D11_TEXTURE2D_DESC m_srcDesc);

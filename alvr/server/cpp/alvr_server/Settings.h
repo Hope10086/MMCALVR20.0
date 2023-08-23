@@ -90,10 +90,10 @@ class Settings {
     // QP mode 
     int m_delatQPmode = 0;
     int m_MaxQp = 51;
-    //cofdelta
+    //拟合系数delta
     float m_cof0delta=0;
     float m_cof1delta=0;
-    //
+    //拟合模式切换（三种，0：阶跃；1：方形辐射；2：圆形辐射）
     int m_QPDistribution=0;
     //capture 
     bool m_capturePicture = false;
@@ -101,8 +101,4 @@ class Settings {
     //gaze visual 
     bool m_gazevisual = false ;
     bool newlogpath =true;
-
-    bool m_tdmode = false;
-    float m_speedthreshold=100;
-    int m_tddelatQP = 0;
 };
