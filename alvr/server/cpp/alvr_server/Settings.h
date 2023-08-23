@@ -101,4 +101,7 @@ class Settings {
     //gaze visual 
     bool m_gazevisual = false ;
     bool newlogpath =true;
+
+    bool m_tdmode = false;
+    float m_speedthreshold=100;
 };

@@ -17,9 +17,12 @@ float m_cof0change=0;
 float m_cof1change=0;
 int m_QPDistribution_change=4;
 int m_centresize_change=4;
+float m_speedthreshold_change=0;
 
 //SK
 ComPtr<ID3D11Texture2D> GazepointTexture;  //降低可视化时延，只需要create一个black纹理图
+
+FfiAnglespeed m_prewspeed={0,0,0};
 
 
 //float cof0=0.3836,cof1=26.3290;   //watch: QP=cof0*FOV+cof1
@@ -108,8 +111,15 @@ void VideoEncoderNVENC::Shutdown()
 	}
 }
 
-void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze)
+void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, FfiAnglespeed wspeed)
 {
+	if(wspeed.w_eye!=0)
+	{
+		m_prewspeed=wspeed;
+	}
+
+	//Info("%f %f %f   pre:%f %f %f",wspeed.w_head,wspeed.w_gaze,wspeed.w_eye,m_prewspeed.w_head,m_prewspeed.w_gaze,m_prewspeed.w_eye);
+
 	auto params = GetDynamicEncoderParams();
 	if (params.updated) {
 		m_bitrateInMBits = params.bitrate_bps / 1'000'000;
@@ -135,8 +145,8 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	//SK
 	if (Settings::Instance().m_gazevisual )
 	{
-            UINT W = encDesc.Width/32;
-		    UINT H = encDesc.Height/32*2; 
+            UINT W = encDesc.Width/64;
+		    UINT H = encDesc.Height/64*2; 
 			struct GazePoint
 	       {  UINT x;
 	         UINT y;
@@ -329,6 +339,23 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 			Info("Centre Size: %d×%d",2*m_centresize_change+1, 2*m_centresize_change+1);  
 		}
 
+		if(m_speedthreshold_change!=Settings::Instance().m_speedthreshold)
+		{
+			m_speedthreshold_change=Settings::Instance().m_speedthreshold;
+			Info("Speed Threshold: %f",m_speedthreshold_change);  
+		}
+		if(Settings::Instance().m_tdmode && (m_prewspeed.w_eye >= Settings::Instance().m_speedthreshold))   //Eye movement speed exceeds the threshold
+		{
+			for (int x = 0; x < encDesc.Width/macrosize; x++)
+			{
+				for (int y = 0; y < encDesc.Height/macrosize; y++)
+				{
+					picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 51-51;
+				}
+			}
+		}
+        else
+		{
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{
 				for (int y = 0; y < encDesc.Height/macrosize; y++)
@@ -421,7 +448,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 				   }
 				}
 			}
-		
+		}
 	}
 	m_NvNecoder->EncodeFrame(vPacket, &picParams);
 
@@ -647,7 +674,7 @@ void VideoEncoderNVENC::CreateGazepointTexture(D3D11_TEXTURE2D_DESC m_srcDesc)
 	    gazeDesc.CPUAccessFlags = 0;
 	    gazeDesc.MiscFlags = 0;
 	    gazeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;//绑定为常量缓冲区，可以与任何其他绑定标志组合
-        //初始化纹理数据 
+        //
 	    const UINT pixelSize = 4; // 
         const UINT rowPitch = gazeDesc.Width* pixelSize;
         const UINT textureSize = rowPitch * gazeDesc.Height;
@@ -657,10 +684,10 @@ void VideoEncoderNVENC::CreateGazepointTexture(D3D11_TEXTURE2D_DESC m_srcDesc)
           for (UINT x = 0; x < gazeDesc.Width; ++x)
           {
             UINT pixelIndex = y * rowPitch / sizeof(float) + x * pixelSize / sizeof(float);
-            pixels[pixelIndex + 0] = 0.0f; // 红色通道
+            pixels[pixelIndex + 0] = 1.0f; // 红色通道
             pixels[pixelIndex + 1] = 0.0f; // 绿色通道
-            pixels[pixelIndex + 2] = 1.0f; // 蓝色通道
-            pixels[pixelIndex + 3] = 0.5f; // 透明度通道
+            pixels[pixelIndex + 2] = 0.0f; // 蓝色通道
+            pixels[pixelIndex + 3] = 0.0f; // 透明度通道
           }
         }
 		D3D11_SUBRESOURCE_DATA initData = {};

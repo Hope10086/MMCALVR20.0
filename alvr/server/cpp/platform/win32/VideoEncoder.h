@@ -16,5 +16,6 @@ class VideoEncoder {
                           uint64_t targetTimestampNs,
                           bool insertIDR,
                           FfiGazeOPOffset NDCLeftGaze, 
-                          FfiGazeOPOffset NDCRightGaze) = 0;
+                          FfiGazeOPOffset NDCRightGaze,
+                          FfiAnglespeed wspeed) = 0;
 };

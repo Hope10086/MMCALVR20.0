@@ -469,6 +469,24 @@ void MaxQpAdd(){
 #endif
 }
 
+void TDmode(){
+    #ifndef __APPLE__
+    Settings::Instance().m_tdmode=!Settings::Instance().m_tdmode;
+#endif
+}
+
+void SpeedThresholdadd(){
+    #ifndef __APPLE__
+    Settings::Instance().m_speedthreshold=Settings::Instance().m_speedthreshold+100;
+#endif
+}
+
+void SpeedThresholdsub(){
+    #ifndef __APPLE__
+    Settings::Instance().m_speedthreshold=Settings::Instance().m_speedthreshold-100;
+#endif
+}
+
 
 void GazeVisual(){
    // Window  Nivada GPU 
