@@ -17,3 +17,4 @@ void Txtwspeed(const char *format, ...);
 void TxtNDCGaze(const char *format, ...);
 void TxtLatency(const char *format, ...); 
 void ThreadLatency(const char *format, ...);
+void TxtDeltaLocat(const char *format, ...);

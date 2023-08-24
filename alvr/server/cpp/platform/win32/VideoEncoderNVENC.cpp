@@ -279,20 +279,20 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		  rightgazeMac_Y = hist_rightgazeMac_Y;
 	   }	   
 		// log gaze location (Macblock)
-		if (Settings::Instance().m_recordGaze)
-		{
-			TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
-			,targetTimestampNs
-			,NDCLeftGaze.x
-			,NDCLeftGaze.y
-			,NDCRightGaze.x+1
-			,NDCRightGaze.y
-			,(NDCLeftGaze.x)*encDesc.Width/2
-			,(NDCLeftGaze.y)*encDesc.Height
-			,(1.0+NDCRightGaze.x)*encDesc.Width/2
-			,(NDCRightGaze.y)*encDesc.Height
-			);
-		}
+		// if (Settings::Instance().m_recordGaze)
+		// {
+		// 	TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
+		// 	,targetTimestampNs
+		// 	,NDCLeftGaze.x
+		// 	,NDCLeftGaze.y
+		// 	,NDCRightGaze.x+1
+		// 	,NDCRightGaze.y
+		// 	,(NDCLeftGaze.x)*encDesc.Width/2
+		// 	,(NDCLeftGaze.y)*encDesc.Height
+		// 	,(1.0+NDCRightGaze.x)*encDesc.Width/2
+		// 	,(NDCRightGaze.y)*encDesc.Height
+		// 	);
+		// }
 		// update  gaze Location(X,Y) Velocity(Vx,Vy) 's History
 		    hist_targetTimestampNs = targetTimestampNs; //time
 	    	hist_leftgazeMac_X = leftgazeMac_X;  //Location
@@ -410,18 +410,18 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 							continue;
 						}
 
-						if (x < (encDesc.Width/macrosize)/2)    //左眼
+						if (x < (encDesc.Width/macrosize)/2)    //
 						{						
 							distance=sqrt(pow(x*macrosize-leftgazeMac_X*macrosize,2)+pow(y*macrosize-leftgazeMac_Y*macrosize,2));
 						}
-						else if(x >= (encDesc.Width/macrosize)/2)   //右眼
+						else if(x >= (encDesc.Width/macrosize)/2)   //
 						{
 							distance=sqrt(pow(x*macrosize-rightgazeMac_X*macrosize,2)+pow(y*macrosize-rightgazeMac_Y*macrosize,2));
 						}
 						FOV=2*atanf(distance/ZDepth)*180/(4*atanf(1));
 						//expect_qp=floor(cof0_final*FOV+cof1_final);   //linear
 						expect_qp=floor(cof0_final*exp(cof1_final*FOV));        //exp
-						if(expect_qp<21)  //限制QP范围
+						if(expect_qp<21)  //
 						{
 							expect_qp=21;
 						}

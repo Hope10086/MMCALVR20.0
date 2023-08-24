@@ -494,5 +494,9 @@ void GazeVisual(){
 }
 
 void LogLatency(const char *stringPtr, ...) {
-    TxtLatency(stringPtr);
+
+    if (false)
+    {
+        //TxtLatency(stringPtr);
+    }
 }

@@ -95,9 +95,7 @@ void LogPeriod(const char *tag, const char *format, ...)
 }
 
 void LogFileUpDate(string LogFile) {
-     //LogGetLocalTime();
-
-	
+     //LogGetLocalTime();	
     if (fpLog != nullptr) {
         fclose(fpLog);
         fpLog = nullptr;
@@ -186,6 +184,18 @@ void TxtNDCGaze(const char *format, ...)
     //fprintf(fpLog, sys_timeType.c_str());
     fprintf(fpLog, buf);
 	va_end(args);
+}
+
+void TxtDeltaLocat(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	LogFileUpDate("LocatDelta.txt");
+    char buf[1024];   
+    vsnprintf(buf, sizeof(buf), format, args);
+    fprintf(fpLog, buf);
+	va_end(args);
+
 }
 
 void TxtLatency(const char *format, ...)

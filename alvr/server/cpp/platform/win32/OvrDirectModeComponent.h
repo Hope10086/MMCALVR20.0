@@ -65,6 +65,7 @@ private:
 	uint64_t m_targetTimestampNs;
 	uint64_t m_prevTargetTimestampNs;
 	FfiGazeOPOffset m_GazeOffset[2];
+	FfiGazeOPOffset HisGloGazeLoactDel[2];
 	FfiQuat m_GazeQuat[2];
 	FfiQuat m_preGazeQuat[2];
 	FfiQuat m_GlobalQuat[2];
@@ -83,3 +84,6 @@ private:
 void QuatToEuler(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll) ;
 void QuatToAngle(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll);
 void QuatToEuler2(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll);
+void GazeQuatToNDCLocation(FfiQuat LGazeQuat ,FfiQuat RGazeQuat	,FfiGazeOPOffset *LNDCLocat , FfiGazeOPOffset *RNDCLocat);
+FfiGazeOPOffset DeltaLocationCal(FfiGazeOPOffset nowNDCLocat , FfiGazeOPOffset preNDCLocat);
+FfiQuat QuatFmt( vr::HmdQuaternion_t  rawQuat);
