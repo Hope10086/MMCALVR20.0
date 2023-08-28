@@ -219,3 +219,15 @@ void ThreadLatency(const char *format, ...)
     fprintf(fpLog, buf);
 	va_end(args);
 }
+
+void TxtDeltaHmd(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	LogFileUpDate("HmdDelta.txt");
+    char buf[1024];   
+    vsnprintf(buf, sizeof(buf), format, args);
+    fprintf(fpLog, buf);
+	va_end(args);
+
+}

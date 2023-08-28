@@ -1,12 +1,12 @@
-use alvr_common::{SlidingWindowAverage, HEAD_ID, LEFT_HAND_ID, RIGHT_HAND_ID,LogEntry,LogSeverity};
+use alvr_common::{SlidingWindowAverage, HEAD_ID, LEFT_HAND_ID, RIGHT_HAND_ID};
 use alvr_events::{EventType, GraphStatistics, Statistics};
 use alvr_packets::ClientStatistics;
-use serde_json::to_string;
+//use serde_json::to_string;
 use std::{
     collections::{HashMap, VecDeque},
     time::{Duration, Instant},
     ffi::CString,
-    os::raw::c_char, string
+    //os::raw::c_char, string
 };
 
 const FULL_REPORT_INTERVAL: Duration = Duration::from_millis(500);

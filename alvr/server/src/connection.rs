@@ -811,7 +811,7 @@ async fn connection_pipeline(
                 .device_motions
                 .iter()
                 .find(|(id, _)| *id == *HEAD_ID)
-                .map(|(_, m)|  tracking.face_data.eye_gazes)
+                .map(|(_, _m)|  tracking.face_data.eye_gazes)
                 .unwrap_or_default();
         
                 if settings.logging.log_tracking {

@@ -87,3 +87,4 @@ void QuatToEuler2(float qx, float qy, float qz, float qw, float& yaw, float& pit
 void GazeQuatToNDCLocation(FfiQuat LGazeQuat ,FfiQuat RGazeQuat	,FfiGazeOPOffset *LNDCLocat , FfiGazeOPOffset *RNDCLocat);
 FfiGazeOPOffset DeltaLocationCal(FfiGazeOPOffset nowNDCLocat , FfiGazeOPOffset preNDCLocat);
 FfiQuat QuatFmt( vr::HmdQuaternion_t  rawQuat);
+FfiQuat DelatQuatCal( FfiQuat preQuat , FfiQuat nowQuat);

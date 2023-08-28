@@ -169,6 +169,8 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// Txt Delta Loaction   
 			if (Settings::Instance().m_recordGaze)
 			{
+					int width = Settings::Instance().m_renderWidth /2;
+	                int height = Settings::Instance().m_renderHeight;
 
 				//local gaze  loaction 's delta 
 				FfiGazeOPOffset preLocNDCLocat[2] , nowLocNDCLocat[2];
@@ -178,12 +180,41 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				FfiGazeOPOffset LLocGazeLoactDel = DeltaLocationCal(nowLocNDCLocat[0] ,preLocNDCLocat[0]);
 				FfiGazeOPOffset RLocGazeLoactDel = DeltaLocationCal(nowLocNDCLocat[1] ,preLocNDCLocat[1]);
 
-				// global gaze  loaction 's delta 
-				FfiGazeOPOffset preGloNDCLocat[2] , nowGloNDClocat[2]; 
-				GazeQuatToNDCLocation(m_preGlobalQuat[0], m_preGlobalQuat[1],&preGloNDCLocat[0],&preGloNDCLocat[1]);
-				GazeQuatToNDCLocation(m_GlobalQuat[0], m_GlobalQuat[1],&nowGloNDClocat[0],&nowGloNDClocat[1]);
-			    FfiGazeOPOffset LGloGazeLoactDel = DeltaLocationCal(nowGloNDClocat[0],preGloNDCLocat[0] );
-			    FfiGazeOPOffset RGloGazeLoactDel = DeltaLocationCal(nowGloNDClocat[1],preGloNDCLocat[1] );
+				//// global gaze  loaction 's delta 
+				// FfiGazeOPOffset preGloNDCLocat[2] , nowGloNDClocat[2]; 
+				// GazeQuatToNDCLocation(m_preGlobalQuat[0], m_preGlobalQuat[1],&preGloNDCLocat[0],&preGloNDCLocat[1]);
+				// GazeQuatToNDCLocation(m_GlobalQuat[0], m_GlobalQuat[1],&nowGloNDClocat[0],&nowGloNDClocat[1]);
+			    // FfiGazeOPOffset LGloGazeLoactDel = DeltaLocationCal(nowGloNDClocat[0],preGloNDCLocat[0] );
+			    // FfiGazeOPOffset RGloGazeLoactDel = DeltaLocationCal(nowGloNDClocat[1],preGloNDCLocat[1] );
+				
+				FfiQuat GlobDelatQuat[2] , HmdDelatQuat;
+				GlobDelatQuat[0] = DelatQuatCal(m_preGlobalQuat[0],m_GlobalQuat[0]);
+				GlobDelatQuat[1] = DelatQuatCal(m_preGlobalQuat[1],m_GlobalQuat[1]);
+				Info("debug: %lld  %f %f %f %f , %f %f %f %f, %f %f %f %f \n"
+                  ,m_targetTimestampNs
+                  ,m_preGlobalQuat[0].x
+                  ,m_preGlobalQuat[0].y
+                  ,m_preGlobalQuat[0].z
+                  ,m_preGlobalQuat[0].w
+
+				  ,m_GlobalQuat[0].x
+				  ,m_GlobalQuat[0].y
+				  ,m_GlobalQuat[0].z
+				  ,m_GlobalQuat[0].w
+
+				  ,GlobDelatQuat[0].x
+				  ,GlobDelatQuat[0].y
+				  ,GlobDelatQuat[0].z
+				  ,GlobDelatQuat[0].w
+   
+                 );
+
+				FfiGazeOPOffset LGloGazeLoactDel ,RGloGazeLoactDel;
+				GazeQuatToNDCLocation(GlobDelatQuat[0] , GlobDelatQuat[1], &LGloGazeLoactDel, &RGloGazeLoactDel);
+				LGloGazeLoactDel ={(LGloGazeLoactDel.x - 0.62125) *width  ,(LGloGazeLoactDel.y - 0.39547)*height};
+				RGloGazeLoactDel ={(RGloGazeLoactDel.x - 0.37874) *width  ,(RGloGazeLoactDel.y - 0.39547)*height};
+
+				
 				// if (LGloGazeLoactDel.x == 0 )
 				// {
 				// 	LGloGazeLoactDel = HisGloGazeLoactDel[0];
@@ -200,11 +231,20 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				FfiGazeOPOffset preHeadNDCLocat[2] , nowHeadNDCLocat[2];
 				FfiQuat nowHeadQuat = QuatFmt(m_framePoseRotation);
 				FfiQuat preHeadQuat = QuatFmt(m_prevFramePoseRotation);
-				GazeQuatToNDCLocation(preHeadQuat ,preHeadQuat ,&preHeadNDCLocat[0] , &preHeadNDCLocat[1]);
-				GazeQuatToNDCLocation(nowHeadQuat ,nowHeadQuat ,&nowHeadNDCLocat[0] , &nowHeadNDCLocat[1]);
 
-				FfiGazeOPOffset LHeadGazeLoactDel = DeltaLocationCal(nowHeadNDCLocat[0], preHeadNDCLocat[0]);
-				FfiGazeOPOffset RHeadGazeLoactDel = DeltaLocationCal(nowHeadNDCLocat[1], preHeadNDCLocat[1]);
+
+				// GazeQuatToNDCLocation(preHeadQuat ,preHeadQuat ,&preHeadNDCLocat[0] , &preHeadNDCLocat[1]);
+				// GazeQuatToNDCLocation(nowHeadQuat ,nowHeadQuat ,&nowHeadNDCLocat[0] , &nowHeadNDCLocat[1]);
+
+				// FfiGazeOPOffset LHeadGazeLoactDel = DeltaLocationCal(nowHeadNDCLocat[0], preHeadNDCLocat[0]);
+				// FfiGazeOPOffset RHeadGazeLoactDel = DeltaLocationCal(nowHeadNDCLocat[1], preHeadNDCLocat[1]);
+
+                FfiGazeOPOffset HeadGazeLoactDel[2];
+				HmdDelatQuat = DelatQuatCal(preHeadQuat, nowHeadQuat);
+				GazeQuatToNDCLocation(HmdDelatQuat, HmdDelatQuat,&HeadGazeLoactDel[0],&HeadGazeLoactDel[1]);
+                FfiGazeOPOffset LHeadGazeLoactDel = {(HeadGazeLoactDel[0].x - 0.62125) *width  ,(HeadGazeLoactDel[0].y - 0.39547)*height};
+                FfiGazeOPOffset RHeadGazeLoactDel = {(HeadGazeLoactDel[1].x - 0.37874) *width  ,(HeadGazeLoactDel[1].y - 0.39547)*height};
+
 
                 // Txt  Left location Out 
 
@@ -219,6 +259,16 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				, int (LGloGazeLoactDel.y)
 				, int (sqrt(pow(LGloGazeLoactDel.x , 2) + pow(LGloGazeLoactDel.y , 2)))
 				);
+				TxtDeltaHmd("%llu hmd: %d %d %d \n"
+				,m_targetTimestampNs
+				, int (LHeadGazeLoactDel.x)
+				, int (LHeadGazeLoactDel.y)
+				, int (sqrt(pow(LHeadGazeLoactDel.x,2) + pow(LHeadGazeLoactDel.y,2)))
+				);
+
+
+
+
 			}
 		}
 		else {
@@ -577,4 +627,17 @@ FfiQuat QuatFmt( vr::HmdQuaternion_t  rawQuat)
    newQuat.y = rawQuat.y;
    newQuat.z = rawQuat.z;
    return newQuat;
+}
+FfiQuat DelatQuatCal( FfiQuat preQuat , FfiQuat nowQuat)
+{
+   OVR::Quatf ovrprequat = OVR::Quatf(preQuat.x ,preQuat.y ,preQuat.z ,preQuat.w);
+   OVR::Quatf ovrnowquat = OVR::Quatf(nowQuat.x ,nowQuat.y ,nowQuat.z ,nowQuat.w);
+   OVR::Quatf delatquat =  ovrprequat.Inverse() *ovrnowquat;
+
+   FfiQuat DelatQuat = {delatquat.x ,delatquat.y ,delatquat.z ,delatquat.w };
+
+
+
+   return DelatQuat;
+
 }
