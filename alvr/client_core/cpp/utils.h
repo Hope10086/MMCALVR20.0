@@ -14,6 +14,11 @@
         __android_log_print(ANDROID_LOG_ERROR, "[ALVR Native]", __VA_ARGS__);                        \
     } while (false)
 
+    #define LOGV(...)                                                                                  \
+    do {                                                                                           \
+        __android_log_print(ANDROID_LOG_VERBOSE, "[ALVR Native]", __VA_ARGS__);                        \
+    } while (false)
+
 static const char *GlErrorString(GLenum error) {
     switch (error) {
     case GL_NO_ERROR:
