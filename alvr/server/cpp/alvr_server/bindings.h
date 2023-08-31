@@ -194,6 +194,7 @@ extern "C" void SpeedThresholdadd();
 extern "C" void SpeedThresholdsub();
 extern "C" void GazeVisual();
 extern "C" void LogLatency(const char *stringPtr, ...) ;
+extern "C" void CloseTxtFile();
 
 
 // NalParsing.cpp

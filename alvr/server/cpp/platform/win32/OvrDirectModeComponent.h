@@ -38,9 +38,8 @@ public:
 	virtual void PostPresent();
 
 	void CopyTexture(uint32_t layerCount);
-	void Calculate();
 
-	void dEulert();
+	double calspeed(double offset);
 
 private:
 	std::shared_ptr<CD3DRender> m_pD3DRender;
@@ -64,6 +63,8 @@ private:
 	vr::HmdQuaternion_t m_framePoseRotation;
 	uint64_t m_targetTimestampNs;
 	uint64_t m_prevTargetTimestampNs;
+	uint64_t m_targetTimestampNs_txt;
+	uint64_t m_prevTargetTimestampNs_txt;
 	FfiGazeOPOffset m_GazeOffset[2];
 	FfiGazeOPOffset HisGloGazeLoactDel[2];
 	FfiQuat m_GazeQuat[2];
@@ -80,11 +81,8 @@ private:
 
 };
 
-
-void QuatToEuler(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll) ;
-void QuatToAngle(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll);
-void QuatToEuler2(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll);
 void GazeQuatToNDCLocation(FfiQuat LGazeQuat ,FfiQuat RGazeQuat	,FfiGazeOPOffset *LNDCLocat , FfiGazeOPOffset *RNDCLocat);
+void GazeQuatToNDCLocation(FfiQuat LGazeQuat ,FfiQuat RGazeQuat	,FfiGazeOPOffset *LNDCLocat , FfiGazeOPOffset *RNDCLocat , double *RGazeVector ,double *LGazeVector);
 FfiGazeOPOffset DeltaLocationCal(FfiGazeOPOffset nowNDCLocat , FfiGazeOPOffset preNDCLocat);
 FfiQuat QuatFmt( vr::HmdQuaternion_t  rawQuat);
 FfiQuat DelatQuatCal( FfiQuat preQuat , FfiQuat nowQuat);

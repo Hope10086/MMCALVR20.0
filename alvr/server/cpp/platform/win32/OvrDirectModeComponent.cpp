@@ -123,44 +123,54 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 		auto pose = m_poseHistory->GetBestPoseMatch(*pPose);
 		if (pose) {
 			// found the frameIndex
+
+//Compare the quaternions of the old and new globals
+			bool bprint=false;
+
+			if((m_GlobalQuat[0].w != pose->GloabGazeQuat[0].w)||
+			(m_GlobalQuat[0].x != pose->GloabGazeQuat[0].x)||
+			(m_GlobalQuat[0].y != pose->GloabGazeQuat[0].y)||
+			(m_GlobalQuat[0].z != pose->GloabGazeQuat[0].z))   //The timestamp is updated only when the global quaternion is different
+			{
+				m_prevTargetTimestampNs_txt = m_targetTimestampNs_txt;
+				m_targetTimestampNs_txt = pose->targetTimestampNs;
+				//head Poses , Lower frequency
+				m_prevFramePoseRotation = m_framePoseRotation;
+				m_framePoseRotation.x = pose->motion.orientation.x;
+			    m_framePoseRotation.y = pose->motion.orientation.y;
+			    m_framePoseRotation.z = pose->motion.orientation.z;
+			    m_framePoseRotation.w = pose->motion.orientation.w;
+				// Gaze Pose.Orientation
+				m_preGazeQuat[0] = m_GazeQuat[0];
+				m_preGazeQuat[1] = m_GazeQuat[1];
+				m_GazeQuat[0] = pose->GazeQuat[0];
+				m_GazeQuat[1] = pose->GazeQuat[1];
+                // Global  Gaze Pose.Orientation
+			    m_preGlobalQuat[0] = m_GlobalQuat[0];
+				m_preGlobalQuat[1] = m_GlobalQuat[1];
+				m_GlobalQuat[0] = pose->GloabGazeQuat[0];
+				m_GlobalQuat[1] = pose->GloabGazeQuat[1];
+				bprint=true;
+			}
 			m_prevTargetTimestampNs = m_targetTimestampNs;
 			m_targetTimestampNs = pose->targetTimestampNs;
+
+//Txt pose			
+			// if (Settings::Instance().m_capturePicture || Settings::Instance().m_recordGaze)
+			// {
+			// TxtPrint("%llu position %lf %lf %lf orientation %lf %lf %lf %lf\n"
+			// ,m_targetTimestampNs
+			// ,pose->motion.position[0]
+			// ,pose->motion.position[1]
+			// ,pose->motion.position[2]
+			// ,pose->motion.orientation.x
+			// ,pose->motion.orientation.y
+			// ,pose->motion.orientation.z
+			// ,pose->motion.orientation.w
+			// );
+			// }
 			
-			//head Poses 
-			m_prevFramePoseRotation = m_framePoseRotation;
-			m_framePoseRotation.x = pose->motion.orientation.x;
-			m_framePoseRotation.y = pose->motion.orientation.y;
-			m_framePoseRotation.z = pose->motion.orientation.z;
-			m_framePoseRotation.w = pose->motion.orientation.w;
-			if (Settings::Instance().m_capturePicture || Settings::Instance().m_recordGaze)
-			{
-			TxtPrint("%llu %lf %lf %lf %lf %lf %lf %lf\n"
-			,m_targetTimestampNs
-			,pose->motion.position[0]
-			,pose->motion.position[1]
-			,pose->motion.position[2]
-			,pose->motion.orientation.x
-			,pose->motion.orientation.y
-			,pose->motion.orientation.z
-			,pose->motion.orientation.w
-			);
-			}
-
-			// m_GazeOffset[0] = pose->NormalGazeOffset[0];
-			// m_GazeOffset[1] = pose->NormalGazeOffset[1];
-			// Gaze Pose.Orientation
-			m_preGazeQuat[0] = m_GazeQuat[0];
-			m_preGazeQuat[1] = m_GazeQuat[1];
-			m_GazeQuat[0] = pose->GazeQuat[0];
-			m_GazeQuat[1] = pose->GazeQuat[1];
-            // Global  Gaze Pose.Orientation
-			m_preGlobalQuat[0] = m_GlobalQuat[0];
-			m_preGlobalQuat[1] = m_GlobalQuat[1];
-			m_GlobalQuat[0] = pose->GloabGazeQuat[0];
-			m_GlobalQuat[1] = pose->GloabGazeQuat[1];
-
-            Calculate();
-
+			FfiGazeOPOffset LeftGazeDirection ,RightGazeDirection;
 			//  Quat to Vector , Vector to angule,center_offset
      		GazeQuatToNDCLocation(m_GazeQuat[0],m_GazeQuat[1], &m_GazeOffset[0], &m_GazeOffset[1]);
         	if (m_GazeOffset[0].x<= 0 || m_GazeOffset[0].y<=0 || m_GazeOffset[1].x<=0 || m_GazeOffset[1].y <= 0)
@@ -169,106 +179,110 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// Txt Delta Loaction   
 			if (Settings::Instance().m_recordGaze)
 			{
-					int width = Settings::Instance().m_renderWidth /2;
+					int width  = Settings::Instance().m_renderWidth /2;
 	                int height = Settings::Instance().m_renderHeight;
-
+//local
 				//local gaze  loaction 's delta 
 				FfiGazeOPOffset preLocNDCLocat[2] , nowLocNDCLocat[2];
 				nowLocNDCLocat[0] =   m_GazeOffset[0];
 				nowLocNDCLocat[1] =   m_GazeOffset[1];
-				GazeQuatToNDCLocation(m_preGazeQuat[0] , m_preGazeQuat[1] ,&preLocNDCLocat[0],&preLocNDCLocat[1]);
+				double LeftLocalDirection ,RightLocalDirection;
+				GazeQuatToNDCLocation(m_preGazeQuat[0] , m_preGazeQuat[1] ,&preLocNDCLocat[0],&preLocNDCLocat[1],&LeftLocalDirection,&RightLocalDirection);
+				//Delta Quat
+				FfiQuat LocalDelatQuat[2];
+				FfiGazeOPOffset LLocalGazeLoactDel ,RLocalGazeLoactDel;
+				LocalDelatQuat[0]=DelatQuatCal(m_preGazeQuat[0],m_GazeQuat[0]);
+				LocalDelatQuat[1]=DelatQuatCal(m_preGazeQuat[1],m_GazeQuat[1]);
+				GazeQuatToNDCLocation(LocalDelatQuat[0],LocalDelatQuat[1], &LLocalGazeLoactDel, &RLocalGazeLoactDel,&LeftLocalDirection,&RightLocalDirection);
+				//Delta Quat
 				FfiGazeOPOffset LLocGazeLoactDel = DeltaLocationCal(nowLocNDCLocat[0] ,preLocNDCLocat[0]);
 				FfiGazeOPOffset RLocGazeLoactDel = DeltaLocationCal(nowLocNDCLocat[1] ,preLocNDCLocat[1]);
-
-				//// global gaze  loaction 's delta 
-				// FfiGazeOPOffset preGloNDCLocat[2] , nowGloNDClocat[2]; 
-				// GazeQuatToNDCLocation(m_preGlobalQuat[0], m_preGlobalQuat[1],&preGloNDCLocat[0],&preGloNDCLocat[1]);
-				// GazeQuatToNDCLocation(m_GlobalQuat[0], m_GlobalQuat[1],&nowGloNDClocat[0],&nowGloNDClocat[1]);
-			    // FfiGazeOPOffset LGloGazeLoactDel = DeltaLocationCal(nowGloNDClocat[0],preGloNDCLocat[0] );
-			    // FfiGazeOPOffset RGloGazeLoactDel = DeltaLocationCal(nowGloNDClocat[1],preGloNDCLocat[1] );
-				
 				FfiQuat GlobDelatQuat[2] , HmdDelatQuat;
-				GlobDelatQuat[0] = DelatQuatCal(m_preGlobalQuat[0],m_GlobalQuat[0]);
-				GlobDelatQuat[1] = DelatQuatCal(m_preGlobalQuat[1],m_GlobalQuat[1]);
-				Info("debug: %lld  %f %f %f %f , %f %f %f %f, %f %f %f %f \n"
-                  ,m_targetTimestampNs
-                  ,m_preGlobalQuat[0].x
-                  ,m_preGlobalQuat[0].y
-                  ,m_preGlobalQuat[0].z
-                  ,m_preGlobalQuat[0].w
-
-				  ,m_GlobalQuat[0].x
-				  ,m_GlobalQuat[0].y
-				  ,m_GlobalQuat[0].z
-				  ,m_GlobalQuat[0].w
-
-				  ,GlobDelatQuat[0].x
-				  ,GlobDelatQuat[0].y
-				  ,GlobDelatQuat[0].z
-				  ,GlobDelatQuat[0].w
-   
-                 );
-
-				FfiGazeOPOffset LGloGazeLoactDel ,RGloGazeLoactDel;
-				GazeQuatToNDCLocation(GlobDelatQuat[0] , GlobDelatQuat[1], &LGloGazeLoactDel, &RGloGazeLoactDel);
-				LGloGazeLoactDel ={(LGloGazeLoactDel.x - 0.62125) *width  ,(LGloGazeLoactDel.y - 0.39547)*height};
-				RGloGazeLoactDel ={(RGloGazeLoactDel.x - 0.37874) *width  ,(RGloGazeLoactDel.y - 0.39547)*height};
-
-				
-				// if (LGloGazeLoactDel.x == 0 )
-				// {
-				// 	LGloGazeLoactDel = HisGloGazeLoactDel[0];
-				// 	RGloGazeLoactDel = HisGloGazeLoactDel[1];
-				// }
-				// else
-				// {
-				// 	HisGloGazeLoactDel[0] = LGloGazeLoactDel ;
-				// 	HisGloGazeLoactDel[1] = RGloGazeLoactDel ;
-				// }
-				
-
-				//head delta
+//head
 				FfiGazeOPOffset preHeadNDCLocat[2] , nowHeadNDCLocat[2];
 				FfiQuat nowHeadQuat = QuatFmt(m_framePoseRotation);
 				FfiQuat preHeadQuat = QuatFmt(m_prevFramePoseRotation);
-
-
-				// GazeQuatToNDCLocation(preHeadQuat ,preHeadQuat ,&preHeadNDCLocat[0] , &preHeadNDCLocat[1]);
-				// GazeQuatToNDCLocation(nowHeadQuat ,nowHeadQuat ,&nowHeadNDCLocat[0] , &nowHeadNDCLocat[1]);
-
-				// FfiGazeOPOffset LHeadGazeLoactDel = DeltaLocationCal(nowHeadNDCLocat[0], preHeadNDCLocat[0]);
-				// FfiGazeOPOffset RHeadGazeLoactDel = DeltaLocationCal(nowHeadNDCLocat[1], preHeadNDCLocat[1]);
-
                 FfiGazeOPOffset HeadGazeLoactDel[2];
+				double LeftheadDirection ,RightheadDirection;   //head angle
 				HmdDelatQuat = DelatQuatCal(preHeadQuat, nowHeadQuat);
-				GazeQuatToNDCLocation(HmdDelatQuat, HmdDelatQuat,&HeadGazeLoactDel[0],&HeadGazeLoactDel[1]);
+				GazeQuatToNDCLocation(HmdDelatQuat, HmdDelatQuat,&HeadGazeLoactDel[0],&HeadGazeLoactDel[1], &LeftheadDirection, &RightheadDirection);
                 FfiGazeOPOffset LHeadGazeLoactDel = {(HeadGazeLoactDel[0].x - 0.62125) *width  ,(HeadGazeLoactDel[0].y - 0.39547)*height};
                 FfiGazeOPOffset RHeadGazeLoactDel = {(HeadGazeLoactDel[1].x - 0.37874) *width  ,(HeadGazeLoactDel[1].y - 0.39547)*height};
 
 
-                // Txt  Left location Out 
+//global
+				GlobDelatQuat[0] = DelatQuatCal(m_preGlobalQuat[0],m_GlobalQuat[0]);
+				GlobDelatQuat[1] = DelatQuatCal(m_preGlobalQuat[1],m_GlobalQuat[1]);
+				FfiGazeOPOffset LGloGazeLoactDel ,RGloGazeLoactDel;
+				double LeftGlobDirection ,RightGlobDirection;  //global angle
+				GazeQuatToNDCLocation(GlobDelatQuat[0] , GlobDelatQuat[1], &LGloGazeLoactDel, &RGloGazeLoactDel ,&LeftGlobDirection, &RightGlobDirection);
+				//LGloGazeLoactDel ={(LGloGazeLoactDel.x - 0.62125) *width  ,(LGloGazeLoactDel.y - 0.39547)*height};
+				//RGloGazeLoactDel ={(RGloGazeLoactDel.x - 0.37874) *width  ,(RGloGazeLoactDel.y - 0.39547)*height};
+				LGloGazeLoactDel={LHeadGazeLoactDel.x+LLocGazeLoactDel.x,LHeadGazeLoactDel.y+LLocGazeLoactDel.y};  //global = head + local
+				RGloGazeLoactDel={RHeadGazeLoactDel.x+RLocGazeLoactDel.x,RHeadGazeLoactDel.y+RLocGazeLoactDel.y};
 
-				TxtDeltaLocat("%llu Left: local %d %d %d global %d %d %d\n"
-				,m_targetTimestampNs
-				// , int (LHeadGazeLoactDel.x)
-				// , int (LHeadGazeLoactDel.y)
+//pixel offset speed
+                //Info("%llu",(m_targetTimestampNs-m_prevTargetTimestampNs));
+				FfiGazeOPOffset Headspeed_XY={calspeed(LHeadGazeLoactDel.x),calspeed(LHeadGazeLoactDel.y)};
+				double Headspeed=calspeed(sqrt(pow(LHeadGazeLoactDel.x,2) + pow(LHeadGazeLoactDel.y,2)));
+				FfiGazeOPOffset Leftlocalspeed_XY={calspeed(LLocGazeLoactDel.x),calspeed(LLocGazeLoactDel.y)};
+				double Leftlocalspeed = calspeed(sqrt(pow(LLocGazeLoactDel.x,2) + pow(LLocGazeLoactDel.y,2)));
+				FfiGazeOPOffset Leftglobalspeed_XY={calspeed(LGloGazeLoactDel.x),calspeed(LGloGazeLoactDel.y)};
+				double Leftglobalspeed = calspeed(sqrt(pow(LGloGazeLoactDel.x,2) + pow(LGloGazeLoactDel.y,2)));
+				
+//Angle speed
+				double HeadAngSpeed_angle = calspeed(LeftheadDirection);
+				double LeftLocalSpeed_angle = calspeed(LeftLocalDirection);
+				double LeftGlobalSpeed_angle = calspeed(LeftGlobDirection);
+
+// Txt  speed
+			// if(bprint)
+			// {
+			// 	//SK
+			// 	Info("%llu %llu",m_prevTargetTimestampNs_txt,m_targetTimestampNs_txt);
+			// 	//SK
+			// 	TxtDeltaLocat("%llu speed head %d %d %d Left: local %d %d %d global %d %d %d\n"
+			// 	, m_targetTimestampNs
+			// 	, int (Headspeed_XY.x)
+			// 	, int (Headspeed_XY.y)
+			// 	, int (Headspeed)
+			// 	, int (Leftlocalspeed_XY.x)
+			// 	, int (Leftlocalspeed_XY.y)
+			// 	, int (Leftlocalspeed)
+			// 	, int (Leftglobalspeed_XY.x)
+			// 	, int (Leftglobalspeed_XY.y)
+			// 	, int (Leftglobalspeed)
+			// 	);
+			// 	Txtwspeed("%llu Anglespeed: head %lf Left: local %lf global %lf \n"
+			// 	,m_targetTimestampNs
+			// 	,HeadAngSpeed_angle
+			// 	,LeftLocalSpeed_angle
+			// 	,LeftGlobalSpeed_angle	
+			// 	);
+			// }
+
+// Txt  offset
+            if(bprint)
+			{
+				TxtDeltaLocat("%llu variation head %d %d %d Left: local %d %d %d global %d %d %d\n"
+				, m_targetTimestampNs
+				, int (LHeadGazeLoactDel.x)
+				, int (LHeadGazeLoactDel.y)
+				, int (sqrt(pow(LHeadGazeLoactDel.x,2) + pow(LHeadGazeLoactDel.y,2)))
 				, int (LLocGazeLoactDel.x)
 				, int (LLocGazeLoactDel.y)
 				, int (sqrt(pow(LLocGazeLoactDel.x,2) + pow(LLocGazeLoactDel.y,2)))
 				, int (LGloGazeLoactDel.x)
 				, int (LGloGazeLoactDel.y)
-				, int (sqrt(pow(LGloGazeLoactDel.x , 2) + pow(LGloGazeLoactDel.y , 2)))
+				, int (sqrt(pow(LGloGazeLoactDel.x,2) + pow(LGloGazeLoactDel.y,2)))
 				);
-				TxtDeltaHmd("%llu hmd: %d %d %d \n"
+				Txtwspeed("%llu Angle: head %lf Left: local %lf global %lf \n"
 				,m_targetTimestampNs
-				, int (LHeadGazeLoactDel.x)
-				, int (LHeadGazeLoactDel.y)
-				, int (sqrt(pow(LHeadGazeLoactDel.x,2) + pow(LHeadGazeLoactDel.y,2)))
+				,LeftheadDirection
+				,LeftLocalDirection
+				,LeftGlobDirection	
 				);
-
-
-
-
+			}
 			}
 		}
 		else {
@@ -425,121 +439,10 @@ void OvrDirectModeComponent::CopyTexture(uint32_t layerCount) {
 	}
 }
 
-void QuatToEuler(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll) {
-    
-	// Normalize the quaternion
-    double sinr_cosp = +2.0 * (qw * qx + qy * qz);
-    double cosr_cosp = +1.0 - 2.0 * (qx * qx + qy * qy);
-    roll = atan2(sinr_cosp, cosr_cosp)*(180/PI);
-
-    // pitch (y-axis rotation)
-    double sinp = +2.0 * (qw * qy - qz * qx);
-    if (fabs(sinp) >= 1)
-        pitch = copysign(PI / 2, sinp)* (180 / PI); // use 90 degrees if out of range
-    else
-        pitch = asin(sinp)*(180 / PI);
-
-    // yaw (z-axis rotation)
-    double siny_cosp = +2.0 * (qw * qz + qx * qy) ;
-    double cosy_cosp = +1.0 - 2.0 * (qy * qy + qz * qz);
-    yaw = atan2(siny_cosp, cosy_cosp)* (180 / PI);
-    //    return yaw;
-}
-
-void OvrDirectModeComponent::dEulert(){
-	 double DeltaTime =((m_targetTimestampNs-m_prevTargetTimestampNs)/1000000.0); // ms
-
-	 double DeltaHeadYaw = (m_headEuler.Yaw - m_preheadEuler.Yaw)*1000/DeltaTime;
-	 double DeltaHeadPitch = (m_headEuler.Pitch - m_preheadEuler.Pitch)*1000/DeltaTime;
-	 double DeltaHeadRoll = (m_headEuler.Roll - m_preheadEuler.Roll)*1000/DeltaTime;
-
-	 double DeltaGazeYaw = (m_gazeEuler.Yaw - m_pregazeEuler.Yaw)*1000/DeltaTime;
-	 double DeltaGazePitch = (m_gazeEuler.Pitch - m_pregazeEuler.Pitch)*1000/DeltaTime;
-	 double DeltaGazeRoll = (m_gazeEuler.Roll - m_pregazeEuler.Roll)*1000/DeltaTime;
-
-	 double DeltaEyeYaw = (m_eyeEuler.Yaw - m_preeyeEuler.Yaw)*1000/DeltaTime;
-	 double DeltaEyePitch = (m_eyeEuler.Pitch - m_preeyeEuler.Pitch)*1000/DeltaTime;
-	 double DeltaEyeRoll = (m_eyeEuler.Roll - m_preeyeEuler.Roll)*1000/DeltaTime;
-
-	 double whead = std::sqrt(DeltaHeadYaw*DeltaHeadYaw + DeltaHeadPitch*DeltaHeadPitch + DeltaHeadRoll*DeltaHeadRoll) ;
-	 double wgaze = std::sqrt(DeltaGazeYaw*DeltaGazeYaw + DeltaGazePitch*DeltaGazePitch + DeltaGazeRoll*DeltaGazeRoll);
-	 double weye = std::sqrt(DeltaEyeYaw * DeltaEyeYaw + DeltaEyePitch*DeltaEyePitch + DeltaEyeRoll *DeltaEyeRoll);
-	 m_wspeed.w_head = whead;
-	 m_wspeed.w_gaze = wgaze;
-	 m_wspeed.w_eye = weye;
-
-	//  double wheadY = cos(roll)
-
-}
-
-void QuatToAngle(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll)
+double OvrDirectModeComponent::calspeed(double offset)
 {
-  	 OVR::Quatf quaternion =OVR::Quatf(qx, qy, qz, qw);
-     OVR::Vector3f direction = quaternion.Rotate(OVR::Vector3f(0.0f, 0.0f, -1.0f));
-	 yaw = std::atan2(-direction.x, direction.z)*(180 / PI); //y Aisx
-	 pitch = std::atan2(-direction.y,direction.z)*(180 / PI);
-	 roll = std::atan2(-direction.y, direction.x)*(180 / PI);
-}
-
-void QuatToEuler2(float qx, float qy, float qz, float qw, float& yaw, float& pitch, float& roll)
-{
-    OVR::Quatf quaternion =OVR::Quatf(qx, qy, qz, qw);
-	quaternion.GetYawPitchRoll(&yaw,&pitch,&roll);
-	yaw = yaw *(180 / PI);
-	pitch = pitch *(180 / PI);
-	roll = roll  *(180 / PI);
-}
-
-void OvrDirectModeComponent::Calculate(){
-		OVR::Quatf headrot = OVR::Quatf(m_framePoseRotation.x,m_framePoseRotation.y,
-		m_framePoseRotation.z,m_framePoseRotation.w);
-
-		OVR::Quatf local_leftgaze = OVR::Quatf(m_GazeQuat[0].x,m_GazeQuat[0].y,
-		m_GazeQuat[0].z,m_GazeQuat[0].w );
-		OVR::Quatf local_rightgaze = OVR::Quatf(m_GazeQuat[1].x,m_GazeQuat[1].y,
-		m_GazeQuat[1].z,m_GazeQuat[1].w );
-        OVR::Vector3f local_leftgazeVector = local_leftgaze.ToRotationVector();
-        OVR::Vector3f local_rightgazeVector = local_rightgaze.ToRotationVector();
-		OVR::Vector3f local_gazeVector = OVR::Vector3f(
-				(local_leftgazeVector.x + local_rightgazeVector.x)/2,
-				(local_leftgazeVector.y + local_rightgazeVector.y)/2,
-				(local_leftgazeVector.z + local_rightgazeVector.z)/2
-				 );
-		OVR::Quatf local_gaze =OVR::Quatf::FromRotationVector (local_gazeVector);
-
-			//OVR::Quatf eyerot =  (gazerot * headrot) ;
-			//eyerot.Normalize(); //Normalize
-
-		OVR::Quatf global_leftgaze =  OVR::Quatf(m_GlobalQuat[0].x,m_GlobalQuat[0].y, 
-			m_GlobalQuat[0].z, m_GlobalQuat[0].w);
-		OVR::Quatf global_rightgaze =  OVR::Quatf(m_GlobalQuat[1].x,m_GlobalQuat[1].y, 
-			m_GlobalQuat[1].z, m_GlobalQuat[1].w);
-
-		OVR::Vector3f global_leftgazeVector = global_leftgaze.ToRotationVector();
-		OVR::Vector3f global_rightgazeVector = global_rightgaze.ToRotationVector();
-		OVR::Vector3f global_gazeVector = OVR::Vector3f(
-				(global_leftgazeVector.x + global_rightgazeVector.x)/2,
-				(global_leftgazeVector.y + global_rightgazeVector.y)/2,
-				(global_leftgazeVector.z + global_rightgazeVector.z)/2
-			);
-		OVR::Quatf global_gaze = OVR::Quatf::FromRotationVector(global_gazeVector);
-
-			
-			m_preheadEuler = m_headEuler; //old euler
-			m_pregazeEuler = m_gazeEuler;
-			m_preeyeEuler = m_eyeEuler;
-            QuatToEuler2(headrot.x,headrot.y,headrot.z,headrot.w,m_headEuler.Yaw,m_headEuler.Pitch,m_headEuler.Roll);
-			QuatToEuler2(local_gaze.x,local_gaze.y,local_gaze.z,local_gaze.w,m_gazeEuler.Yaw,m_gazeEuler.Pitch,m_gazeEuler.Roll);
-			QuatToEuler2(global_gaze.x,global_gaze.y,global_gaze.z,global_gaze.w,m_eyeEuler.Yaw,m_eyeEuler.Pitch,m_eyeEuler.Roll);
-			//TxtGaze("time: %llu hyaw %lf hpitch %lf hroll %lf\n",m_targetTimestampNs ,m_headEuler.Yaw,m_headEuler.Pitch ,m_headEuler.Roll);
-			//Info("time: %llu yaw %lf pitch %lf roll %lf\n",m_targetTimestampNs ,m_headEuler.Yaw,m_headEuler.Pitch ,m_headEuler.Roll);
-        dEulert();
-			//Info("time: %llu wh %lf wg %lf we %lf \n",m_targetTimestampNs ,m_wspeed.w_head ,m_wspeed.w_gaze ,m_wspeed.w_eye);	
-		if ( Settings::Instance().m_recordGaze)
-			{
-			 Txtwspeed("time: %llu wh %lf wg %lf we %lf \n",m_targetTimestampNs ,m_wspeed.w_head ,m_wspeed.w_gaze ,m_wspeed.w_eye);
-
-			}	
+	double speed=offset/((m_targetTimestampNs_txt-m_prevTargetTimestampNs_txt)/1000000000.0);  //The unit is /s 
+	return speed;
 }
 
 void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffset* LNDCLocat , FfiGazeOPOffset* RNDCLocat)
@@ -573,9 +476,11 @@ void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffs
         			 float LeftGazeRad_Y = atanf(-1.0*LeftGazeVector.v[1]/LeftGazeVector.v[2]);
          			 float RightGazeRad_X = atanf(-1.0*RightGazeVector.v[0]/RightGazeVector.v[2]);
         			 float RightGazeRad_Y = atanf(-1.0*RightGazeVector.v[1]/RightGazeVector.v[2]);
+
+
         			 float RadToAnglue = (180.0/3.14159265358979323846f);
 					 // need to change if fov is change
-                     FfiFov leftcfov ={ -0.942478,0.698132,0.733038,-0.942478};
+                     FfiFov leftcfov  = { -0.942478,0.698132,0.733038,-0.942478};
 					 FfiFov rightcfov = { -0.698132,0.942478,0.733038,-0.942478};
 
         			//  *LNDCLocat.x = 1.0*(tanf(LeftGazeRad_X)+tanf(-leftcfov.left))/(tanf(leftcfov.right)+tanf(-leftcfov.left));
@@ -608,6 +513,89 @@ void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffs
 }
 
 
+void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffset* LNDCLocat , FfiGazeOPOffset* RNDCLocat , double *LGazeVector ,double *RGazeVector)
+{
+	       		vr::HmdQuaternion_t LeftGazeQuat = HmdQuaternion_Init(
+                LGazeQuat.w,
+				LGazeQuat.x,
+				LGazeQuat.y,
+				LGazeQuat.z
+       			 );
+       			 vr::HmdQuaternion_t RightGazeQuat = HmdQuaternion_Init(
+       			 RGazeQuat.w, 
+       			 RGazeQuat.x, 
+       			 RGazeQuat.y, 
+       			 RGazeQuat.z 
+       			 );
+       			 vr::HmdVector3d_t ZAix = {0.0, 0.0, -1};//ZAix is (0,0,1)or(0,0,-1)
+      			 vr::HmdVector3d_t LeftGazeVector;
+       			 vr::HmdVector3d_t RightGazeVector;
+      			  if (!LGazeQuat.w || !RGazeQuat.w)  //when eye gaze is null w =0 , so  Gaze is center
+       				 {
+           			  LeftGazeVector  = ZAix;
+           			  RightGazeVector = ZAix;
+       				 }
+       			 else
+      				  {
+           	 		 LeftGazeVector  = vrmath::quaternionRotateVector(LeftGazeQuat,ZAix,false);
+             		 RightGazeVector = vrmath::quaternionRotateVector(RightGazeQuat,ZAix,false);
+      				  }
+
+				//Value limit
+					if(RightGazeVector.v[2]<-1)
+					{
+						RightGazeVector.v[2]=-1;
+					}
+					if(LeftGazeVector.v[2]<-1)
+					{
+						LeftGazeVector.v[2]=-1;
+					}
+
+
+        			 double LeftGazeRad_X = atanf(-1.0*LeftGazeVector.v[0]/LeftGazeVector.v[2]); 
+        			 double LeftGazeRad_Y = atanf(-1.0*LeftGazeVector.v[1]/LeftGazeVector.v[2]);
+         			 double RightGazeRad_X = atanf(-1.0*RightGazeVector.v[0]/RightGazeVector.v[2]);
+        			 double RightGazeRad_Y = atanf(-1.0*RightGazeVector.v[1]/RightGazeVector.v[2]);
+
+					 double LeftGazeRad = acos(-1.0* LeftGazeVector.v[2]);
+					 double RightGazeRad = acos( -1.0* RightGazeVector.v[2] );
+
+        			 double RadToAnglue = (180.0/3.14159265358979323846f);
+					 *LGazeVector = LeftGazeRad  *RadToAnglue ;    
+					 *RGazeVector = RightGazeRad *RadToAnglue ;
+					 // need to change if fov is change
+                     FfiFov leftcfov  = { -0.942478,0.698132,0.733038,-0.942478};
+					 FfiFov rightcfov = { -0.698132,0.942478,0.733038,-0.942478};
+
+        			//  *LNDCLocat.x = 1.0*(tanf(LeftGazeRad_X)+tanf(-leftcfov.left))/(tanf(leftcfov.right)+tanf(-leftcfov.left));
+        			//  *LNDCLocat.y = 1.0*(tanf(-LeftGazeRad_Y)+tanf(leftcfov.up))/(tanf(-leftcfov.down)+tanf(leftcfov.up));
+        			 
+					//  *RNDCLocat.x = 1.0*(tanf(RightGazeRad_X)+tanf(-rightcfov.left))/(tanf(rightcfov.right)+tanf(-rightcfov.left));
+        			//  *RNDCLocat.y = 1.0*(tanf(-RightGazeRad_Y)+tanf(rightcfov.up))/(tanf(-rightcfov.down)+tanf(rightcfov.up));
+				    if (LNDCLocat)
+					{
+						*LNDCLocat = 
+						{
+						 1.0*(tanf(LeftGazeRad_X)+tanf(-leftcfov.left))/(tanf(leftcfov.right)+tanf(-leftcfov.left))
+						,1.0*(tanf(-LeftGazeRad_Y)+tanf(leftcfov.up))/(tanf(-leftcfov.down)+tanf(leftcfov.up))
+						};
+					}
+					else
+					Info("LNDCLocat in null\n");
+					if (RNDCLocat)
+					{
+						*RNDCLocat = {
+						 1.0*(tanf(RightGazeRad_X)+tanf(-rightcfov.left))/(tanf(rightcfov.right)+tanf(-rightcfov.left))        
+					    ,1.0*(tanf(-RightGazeRad_Y)+tanf(rightcfov.up))/(tanf(-rightcfov.down)+tanf(rightcfov.up))
+						};
+					}
+					else
+					Info("RNDCLocat in null\n");
+					
+					
+
+}
+
 FfiGazeOPOffset DeltaLocationCal (FfiGazeOPOffset nowNDCLocat , FfiGazeOPOffset preNDCLocat)
 {
 	FfiGazeOPOffset DeltaLocat;
@@ -635,8 +623,6 @@ FfiQuat DelatQuatCal( FfiQuat preQuat , FfiQuat nowQuat)
    OVR::Quatf delatquat =  ovrprequat.Inverse() *ovrnowquat;
 
    FfiQuat DelatQuat = {delatquat.x ,delatquat.y ,delatquat.z ,delatquat.w };
-
-
 
    return DelatQuat;
 

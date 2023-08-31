@@ -126,17 +126,20 @@ void LogFileUpDate(string LogFile) {
     
 }
 
+void LogFileClose(){
+	if (fpLog != nullptr) {
+        fclose(fpLog);
+        fpLog = nullptr;
+    }
+}
+
 void TxtPrint(const char *format, ...)
 {   string Info_Type = "Info:";
 	va_list args;
 	va_start(args, format);
-	//LogFileUpDate("E:\\alvrdata\\TxtPrintf\\A_TxtPrint1.txt");
 	LogFileUpDate("TxtPrint.txt");
-	//LogFileUpDate("C:\\SHN\\ALVREXE\\OutPut\\Log\\A_TxtPrint12.txt");
-    char buf[1024];
-	//string sys_timeType=sys_time+Info_Type;    
+    char buf[1024];    
     vsnprintf(buf, sizeof(buf), format, args);
-    //fprintf(fpLog, sys_timeType.c_str());
     fprintf(fpLog, buf);
 	va_end(args);
 }

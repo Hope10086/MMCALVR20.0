@@ -500,3 +500,8 @@ void LogLatency(const char *stringPtr, ...) {
         //TxtLatency(stringPtr);
     }
 }
+
+void CloseTxtFile(){
+
+    LogFileClose();
+}
