@@ -179,8 +179,8 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// Txt Delta Loaction   
 			if (Settings::Instance().m_recordGaze)
 			{
-					int width  = Settings::Instance().m_renderWidth /2;
-	                int height = Settings::Instance().m_renderHeight;
+			int width  = Settings::Instance().m_renderWidth /2;
+	        int height = Settings::Instance().m_renderHeight;
 //local
 				//local gaze  loaction 's delta 
 				FfiGazeOPOffset preLocNDCLocat[2] , nowLocNDCLocat[2];
@@ -234,8 +234,12 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				double HeadAngSpeed_angle = calspeed(LeftheadDirection);
 				double LeftLocalSpeed_angle = calspeed(LeftLocalDirection);
 				double LeftGlobalSpeed_angle = calspeed(LeftGlobDirection);
+// List 
 
-// Txt  speed
+
+
+
+//  Printf Txt  speed
 			// if(bprint)
 			// {
 			// 	//SK
@@ -261,7 +265,7 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// 	);
 			// }
 
-// Txt  offset
+// Printf  Txt  offset
             if(bprint)
 			{
 				TxtDeltaLocat("%llu variation head %d %d %d Left: local %d %d %d global %d %d %d\n"
@@ -282,6 +286,30 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				,LeftLocalDirection
 				,LeftGlobDirection	
 				);
+
+			TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
+			,m_targetTimestampNs
+			,m_GazeOffset[0].x
+			,m_GazeOffset[0].y
+			,m_GazeOffset[1].x+1
+			,m_GazeOffset[1].y
+			,m_GazeOffset[0].x*width
+			,m_GazeOffset[0].y*height
+			,(m_GazeOffset[1].x+1)*width
+			,(m_GazeOffset[1].y)*height
+			);
+			
+			TxtPrint("%llu position %lf %lf %lf orientation %lf %lf %lf %lf\n"
+			,m_targetTimestampNs
+			,pose->motion.position[0]
+			,pose->motion.position[1]
+			,pose->motion.position[2]
+			,pose->motion.orientation.x
+			,pose->motion.orientation.y
+			,pose->motion.orientation.z
+			,pose->motion.orientation.w
+			);
+
 			}
 			}
 		}
