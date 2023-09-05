@@ -104,4 +104,9 @@ class Settings {
 
     bool m_tdmode = false;
     float m_speedthreshold=100;
+
+    //TD QP_
+    int m_tdroideltaqp =0 ;
+    int m_tdnonroideltaqp =0 ;
+    int m_tdsubroideltaqp =0 ;
 };

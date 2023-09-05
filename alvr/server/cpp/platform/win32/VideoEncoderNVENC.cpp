@@ -20,10 +20,7 @@ int m_centresize_change=4;
 float m_speedthreshold_change=0;
 
 //SK
-ComPtr<ID3D11Texture2D> GazepointTexture;  //降低可视化时延，只需要create一个black纹理图
-
-FfiAnglespeed m_prewspeed={0,0,0};
-
+ComPtr<ID3D11Texture2D> GazepointTexture;  //
 
 //float cof0=0.3836,cof1=26.3290;   //watch: QP=cof0*FOV+cof1
 //float cof0=0.435,cof1=29.9997;   //play: QP=0.435*FOV+29.9997
@@ -111,14 +108,10 @@ void VideoEncoderNVENC::Shutdown()
 	}
 }
 
-void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, FfiAnglespeed wspeed)
+void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, GazeHistory m_gazeinfo)
 {
-	if(wspeed.w_eye!=0)
-	{
-		m_prewspeed=wspeed;
-	}
-
-	//Info("%f %f %f   pre:%f %f %f",wspeed.w_head,wspeed.w_gaze,wspeed.w_eye,m_prewspeed.w_head,m_prewspeed.w_gaze,m_prewspeed.w_eye);
+	
+	
 
 	auto params = GetDynamicEncoderParams();
 	if (params.updated) {
@@ -193,10 +186,6 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	if (Settings::Instance().m_capturePicture)
 	{
 	wchar_t buf[1024];	
-	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%dx%d-%llu.dds", inputDesc.Width,inputDesc.Height,targetTimestampNs);
-	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%llu.dds",targetTimestampNs);
-	//_snwprintf_s(buf, sizeof(buf), L"E:\\alvrdata\\ScreenDDS\\%llu.dds",targetTimestampNs);
-	//_snwprintf_s(buf, sizeof(buf), L"C:\\SHN\\ALVREXE\\OutPut\\SaveDDS\\%llu.dds",targetTimestampNs);
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 	std::wstring wpath = converter.from_bytes(g_driverRootDir)+L"\\dds\\" ;
 	_snwprintf_s(buf, sizeof(buf), (wpath+L"%llu.dds").c_str(),targetTimestampNs);
@@ -210,6 +199,29 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		Debug("Inserting IDR frame.\n");
 		picParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR;
 	}
+	// gaze history update
+	if (m_gazeBuffer.size() == 0)
+	{
+		m_gazeBuffer.push_back(m_gazeinfo);
+	}
+	else
+	{
+		if (m_gazeBuffer.back().FrameTimestampNs != m_gazeinfo.FrameTimestampNs)
+		{
+			m_gazeBuffer.push_back(m_gazeinfo);
+		}
+		
+	}
+	if (m_gazeBuffer.size() > 90)
+	{
+		 m_gazeBuffer.pop_front();
+	}
+	
+	
+	
+
+	
+	
 	// qp changed 
 	if (true)
 	{    		
@@ -221,11 +233,13 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		int Roi_qpDelta = -30; //51-30=21  // may be changed in switch
 		int nRoi_qpDelta = -Settings::Instance().m_delatQPmode;
 		int Roi_Size = Settings::Instance().m_RoiSize;
+
+		int TDRoiDeltaQp = 0;
+		int TDnonRoiDeltaQp = 0;
+		int TDsubRoiDeltaQp = 0;
+
 		int countx = Roi_Size*(float(encDesc.Width)/float(2*2592));
-		//int county = Roi_Size*(float(encDesc.Height)/float(1920));
-		int county = countx;
-		//Info("Delta QP Mode: %d  \n", Settings::Instance().m_delatQPmode);
-		//Info("Roi MacroSize(single) = %dX%d \n", countx,county);		
+		int county = countx;		
 		float ZDepth = 2592/(tanf(0.942478)+tanf(0.698132));
 		float angle = (2*atanf((2*Roi_Size+1)*16/ZDepth))*(180/(4*atanf(1)));
 		if (m_QpModechange != Settings::Instance().m_delatQPmode)
@@ -241,70 +255,14 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		picParams.qpDeltaMapSize = (encDesc.Width/macrosize)*(encDesc.Height/macrosize);
 		picParams.qpDeltaMap = (int8_t*)malloc(picParams.qpDeltaMapSize * sizeof(int8_t));   
 
-		//TxtPrint("Frame Encode Time %llu  Gazexy %lf %lf \n" ,targetTimestampNs,NDCLeftGaze.x, NDCLeftGaze.y);  
+
 
 		int leftgazeMac_X  = ((NDCLeftGaze.x)*encDesc.Width/2)/macrosize ;
 		int leftgazeMac_Y  = ((NDCLeftGaze.y)*encDesc.Height) /macrosize;
 
 		int rightgazeMac_X = ((1.0+NDCRightGaze.x)*encDesc.Width/2)/macrosize;
 		int rightgazeMac_Y = ((NDCRightGaze.y)*encDesc.Height)/macrosize;
-		//
-		//double delttime = (targetTimestampNs-hist_targetTimestampNs )/(uint64_t (1000000));
-	    double leftgazeMac_Vx =0;
-		double leftgazeMac_Vy = 0;
-		double rightgazeMac_Vx = 0;
-		double rightgazeMac_Vy = 0;
-		//  if (delttime)
-		//  {
-	     leftgazeMac_Vx = double((leftgazeMac_X - hist_leftgazeMac_X));
-		 leftgazeMac_Vy = double((leftgazeMac_Y - hist_leftgazeMac_Y));
-		 rightgazeMac_Vx = double((rightgazeMac_X - hist_rightgazeMac_X));
-		 rightgazeMac_Vy = double((rightgazeMac_Y - hist_rightgazeMac_Y));
-		//  }
 
-
-		// if the changes of gaze  ,ignore it
-		if (abs(leftgazeMac_Vx) + abs(leftgazeMac_Vy)<2)
-		{   
-			//Info("%llu %lf ",targetTimestampNs,delttime);
-			//Info("%lf %lf %lf %lf ",NDCLeftGaze.x,NDCLeftGaze.y,NDCRightGaze.x+1,NDCRightGaze.y);
-			//Info("%d %d %d %d ",leftgazeMac_X,leftgazeMac_Y,rightgazeMac_X,rightgazeMac_Y);
-			//Info("time %llu Velocity: %lf %lf %lf %lf\n",targetTimestampNs , leftgazeMac_Vx, leftgazeMac_Vy,rightgazeMac_Vx,rightgazeMac_Vy);
-           leftgazeMac_X = hist_leftgazeMac_X;
-		   leftgazeMac_Y = hist_leftgazeMac_X;
-		}
-        if (abs(rightgazeMac_Vx) + abs(rightgazeMac_Vy)<2)
-	   {
-		  rightgazeMac_X = hist_rightgazeMac_X;
-		  rightgazeMac_Y = hist_rightgazeMac_Y;
-	   }	   
-		// log gaze location (Macblock)
-		// if (Settings::Instance().m_recordGaze)
-		// {
-		// 	TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
-		// 	,targetTimestampNs
-		// 	,NDCLeftGaze.x
-		// 	,NDCLeftGaze.y
-		// 	,NDCRightGaze.x+1
-		// 	,NDCRightGaze.y
-		// 	,(NDCLeftGaze.x)*encDesc.Width/2
-		// 	,(NDCLeftGaze.y)*encDesc.Height
-		// 	,(1.0+NDCRightGaze.x)*encDesc.Width/2
-		// 	,(NDCRightGaze.y)*encDesc.Height
-		// 	);
-		// }
-		// update  gaze Location(X,Y) Velocity(Vx,Vy) 's History
-		    hist_targetTimestampNs = targetTimestampNs; //time
-	    	hist_leftgazeMac_X = leftgazeMac_X;  //Location
-		    hist_leftgazeMac_Y = leftgazeMac_Y;
-	    	hist_rightgazeMac_X = rightgazeMac_X;
-		    hist_rightgazeMac_Y = rightgazeMac_Y;
-
-		    hist_leftgazeMac_Vx = leftgazeMac_Vx;  //Velocity
-		    hist_leftgazeMac_Vy = leftgazeMac_Vy;
-		    hist_rightgazeMac_Vx = rightgazeMac_Vx;
-		    hist_rightgazeMac_Vy = rightgazeMac_Vy;
-        //
 		float distance=0;
 		float FOV=0;   //Dgree °
 		int expect_qp=51;
@@ -333,7 +291,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		}
 		
 		int centresize=Settings::Instance().m_centresize;   //centre*2
-		if(m_centresize_change!=Settings::Instance().m_centresize)
+		if(m_centresize_change != Settings::Instance().m_centresize)
 		{
 			m_centresize_change=Settings::Instance().m_centresize;
 			Info("Centre Size: %d×%d",2*m_centresize_change+1, 2*m_centresize_change+1);  
@@ -344,61 +302,62 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 			m_speedthreshold_change=Settings::Instance().m_speedthreshold;
 			Info("Speed Threshold: %f",m_speedthreshold_change);  
 		}
-		if(Settings::Instance().m_tdmode && (m_prewspeed.w_eye >= Settings::Instance().m_speedthreshold))   //Eye movement speed exceeds the threshold
+
+        // Based GazeHistory  to assign strategy for Time Domain QP Distribution
+
+		if (m_gazeinfo.HeadDirectionAS > 60 || m_gazeinfo.GazeDirectionAS >100) // head speed
 		{
-			for (int x = 0; x < encDesc.Width/macrosize; x++)
-			{
-				for (int y = 0; y < encDesc.Height/macrosize; y++)
-				{
-					picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 51-51;
-				}
-			}
+			TDRoiDeltaQp = Settings::Instance().m_tdroideltaqp;
+			TDsubRoiDeltaQp = Settings::Instance().m_tdsubroideltaqp;
+			TDnonRoiDeltaQp = Settings::Instance().m_tdnonroideltaqp;
 		}
-        else
-		{
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{
 				for (int y = 0; y < encDesc.Height/macrosize; y++)
 				{
-
                    if(Settings::Instance().m_QPDistribution==1)  // Squence
 				   {
-						if (abs(x - leftgazeMac_X) <= centresize && abs(y - leftgazeMac_Y) <= centresize && x < (encDesc.Width/macrosize)/2)  //左眼中心21qp区域
+					   // ROI
+						if (abs(x - leftgazeMac_X) <= centresize && abs(y - leftgazeMac_Y) <= centresize && x < (encDesc.Width/macrosize)/2)  //Left view roi
 						{
-							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
+							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21+TDRoiDeltaQp-51; 		
 							continue;																  
 						}
-						else if(abs(x -rightgazeMac_X) <= centresize && abs(y - rightgazeMac_Y) <= centresize && x >= (encDesc.Width/macrosize)/2 )//右眼中心21qp区域
+						else if(abs(x -rightgazeMac_X) <= centresize && abs(y - rightgazeMac_Y) <= centresize && x >= (encDesc.Width/macrosize)/2 )// Right view roi
 						{
-							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
+							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21+TDRoiDeltaQp-51; 		
 							continue;
 						}
+					  // non-ROI & sub -ROI
 
-						if (x < (encDesc.Width/macrosize)/2)    //左眼
+						if (x < (encDesc.Width/macrosize)/2)    //Left eye view 
 						{						
 							distance=(((abs(x*macrosize-leftgazeMac_X*macrosize)) > (abs(y*macrosize-leftgazeMac_Y*macrosize))) ? (abs(x*macrosize-leftgazeMac_X*macrosize)) : (abs(y*macrosize-leftgazeMac_Y*macrosize)));
 						}
-					  	else if(x >= (encDesc.Width/macrosize)/2)   //右眼
+					  	else if(x >= (encDesc.Width/macrosize)/2)   //Right eye view
 						{
 							distance=(((abs(x*macrosize-rightgazeMac_X*macrosize)) > (abs(y*macrosize-rightgazeMac_Y*macrosize))) ? (abs(x*macrosize-rightgazeMac_X*macrosize)) : (abs(y*macrosize-rightgazeMac_Y*macrosize)));
 						}
 						FOV=2*atanf(distance/ZDepth)*180/(4*atanf(1));
 						//expect_qp=floor(cof0_final*FOV+cof1_final);    //linear
-						expect_qp=floor(cof0_final*exp(cof1_final*FOV));        //exp
-						if(expect_qp<21)  //限制QP范围
+						expect_qp = floor(cof0_final*exp(cof1_final*FOV));        //exp
+						if(expect_qp < 21)  //limit QP 
 						{
-							expect_qp=21;
+							expect_qp = 21 + TDRoiDeltaQp;
 						}
-						if(expect_qp>=max_qp)
-						{
-							expect_qp=max_qp;
+					    else {
+						   if(expect_qp >= max_qp){
+							expect_qp = max_qp + TDnonRoiDeltaQp; //non ROI
+						    }
+					    	else{
+							expect_qp = expect_qp +TDsubRoiDeltaQp; // sub ROI
+							}
 						}
-						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = expect_qp-51; 
-						
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = expect_qp-51; 		
 
 				   }
-                   else if(Settings::Instance().m_QPDistribution==2)    //圆形辐射
-				   {
+                   else if(Settings::Instance().m_QPDistribution==2)    //circle 
+				   {     // ROI
 						if (abs(x - leftgazeMac_X) <= centresize && abs(y - leftgazeMac_Y) <= centresize && x < (encDesc.Width/macrosize)/2)  //左眼中心21qp区域
 						{
 							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
@@ -409,7 +368,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
 							continue;
 						}
-
+                       // non-ROI & sub ROI
 						if (x < (encDesc.Width/macrosize)/2)    //
 						{						
 							distance=sqrt(pow(x*macrosize-leftgazeMac_X*macrosize,2)+pow(y*macrosize-leftgazeMac_Y*macrosize,2));
@@ -431,7 +390,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 						}
 						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = expect_qp-51; 
 				   }
-				   else if(Settings::Instance().m_QPDistribution==0)  //阶跃（只有ROI_QP和NROI_QP两个值）
+				   else if(Settings::Instance().m_QPDistribution==0)  // 
 				   {
 					  if (abs(x - leftgazeMac_X) <= countx && abs(y - leftgazeMac_Y) <= county   && x < (encDesc.Width/macrosize)/2)  //左眼
 					{
@@ -447,9 +406,8 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 					 }
 				   }
 				}
-			}
-		}
-	}
+			}		
+	    }
 	m_NvNecoder->EncodeFrame(vPacket, &picParams);
 
 	free(picParams.qpDeltaMap);
@@ -461,10 +419,6 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		}
 		
 		 ParseFrameNals(m_codec, packet.data(), (int)packet.size(), targetTimestampNs, insertIDR);
-		// if (Settings::Instance().m_recordGaze)
-		// {
-		// 	TxtPrint("%llu %lf %lf %lf %lf\n",targetTimestampNs,NDCLeftGaze.x,NDCLeftGaze.y,NDCRightGaze.x+1,NDCRightGaze.y);
-		// }
 	}
 }
 

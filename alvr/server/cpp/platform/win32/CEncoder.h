@@ -36,7 +36,7 @@
 		void Initialize(std::shared_ptr<CD3DRender> d3dRender);
 
 		bool CopyToStaging(ID3D11Texture2D *pTexture[][2], vr::VRTextureBounds_t bounds[][2], int layerCount, bool recentering
-			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText, FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset, FfiAnglespeed wspeed);
+			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText, FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset,  GazeHistory gazeinfo);
 
 		virtual void Run();
 
@@ -83,7 +83,7 @@
 		uint64_t m_presentationTime;
 		uint64_t m_targetTimestampNs;
 		FfiGazeOPOffset m_GazeOffset[2] = {{0.621,0.395},{0.338,0.395}};
-		FfiAnglespeed m_wspeed={0,0,0};
+		GazeHistory m_gazeinfo;
 
 		std::shared_ptr<FrameRender> m_FrameRender;
 

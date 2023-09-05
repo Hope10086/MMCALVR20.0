@@ -77,17 +77,16 @@
 		}
 
 		bool CEncoder::CopyToStaging(ID3D11Texture2D *pTexture[][2], vr::VRTextureBounds_t bounds[][2], int layerCount, bool recentering
-			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText,  FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset, FfiAnglespeed wspeed)
+			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText,  FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset,  GazeHistory gazeinfo)
 		{
 			m_presentationTime = presentationTime;
 			m_targetTimestampNs = targetTimestampNs;
-			//Info("Source file:CEncoder.cpp\n");
-			//Info("Recive GazeOffset = (%lf,%lf) (%lf,%lf)\n",leftGazeOffset.x, leftGazeOffset.y, rightGazeOffset.x, rightGazeOffset.y);
+
 			m_GazeOffset[0] = leftGazeOffset;
 			m_GazeOffset[1] = rightGazeOffset;
 
-			m_wspeed=wspeed;
-			//TxtPrint("Frame Render Time %llu ",m_targetTimestampNs);
+			m_gazeinfo = gazeinfo ;
+
 			m_FrameRender->Startup();
 			m_FrameRender->RenderFrame(pTexture, bounds, layerCount, recentering, message, debugText, m_GazeOffset[0], m_GazeOffset[1]);
 			return true;
@@ -174,7 +173,7 @@
 
 				if (m_FrameRender->GetTexture())
 				{
-					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1], m_wspeed);
+					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1], m_gazeinfo);
 				}
 
 				m_encodeFinished.Set();

@@ -64,15 +64,21 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[1].button("MaxQp Add").clicked() {   
             request = Some(ServerRequest ::MaxQpAdd);
         }
-        if ui[2].button("TD Mode").clicked() {   
-            request = Some(ServerRequest ::TDmode);
-        }
-
-        if ui[0].button("Speed Threshold add").clicked() {   
+        if ui[2].button("Speed Threshold add").clicked() {   
             request = Some(ServerRequest ::SpeedThresholdadd);
         }
-        if ui[1].button("Speed Threshold sub").clicked() {   
+        if ui[3].button("Speed Threshold sub").clicked() {   
             request = Some(ServerRequest ::SpeedThresholdsub);
+        }
+        
+        if ui[0].button("TD Mode").clicked() {   
+            request = Some(ServerRequest ::TDmode);
+        }
+        if ui[1].button("TD QP Add").clicked() {
+            request = Some(ServerRequest::TDQPAdd);
+        }
+        if ui[2].button("TD QP Zero").clicked() {
+            request = Some(ServerRequest::TDQPZero);
         }
 
     });

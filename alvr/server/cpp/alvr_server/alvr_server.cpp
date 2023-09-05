@@ -505,3 +505,24 @@ void CloseTxtFile(){
 
     LogFileClose();
 }
+
+void TDDelatQPAdd()
+{
+    Settings::Instance().m_tdroideltaqp =Settings::Instance().m_tdroideltaqp +1;
+    Settings::Instance().m_tdsubroideltaqp =Settings::Instance().m_tdsubroideltaqp +1;
+    Settings::Instance().m_tdnonroideltaqp =Settings::Instance().m_tdnonroideltaqp +1;
+    Info("TD Delat QP: %d %d %d \n "
+    ,Settings::Instance().m_tdroideltaqp 
+    ,Settings::Instance().m_tdsubroideltaqp
+    ,Settings::Instance().m_tdnonroideltaqp
+    );
+
+}
+
+void TDDelatQPZero()
+{
+
+    Settings::Instance().m_tdroideltaqp = 0;
+    Settings::Instance().m_tdsubroideltaqp= 0;
+    Settings::Instance().m_tdnonroideltaqp = 0;
+}

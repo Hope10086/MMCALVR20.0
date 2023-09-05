@@ -381,7 +381,7 @@ void VideoEncoderVCE::Shutdown()
 	Debug("Successfully shutdown VideoEncoderVCE.\n");
 }
 
-void VideoEncoderVCE::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, FfiAnglespeed wspeed)
+void VideoEncoderVCE::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, GazeHistory m_gazeinfo)
 {
 	amf::AMFSurfacePtr surface;
 	// Surface is cached by AMF.

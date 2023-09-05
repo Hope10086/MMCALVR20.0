@@ -189,6 +189,8 @@ impl DataSources {
                                 | ServerRequest::MaxQpSub 
                                 | ServerRequest::MaxQpAdd 
                                 | ServerRequest::TDmode
+                                | ServerRequest::TDQPAdd
+                                | ServerRequest::TDQPZero
                                 | ServerRequest::SpeedThresholdadd
                                 | ServerRequest::SpeedThresholdsub
                                 | ServerRequest::GazeVisual=> {

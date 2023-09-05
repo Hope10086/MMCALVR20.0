@@ -241,6 +241,8 @@ pub enum ServerRequest {
     SpeedThresholdadd,
     SpeedThresholdsub,
     TDmode,
+    TDQPAdd,
+    TDQPZero,
     InsertIdr,
     StartRecording,
     StopRecording,

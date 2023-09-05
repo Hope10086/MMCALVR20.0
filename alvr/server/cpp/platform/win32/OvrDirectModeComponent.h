@@ -71,12 +71,10 @@ private:
 	FfiQuat m_preGazeQuat[2];
 	FfiQuat m_GlobalQuat[2];
 	FfiQuat m_preGlobalQuat[2];
-	FfiEuler m_headEuler;
-	FfiEuler m_preheadEuler;
-	FfiEuler m_gazeEuler;
-	FfiEuler m_pregazeEuler;
-	FfiEuler m_eyeEuler;
-	FfiEuler m_preeyeEuler;
+
+	GazeHistory m_gazeinfo;
+
+
 	FfiAnglespeed m_wspeed;
 
 };
