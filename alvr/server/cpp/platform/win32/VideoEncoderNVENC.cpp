@@ -255,8 +255,6 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		picParams.qpDeltaMapSize = (encDesc.Width/macrosize)*(encDesc.Height/macrosize);
 		picParams.qpDeltaMap = (int8_t*)malloc(picParams.qpDeltaMapSize * sizeof(int8_t));   
 
-
-
 		int leftgazeMac_X  = ((NDCLeftGaze.x)*encDesc.Width/2)/macrosize ;
 		int leftgazeMac_Y  = ((NDCLeftGaze.y)*encDesc.Height) /macrosize;
 
@@ -305,12 +303,15 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 
         // Based GazeHistory  to assign strategy for Time Domain QP Distribution
 
-		if (m_gazeinfo.HeadDirectionAS > 60 || m_gazeinfo.GazeDirectionAS >100) // head speed
+		if ( Settings::Instance().m_tdmode &&(m_gazeinfo.HeadDirectionAS > 60 || m_gazeinfo.GazeDirectionAS >100)) // head speed
 		{
 			TDRoiDeltaQp = Settings::Instance().m_tdroideltaqp;
 			TDsubRoiDeltaQp = Settings::Instance().m_tdsubroideltaqp;
 			TDnonRoiDeltaQp = Settings::Instance().m_tdnonroideltaqp;
 		}
+
+
+		
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{
 				for (int y = 0; y < encDesc.Height/macrosize; y++)
