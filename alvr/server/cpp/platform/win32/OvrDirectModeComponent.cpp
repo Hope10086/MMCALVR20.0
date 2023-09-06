@@ -177,7 +177,7 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
       		{Info("Error:calculate GazeOffset in DirectX11 Screen CoorDinate \n"); 
 			}  
 			// Txt Delta Loaction   
-			if (Settings::Instance().m_recordGaze)
+			if (true)
 			{
 			int width  = Settings::Instance().m_renderWidth /2;
 	        int height = Settings::Instance().m_renderHeight;
@@ -240,8 +240,8 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
                 m_gazeinfo.GazeTimestampNs = m_targetTimestampNs_txt;
 				m_gazeinfo.HeadDirectionAS = HeadAngSpeed_angle;
 				m_gazeinfo.HeadDirectionPS = Headspeed_XY;
-				m_gazeinfo.GazeDirectionAS = LeftGlobalSpeed_angle;
-				m_gazeinfo.GazeDirectionPS = Leftglobalspeed_XY;
+				m_gazeinfo.GazeDirectionAS = LeftLocalSpeed_angle;
+				m_gazeinfo.GazeDirectionPS = Leftlocalspeed_XY;
 
 
 
@@ -272,7 +272,7 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// }
 
 // Printf  Txt  offset
-            if(bprint)
+            if(Settings::Instance().m_recordGaze && bprint)
 			{
 				TxtDeltaLocat("%llu variation head %d %d %d Left: local %d %d %d global %d %d %d\n"
 				, m_targetTimestampNs
@@ -291,20 +291,18 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				,LeftheadDirection
 				,LeftLocalDirection
 				,LeftGlobDirection	
-				);
-
-			TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
-			,m_targetTimestampNs
-			,m_GazeOffset[0].x
-			,m_GazeOffset[0].y
-			,m_GazeOffset[1].x+1
-			,m_GazeOffset[1].y
-			,m_GazeOffset[0].x*width
-			,m_GazeOffset[0].y*height
-			,(m_GazeOffset[1].x+1)*width
-			,(m_GazeOffset[1].y)*height
-			);
-			
+				);       
+				TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
+			    ,m_targetTimestampNs
+			    ,m_GazeOffset[0].x
+			    ,m_GazeOffset[0].y
+			    ,m_GazeOffset[1].x+1
+			    ,m_GazeOffset[1].y
+			    ,m_GazeOffset[0].x*width
+			    ,m_GazeOffset[0].y*height
+			    ,(m_GazeOffset[1].x+1)*width
+			    ,(m_GazeOffset[1].y)*height
+			    );
 			TxtPrint("%llu position %lf %lf %lf orientation %lf %lf %lf %lf\n"
 			,m_targetTimestampNs
 			,pose->motion.position[0]

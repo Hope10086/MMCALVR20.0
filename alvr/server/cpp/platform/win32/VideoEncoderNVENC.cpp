@@ -301,17 +301,59 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 			Info("Speed Threshold: %f",m_speedthreshold_change);  
 		}
 
+        //  Based GazeHistory to  determine whether the current frame is in the saccade process
+
+		if (m_gazeinfo.GazeDirectionAS >Settings::Instance().m_speedthreshold)
+		{
+			int  precount =0 ;
+			for (auto it = m_gazeBuffer.rbegin(); it != m_gazeBuffer.rend() && precount <12; ++it)
+			{
+				if (it->GazeDirectionAS > Settings::Instance().m_speedthreshold)
+				{
+					precount++;
+				}
+				else
+				{
+					break;
+				}
+				
+			}
+			Info("Frames %lld is in saccade ,there are %d frames before it \n",targetTimestampNs ,precount);
+			
+
+
+		}
+		else Info("Frames %lld isn't in saccade \n",targetTimestampNs);
+		
+
+
+
+
+
+
         // Based GazeHistory  to assign strategy for Time Domain QP Distribution
 
-		if ( Settings::Instance().m_tdmode &&(m_gazeinfo.HeadDirectionAS > 60 || m_gazeinfo.GazeDirectionAS >100)) // head speed
+		if ( Settings::Instance().m_tdmode ) // head speed
 		{
-			TDRoiDeltaQp = Settings::Instance().m_tdroideltaqp;
-			TDsubRoiDeltaQp = Settings::Instance().m_tdsubroideltaqp;
-			TDnonRoiDeltaQp = Settings::Instance().m_tdnonroideltaqp;
+			if (m_gazeinfo.HeadDirectionAS > Settings::Instance().m_speedthreshold)
+			{
+			    TDRoiDeltaQp = Settings::Instance().m_tdroideltaqp;
+			    TDsubRoiDeltaQp = Settings::Instance().m_tdsubroideltaqp;
+			    TDnonRoiDeltaQp = Settings::Instance().m_tdnonroideltaqp;
+			}
+			else if (m_gazeinfo.GazeDirectionAS >Settings::Instance().m_speedthreshold)
+			{
+				TDRoiDeltaQp = Settings::Instance().m_tdroideltaqp;
+			    TDsubRoiDeltaQp = Settings::Instance().m_tdsubroideltaqp;
+			    TDnonRoiDeltaQp = Settings::Instance().m_tdnonroideltaqp;
+			}
+			
+			
+
 		}
 
 
-		
+
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{
 				for (int y = 0; y < encDesc.Height/macrosize; y++)

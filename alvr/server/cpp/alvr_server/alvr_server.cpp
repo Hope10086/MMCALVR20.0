@@ -477,13 +477,13 @@ void TDmode(){
 
 void SpeedThresholdadd(){
     #ifndef __APPLE__
-    Settings::Instance().m_speedthreshold=Settings::Instance().m_speedthreshold+100;
+    Settings::Instance().m_speedthreshold=Settings::Instance().m_speedthreshold+30;
 #endif
 }
 
 void SpeedThresholdsub(){
     #ifndef __APPLE__
-    Settings::Instance().m_speedthreshold=Settings::Instance().m_speedthreshold-100;
+    Settings::Instance().m_speedthreshold=Settings::Instance().m_speedthreshold-30;
 #endif
 }
 

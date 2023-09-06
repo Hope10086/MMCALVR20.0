@@ -103,7 +103,7 @@ class Settings {
     bool newlogpath =true;
 
     bool m_tdmode = false;
-    float m_speedthreshold=100;
+    float m_speedthreshold=60;
 
     //TD QP_
     int m_tdroideltaqp =0 ;
