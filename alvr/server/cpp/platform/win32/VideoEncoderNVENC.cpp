@@ -333,12 +333,6 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 			    TDsubRoiDeltaQp = 30;
 			    TDnonRoiDeltaQp = 30;
 			}
-			else 
-			{
-				TDRoiDeltaQp = 0;
-			    TDsubRoiDeltaQp = 0;
-			    TDnonRoiDeltaQp = 0;
-			}
 		}
 
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   

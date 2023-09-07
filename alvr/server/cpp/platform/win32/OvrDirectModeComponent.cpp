@@ -171,9 +171,9 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// }
 			FfiGazeOPOffset LocalAngle;
 			GazeQuatToAngle(m_GlobalQuat[0],&LocalAngle);
-			Info("%lld GlobalAngle_X  %lf \n",m_targetTimestampNs ,LocalAngle.x);
+			//Info("%lld GlobalAngle_X  %lf \n",m_targetTimestampNs ,LocalAngle.x);
 
-            if (  Settings::Instance().APoint  <= LocalAngle.x <=Settings::Instance().BPoint)
+            if (  LocalAngle.x <=Settings::Instance().BPoint  && LocalAngle.x >=Settings::Instance().APoint)
 			{
 				Settings::Instance().TDbegin = true;
 			}
@@ -181,7 +181,7 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			{
 				Settings::Instance().TDbegin = false;
 			}
-			
+			Info("TDbegin %d",Settings::Instance().TDbegin);
 
 			FfiGazeOPOffset LeftGazeDirection ,RightGazeDirection;
 			//  Quat to Vector , Vector to angule,center_offset
