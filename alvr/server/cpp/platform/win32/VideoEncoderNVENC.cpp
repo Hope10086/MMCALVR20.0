@@ -318,41 +318,28 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 				}
 				
 			}
-			Info("Frames %lld is in saccade ,there are %d frames before it \n",targetTimestampNs ,precount);
-			
-
-
+			//Info("Frames %lld is in saccade ,there are %d frames before it \n",targetTimestampNs ,precount);
 		}
-		else Info("Frames %lld isn't in saccade \n",targetTimestampNs);
-		
-
-
-
-
-
+		//else Info("Frames %lld isn't in saccade \n",targetTimestampNs);
+	
 
         // Based GazeHistory  to assign strategy for Time Domain QP Distribution
 
 		if ( Settings::Instance().m_tdmode ) // head speed
 		{
-			if (m_gazeinfo.HeadDirectionAS > Settings::Instance().m_speedthreshold)
+			if ( Settings::Instance().TDbegin)
 			{
-			    TDRoiDeltaQp = Settings::Instance().m_tdroideltaqp;
-			    TDsubRoiDeltaQp = Settings::Instance().m_tdsubroideltaqp;
-			    TDnonRoiDeltaQp = Settings::Instance().m_tdnonroideltaqp;
+			    TDRoiDeltaQp = 30;
+			    TDsubRoiDeltaQp = 30;
+			    TDnonRoiDeltaQp = 30;
 			}
-			else if (m_gazeinfo.GazeDirectionAS >Settings::Instance().m_speedthreshold)
+			else 
 			{
-				TDRoiDeltaQp = Settings::Instance().m_tdroideltaqp;
-			    TDsubRoiDeltaQp = Settings::Instance().m_tdsubroideltaqp;
-			    TDnonRoiDeltaQp = Settings::Instance().m_tdnonroideltaqp;
+				TDRoiDeltaQp = 0;
+			    TDsubRoiDeltaQp = 0;
+			    TDnonRoiDeltaQp = 0;
 			}
-			
-			
-
 		}
-
-
 
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{

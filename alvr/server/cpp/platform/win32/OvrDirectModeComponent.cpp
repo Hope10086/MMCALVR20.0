@@ -169,7 +169,20 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// ,pose->motion.orientation.w
 			// );
 			// }
+			FfiGazeOPOffset LocalAngle;
+			GazeQuatToAngle(m_GlobalQuat[0],&LocalAngle);
+			Info("%lld GlobalAngle_X  %lf \n",m_targetTimestampNs ,LocalAngle.x);
+
+            if (  Settings::Instance().APoint  <= LocalAngle.x <=Settings::Instance().BPoint)
+			{
+				Settings::Instance().TDbegin = true;
+			}
+			else
+			{
+				Settings::Instance().TDbegin = false;
+			}
 			
+
 			FfiGazeOPOffset LeftGazeDirection ,RightGazeDirection;
 			//  Quat to Vector , Vector to angule,center_offset
      		GazeQuatToNDCLocation(m_GazeQuat[0],m_GazeQuat[1], &m_GazeOffset[0], &m_GazeOffset[1]);
@@ -545,6 +558,8 @@ void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffs
 }
 
 
+
+
 void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffset* LNDCLocat , FfiGazeOPOffset* RNDCLocat , double *LGazeVector ,double *RGazeVector)
 {
 	       		vr::HmdQuaternion_t LeftGazeQuat = HmdQuaternion_Init(
@@ -623,11 +638,29 @@ void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffs
 					}
 					else
 					Info("RNDCLocat in null\n");
-					
-					
-
 }
 
+void GazeQuatToAngle(FfiQuat LGazeQuat  ,FfiGazeOPOffset* GazeAngle){
+		vr::HmdQuaternion_t LeftGazeQuat = HmdQuaternion_Init(
+                LGazeQuat.w,
+				LGazeQuat.x,
+				LGazeQuat.y,
+				LGazeQuat.z);
+       	vr::HmdVector3d_t ZAix = {0.0, 0.0, -1.0};//ZAix is (0,0,1)or(0,0,-1)
+      	vr::HmdVector3d_t LeftGazeVector;
+      	if (!LGazeQuat.w)  //when eye gaze is null w =0 , so  Gaze is center
+       		{
+           		LeftGazeVector  = ZAix;
+       		}
+       	else
+      		{
+           	LeftGazeVector  = vrmath::quaternionRotateVector(LeftGazeQuat,ZAix,false);
+        	float LeftGazeRad_X = atanf(-1.0*LeftGazeVector.v[0]/LeftGazeVector.v[2]); 
+        	float LeftGazeRad_Y = atanf(-1.0*LeftGazeVector.v[1]/LeftGazeVector.v[2]);
+			}
+			GazeAngle->x =  atanf(-1.0*LeftGazeVector.v[0]/LeftGazeVector.v[2]) *180/PI;
+			GazeAngle->y =  atanf(-1.0*LeftGazeVector.v[1]/LeftGazeVector.v[2]) *180/PI;
+}
 FfiGazeOPOffset DeltaLocationCal (FfiGazeOPOffset nowNDCLocat , FfiGazeOPOffset preNDCLocat)
 {
 	FfiGazeOPOffset DeltaLocat;

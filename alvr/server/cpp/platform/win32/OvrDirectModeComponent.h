@@ -81,6 +81,7 @@ private:
 
 void GazeQuatToNDCLocation(FfiQuat LGazeQuat ,FfiQuat RGazeQuat	,FfiGazeOPOffset *LNDCLocat , FfiGazeOPOffset *RNDCLocat);
 void GazeQuatToNDCLocation(FfiQuat LGazeQuat ,FfiQuat RGazeQuat	,FfiGazeOPOffset *LNDCLocat , FfiGazeOPOffset *RNDCLocat , double *RGazeVector ,double *LGazeVector);
+void GazeQuatToAngle(FfiQuat LGazeQuat  ,FfiGazeOPOffset* GazeAngle);
 FfiGazeOPOffset DeltaLocationCal(FfiGazeOPOffset nowNDCLocat , FfiGazeOPOffset preNDCLocat);
 FfiQuat QuatFmt( vr::HmdQuaternion_t  rawQuat);
 FfiQuat DelatQuatCal( FfiQuat preQuat , FfiQuat nowQuat);

@@ -109,4 +109,12 @@ class Settings {
     int m_tdroideltaqp =0 ;
     int m_tdnonroideltaqp =0 ;
     int m_tdsubroideltaqp =0 ;
+
+    //  Eye Tracking Latency Test1 
+
+    double APoint = -85.0;
+    double BPoint = +85.0;
+    
+    bool  TDbegin = false;
+
 };
