@@ -526,3 +526,15 @@ void TDDelatQPZero()
     Settings::Instance().m_tdsubroideltaqp= 0;
     Settings::Instance().m_tdnonroideltaqp = 0;
 }
+
+
+void Acorrect()
+{
+    Settings::Instance().Acorre = true;
+}
+
+void Bcorrect()
+{
+    Settings::Instance().Bcorre = true;
+
+}

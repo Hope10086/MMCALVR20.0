@@ -191,6 +191,8 @@ impl DataSources {
                                 | ServerRequest::TDmode
                                 | ServerRequest::TDQPAdd
                                 | ServerRequest::TDQPZero
+                                | ServerRequest::ACorrect
+                                | ServerRequest::BCorrect
                                 | ServerRequest::SpeedThresholdadd
                                 | ServerRequest::SpeedThresholdsub
                                 | ServerRequest::GazeVisual=> {

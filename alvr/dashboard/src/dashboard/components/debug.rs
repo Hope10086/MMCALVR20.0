@@ -80,6 +80,13 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[2].button("TD QP Zero").clicked() {
             request = Some(ServerRequest::TDQPZero);
         }
+        if ui[0].button("Set PointA").clicked() {
+            request = Some(ServerRequest::ACorrect);
+        }
+        if ui[1].button("Set PointB").clicked() {
+            request = Some(ServerRequest::BCorrect);
+            
+        }
 
     });
     

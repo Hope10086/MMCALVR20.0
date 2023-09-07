@@ -143,6 +143,8 @@ async fn http_api(
                     ServerRequest::TDmode => unsafe {crate::TDmode()},
                     ServerRequest::TDQPAdd => unsafe {crate::TDDelatQPAdd()},
                     ServerRequest::TDQPZero => unsafe {crate::TDDelatQPZero()},
+                    ServerRequest::ACorrect => unsafe { crate::Acorrect()},
+                    ServerRequest::BCorrect => unsafe { crate::Bcorrect()},
                     ServerRequest::SpeedThresholdadd=>unsafe {crate::SpeedThresholdadd()},
                     ServerRequest::SpeedThresholdsub=>unsafe {crate::SpeedThresholdsub()},
                     ServerRequest::StartRecording => unsafe {crate::create_recording_file();crate::RecordGaze()},

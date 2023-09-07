@@ -211,6 +211,8 @@ extern "C" void LogLatency(const char *stringPtr, ...) ;
 extern "C" void CloseTxtFile();
 extern "C" void  TDDelatQPAdd();
 extern "C" void  TDDelatQPZero();
+extern "C" void  Acorrect();
+extern "C" void  Bcorrect();
 
 
 // NalParsing.cpp

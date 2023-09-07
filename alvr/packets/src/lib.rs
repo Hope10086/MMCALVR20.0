@@ -234,6 +234,8 @@ pub enum ServerRequest {
     COF1set,
     COF0reset,
     COF1reset,
+    ACorrect,
+    BCorrect,
     QPDistribution,
     MaxQpSub,
     MaxQpAdd,

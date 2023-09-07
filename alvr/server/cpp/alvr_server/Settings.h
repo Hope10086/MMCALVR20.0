@@ -116,5 +116,7 @@ class Settings {
     double BPoint = +5.0;
     
     bool  TDbegin = false;
+    bool  Acorre = false;
+    bool  Bcorre = false;
 
 };
