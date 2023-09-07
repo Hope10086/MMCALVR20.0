@@ -87,6 +87,14 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
             request = Some(ServerRequest::BCorrect);
             
         }
+        if ui[0].button("Add B scope").clicked() {
+            request = Some(ServerRequest::BDelatAdd);
+            
+        }
+        if ui[1].button("Sub B scope").clicked() {
+            request =Some(ServerRequest::BDelatSub)
+            
+        }
 
     });
     

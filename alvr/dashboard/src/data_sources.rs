@@ -190,6 +190,8 @@ impl DataSources {
                                 | ServerRequest::MaxQpAdd 
                                 | ServerRequest::TDmode
                                 | ServerRequest::TDQPAdd
+                                | ServerRequest::BDelatAdd
+                                | ServerRequest::BDelatSub
                                 | ServerRequest::TDQPZero
                                 | ServerRequest::ACorrect
                                 | ServerRequest::BCorrect

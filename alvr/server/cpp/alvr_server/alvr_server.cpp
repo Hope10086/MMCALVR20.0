@@ -538,3 +538,14 @@ void Bcorrect()
     Settings::Instance().Bcorre = true;
 
 }
+void BDelatAdd()
+{
+    Settings::Instance().BDelat = Settings::Instance().BDelat +0.5;
+    Info(" BDelat %f\n",Settings::Instance().BDelat);
+}
+
+void BDelatSub()
+{
+    Settings::Instance().BDelat = Settings::Instance().BDelat-0.5;
+    Info(" BDelat %f\n",Settings::Instance().BDelat);
+}

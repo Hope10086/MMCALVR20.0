@@ -213,6 +213,8 @@ extern "C" void  TDDelatQPAdd();
 extern "C" void  TDDelatQPZero();
 extern "C" void  Acorrect();
 extern "C" void  Bcorrect();
+extern "C" void  BDelatAdd();
+extern "C" void  BDelatSub();
 
 
 // NalParsing.cpp

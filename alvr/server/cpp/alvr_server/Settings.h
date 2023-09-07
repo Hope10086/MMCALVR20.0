@@ -112,8 +112,9 @@ class Settings {
 
     //  Eye Tracking Latency Test1 
 
-    double APoint = -5.0;
-    double BPoint = +5.0;
+    double APoint = -75.0;
+    double BPoint = +75.0;
+    double BDelat = 0.5;
     
     bool  TDbegin = false;
     bool  Acorre = false;

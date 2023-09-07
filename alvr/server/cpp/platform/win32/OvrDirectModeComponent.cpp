@@ -173,7 +173,22 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			GazeQuatToAngle(m_GlobalQuat[0],&LocalAngle);
 			//Info("%lld GlobalAngle_X  %lf \n",m_targetTimestampNs ,LocalAngle.x);
 
-            if (  LocalAngle.x <=Settings::Instance().BPoint -0.5  && LocalAngle.x >=Settings::Instance().APoint + 0.5)
+
+
+			if (Settings::Instance().Acorre)
+			{
+				Settings::Instance().APoint = LocalAngle.x;
+				TxtLatency("%lld A Angle = %d\n", m_targetTimestampNs,Settings::Instance().APoint);
+				Settings::Instance().Acorre =false;
+			}
+
+			if (Settings::Instance().Bcorre)
+			{
+				Settings::Instance().BPoint = LocalAngle.x;
+				TxtLatency("%lld B Angle = %d\n", m_targetTimestampNs ,Settings::Instance().Bcorre);
+				Settings::Instance().Bcorre =false;
+			}
+			if (  LocalAngle.x <= (Settings::Instance().BPoint -Settings::Instance().BDelat)  && LocalAngle.x >=Settings::Instance().APoint + 0.5)
 			{
 				Settings::Instance().TDbegin = true;
 			}
@@ -182,20 +197,7 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				Settings::Instance().TDbegin = false;
 			}
 
-			if (Settings::Instance().Acorre)
-			{
-				Settings::Instance().APoint = LocalAngle.x;
-				Info(" A Angle = %d\n",Settings::Instance().APoint);
-				Settings::Instance().Acorre =false;
-			}
 
-			if (Settings::Instance().Bcorre)
-			{
-				Settings::Instance().BPoint = LocalAngle.x;
-				Info(" B Angle = %d\n",Settings::Instance().Bcorre);
-				Settings::Instance().Bcorre =false;
-			}
-			Info("TDbegin %d",Settings::Instance().TDbegin);
 			FfiGazeOPOffset LeftGazeDirection ,RightGazeDirection;
 			//  Quat to Vector , Vector to angule,center_offset
      		GazeQuatToNDCLocation(m_GazeQuat[0],m_GazeQuat[1], &m_GazeOffset[0], &m_GazeOffset[1]);
@@ -269,8 +271,6 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				m_gazeinfo.GazeDirectionAS = LeftLocalSpeed_angle;
 				m_gazeinfo.GazeDirectionPS = Leftlocalspeed_XY;
 
-
-
 //  Printf Txt  speed
 			// if(bprint)
 			// {
@@ -340,8 +340,22 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			,pose->motion.orientation.w
 			);
 
+
 			}
+			
+			if (Settings::Instance().TDbegin)
+			{
+				TxtLatency("%llu Angle: head %lf Left: local %lf global %lf \n"
+				,m_targetTimestampNs
+				,LeftheadDirection
+				,LeftLocalDirection
+				,LeftGlobDirection	
+				);
 			}
+			
+			}
+
+			
 		}
 		else {
 			m_targetTimestampNs = 0;
