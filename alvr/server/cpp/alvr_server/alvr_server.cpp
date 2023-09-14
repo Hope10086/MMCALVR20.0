@@ -549,3 +549,14 @@ void BDelatSub()
     Settings::Instance().BDelat = Settings::Instance().BDelat-0.5;
     Info(" BDelat %f\n",Settings::Instance().BDelat);
 }
+void TimethresholdAdd()
+{
+    Settings::Instance().m_timethreshold =Settings::Instance().m_timethreshold + 10;
+    Info("Timethreshold is %f \n",Settings::Instance().m_timethreshold);
+}
+
+void TimethresholdSub()
+{
+    Settings::Instance().m_timethreshold =Settings::Instance().m_timethreshold - 10;
+    Info("Timethreshold is %f \n",Settings::Instance().m_timethreshold);
+}

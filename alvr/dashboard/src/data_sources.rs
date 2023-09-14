@@ -195,6 +195,8 @@ impl DataSources {
                                 | ServerRequest::TDQPZero
                                 | ServerRequest::ACorrect
                                 | ServerRequest::BCorrect
+                                | ServerRequest::TimeThresholdAdd
+                                | ServerRequest::TimeThresholdSub
                                 | ServerRequest::SpeedThresholdadd
                                 | ServerRequest::SpeedThresholdsub
                                 | ServerRequest::GazeVisual=> {

@@ -238,6 +238,8 @@ pub enum ServerRequest {
     BCorrect,
     BDelatAdd,
     BDelatSub,
+    TimeThresholdAdd,
+    TimeThresholdSub,
     QPDistribution,
     MaxQpSub,
     MaxQpAdd,

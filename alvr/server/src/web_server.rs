@@ -1,6 +1,6 @@
 use crate::{
     DECODER_CONFIG, FILESYSTEM_LAYOUT, SERVER_DATA_MANAGER, VIDEO_MIRROR_SENDER,
-    VIDEO_RECORDING_FILE,
+    VIDEO_RECORDING_FILE, create_recording_file,
 };
 use alvr_common::{log, prelude::*};
 use alvr_events::{Event, EventType};
@@ -147,6 +147,8 @@ async fn http_api(
                     ServerRequest::BCorrect => unsafe { crate::Bcorrect()},
                     ServerRequest::BDelatAdd => unsafe { crate::BDelatAdd()},
                     ServerRequest::BDelatSub => unsafe { crate::BDelatSub()},
+                    ServerRequest::TimeThresholdAdd => unsafe {crate::TimethresholdAdd() },
+                    ServerRequest::TimeThresholdSub => unsafe {crate::TimethresholdSub() },
                     ServerRequest::SpeedThresholdadd =>unsafe {crate::SpeedThresholdadd()},
                     ServerRequest::SpeedThresholdsub =>unsafe {crate::SpeedThresholdsub()},
                     ServerRequest::StartRecording => unsafe {crate::create_recording_file();crate::RecordGaze()},

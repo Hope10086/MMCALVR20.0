@@ -215,6 +215,8 @@ extern "C" void  Acorrect();
 extern "C" void  Bcorrect();
 extern "C" void  BDelatAdd();
 extern "C" void  BDelatSub();
+extern "C" void  TimethresholdAdd();
+extern "C" void  TimethresholdSub();
 
 
 // NalParsing.cpp

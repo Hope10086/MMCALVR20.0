@@ -95,6 +95,12 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
             request =Some(ServerRequest::BDelatSub)
             
         }
+        if ui[0].button("Time Threshold Add").clicked() {
+            request =Some(ServerRequest::TimeThresholdAdd)
+        }
+        if ui[1].button("Time Threshold Sub").clicked() {
+            request =Some(ServerRequest::TimeThresholdSub)
+        }
 
     });
     

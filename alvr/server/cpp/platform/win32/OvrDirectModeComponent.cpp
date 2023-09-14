@@ -361,12 +361,14 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 
 			}
 			
-			if (Settings::Instance().TDbegin)
-			{	TxtLatency("%llu Angle: head %lf Left: local %lf global %lf \n"
+			if (Settings::Instance().TDbegin  ||Settings::Instance().m_recordGaze )
+			{	TxtLatency("%llu Angle: head %lf  Remaintime %f Left: local %lf global %lf \n"
 				,m_targetTimestampNs
+				,Remaintime
 				,LeftheadDirection
 				,LeftLocalDirection
 				,LeftGlobDirection	
+				
 				);
 			} }		
 		}
