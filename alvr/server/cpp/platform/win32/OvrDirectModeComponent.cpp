@@ -245,13 +245,13 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			if (Settings::Instance().Acorre)
 			{
 				Settings::Instance().APoint = LocalAngle.x;
-				TxtLatency("%lld A Angle = %d\n", m_targetTimestampNs,Settings::Instance().APoint);
+				TxtLatency("%lld A Angle = %lf\n", m_targetTimestampNs,Settings::Instance().APoint);
 				Settings::Instance().Acorre =false;
 			}
 			if (Settings::Instance().Bcorre)
 			{
 				Settings::Instance().BPoint = LocalAngle.x;
-				TxtLatency("%lld B Angle = %d\n", m_targetTimestampNs ,Settings::Instance().Bcorre);
+				TxtLatency("%lld B Angle = %lf\n", m_targetTimestampNs ,Settings::Instance().Bcorre);
 				Settings::Instance().Bcorre =false;
 			}
 		// Remaining time calculation
