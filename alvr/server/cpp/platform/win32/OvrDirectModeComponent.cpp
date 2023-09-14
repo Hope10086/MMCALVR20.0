@@ -173,31 +173,6 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			GazeQuatToAngle(m_GlobalQuat[0],&LocalAngle);
 			//Info("%lld GlobalAngle_X  %lf \n",m_targetTimestampNs ,LocalAngle.x);
 
-
-
-			if (Settings::Instance().Acorre)
-			{
-				Settings::Instance().APoint = LocalAngle.x;
-				TxtLatency("%lld A Angle = %d\n", m_targetTimestampNs,Settings::Instance().APoint);
-				Settings::Instance().Acorre =false;
-			}
-
-			if (Settings::Instance().Bcorre)
-			{
-				Settings::Instance().BPoint = LocalAngle.x;
-				TxtLatency("%lld B Angle = %d\n", m_targetTimestampNs ,Settings::Instance().Bcorre);
-				Settings::Instance().Bcorre =false;
-			}
-			if (  LocalAngle.x <= (Settings::Instance().BPoint -Settings::Instance().BDelat)  && LocalAngle.x >=Settings::Instance().APoint + 0.5)
-			{
-				Settings::Instance().TDbegin = true;
-			}
-			else
-			{
-				Settings::Instance().TDbegin = false;
-			}
-
-
 			FfiGazeOPOffset LeftGazeDirection ,RightGazeDirection;
 			//  Quat to Vector , Vector to angule,center_offset
      		GazeQuatToNDCLocation(m_GazeQuat[0],m_GazeQuat[1], &m_GazeOffset[0], &m_GazeOffset[1]);
@@ -262,6 +237,49 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				double HeadAngSpeed_angle = calspeed(LeftheadDirection);
 				double LeftLocalSpeed_angle = calspeed(LeftLocalDirection);
 				double LeftGlobalSpeed_angle = calspeed(LeftGlobDirection);
+
+				
+// Eye tracking latency  test 
+        //   A&B Point Correct 
+
+			if (Settings::Instance().Acorre)
+			{
+				Settings::Instance().APoint = LocalAngle.x;
+				TxtLatency("%lld A Angle = %d\n", m_targetTimestampNs,Settings::Instance().APoint);
+				Settings::Instance().Acorre =false;
+			}
+			if (Settings::Instance().Bcorre)
+			{
+				Settings::Instance().BPoint = LocalAngle.x;
+				TxtLatency("%lld B Angle = %d\n", m_targetTimestampNs ,Settings::Instance().Bcorre);
+				Settings::Instance().Bcorre =false;
+			}
+		// Remaining time calculation
+
+		  double  Remaintime =1000*(Settings::Instance().BPoint - LocalAngle.x) /LeftGlobalSpeed_angle; // unit is ms
+
+
+
+
+
+
+		//   Change QP  touch off
+			if (  LocalAngle.x <= (Settings::Instance().BPoint -Settings::Instance().BDelat)  && LocalAngle.x >=Settings::Instance().APoint + 0.5)
+			{
+				Settings::Instance().TDbegin = true;
+			}
+			else
+			{
+				Settings::Instance().TDbegin = false;
+			}
+			if(Remaintime < Settings::Instance().m_timethreshold)
+			{
+                Settings::Instance().TDbegin = true;
+			}
+			else{
+				Settings::Instance().TDbegin = false;
+			}
+
 // List 
 
                 m_gazeinfo.FrameTimestampNs = m_targetTimestampNs;
@@ -344,18 +362,13 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			}
 			
 			if (Settings::Instance().TDbegin)
-			{
-				TxtLatency("%llu Angle: head %lf Left: local %lf global %lf \n"
+			{	TxtLatency("%llu Angle: head %lf Left: local %lf global %lf \n"
 				,m_targetTimestampNs
 				,LeftheadDirection
 				,LeftLocalDirection
 				,LeftGlobDirection	
 				);
-			}
-			
-			}
-
-			
+			} }		
 		}
 		else {
 			m_targetTimestampNs = 0;
@@ -585,8 +598,6 @@ void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffs
 }
 
 
-
-
 void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffset* LNDCLocat , FfiGazeOPOffset* RNDCLocat , double *LGazeVector ,double *RGazeVector)
 {
 	       		vr::HmdQuaternion_t LeftGazeQuat = HmdQuaternion_Init(
@@ -635,7 +646,7 @@ void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffs
 					 double RightGazeRad = acos( -1.0* RightGazeVector.v[2] );
 
         			 double RadToAnglue = (180.0/3.14159265358979323846f);
-					 *LGazeVector = LeftGazeRad  *RadToAnglue ;    
+					 *LGazeVector = LeftGazeRad_X  *RadToAnglue ;    
 					 *RGazeVector = RightGazeRad *RadToAnglue ;
 					 // need to change if fov is change
                      FfiFov leftcfov  = { -0.942478,0.698132,0.733038,-0.942478};
