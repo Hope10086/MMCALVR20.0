@@ -177,10 +177,35 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
       		{Info("Error:calculate GazeOffset in DirectX11 Screen CoorDinate \n"); 
 			}  
 			// Txt Delta Loaction   
-			if (true)
-			{
 			int width  = Settings::Instance().m_renderWidth /2;
-	        int height = Settings::Instance().m_renderHeight;
+	    	int height = Settings::Instance().m_renderHeight;
+
+// Absolute Global angle			
+			FfiGazeOPOffset Left_Global_angle,preLeft_Global_angle;
+			QuatToAngle(m_preGlobalQuat[0] ,&preLeft_Global_angle);
+			QuatToAngle(m_GlobalQuat[0] ,&Left_Global_angle);   //quat to global angle ,angle: x,y
+	//Horizontal or vertical angel speed (x)
+			double globalspeed_hor = calspeed(Left_Global_angle.x-preLeft_Global_angle.x);
+			double globalspeed_ver = calspeed(Left_Global_angle.y-preLeft_Global_angle.y); //hor or ver angle speed
+			if(Settings::Instance().setmap)
+			{
+				Settings::Instance().setmap = false;
+				Settings::Instance().map_globalangle = Left_Global_angle;   //set map position
+				Info("map's global angle:%lf %lf",Settings::Instance().map_globalangle.x,Settings::Instance().map_globalangle.y);
+			}
+			double remaintime_thre = 0.08;  //80ms
+			//Arriving at map
+			if((globalspeed_hor*remaintime_thre+Left_Global_angle.x>=Settings::Instance().map_globalangle.x)
+			 && (globalspeed_ver*remaintime_thre+Left_Global_angle.y<=Settings::Instance().map_globalangle.y)
+			&& Settings::Instance().m_tdmode
+			)
+			{
+				Settings::Instance().forcebetter = true;
+			}
+			else
+			{
+				Settings::Instance().forcebetter = false;
+			}
 //local
 				//local gaze  loaction 's delta 
 				FfiGazeOPOffset preLocNDCLocat[2] , nowLocNDCLocat[2];
@@ -210,7 +235,7 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
                 FfiGazeOPOffset RHeadGazeLoactDel = {(HeadGazeLoactDel[1].x - 0.37874) *width  ,(HeadGazeLoactDel[1].y - 0.39547)*height};
 
 
-//global
+//relative global
 				GlobDelatQuat[0] = DelatQuatCal(m_preGlobalQuat[0],m_GlobalQuat[0]);
 				GlobDelatQuat[1] = DelatQuatCal(m_preGlobalQuat[1],m_GlobalQuat[1]);
 				FfiGazeOPOffset LGloGazeLoactDel ,RGloGazeLoactDel;
@@ -234,46 +259,37 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				double HeadAngSpeed_angle = calspeed(LeftheadDirection);
 				double LeftLocalSpeed_angle = calspeed(LeftLocalDirection);
 				double LeftGlobalSpeed_angle = calspeed(LeftGlobDirection);
-// List 
 
-                m_gazeinfo.FrameTimestampNs = m_targetTimestampNs;
-                m_gazeinfo.GazeTimestampNs = m_targetTimestampNs_txt;
-				m_gazeinfo.HeadDirectionAS = HeadAngSpeed_angle;
-				m_gazeinfo.HeadDirectionPS = Headspeed_XY;
-				m_gazeinfo.GazeDirectionAS = LeftLocalSpeed_angle;
-				m_gazeinfo.GazeDirectionPS = Leftlocalspeed_XY;
+//Transfer the calculated speed value to the setting
+				Settings::Instance().headspeed_angle = HeadAngSpeed_angle;
+				Settings::Instance().localspeed_angle = LeftLocalSpeed_angle;
+				Settings::Instance().globalspeed_angle = LeftGlobalSpeed_angle;
 
-
-
-//  Printf Txt  speed
-			// if(bprint)
-			// {
-			// 	//SK
-			// 	Info("%llu %llu",m_prevTargetTimestampNs_txt,m_targetTimestampNs_txt);
-			// 	//SK
-			// 	TxtDeltaLocat("%llu speed head %d %d %d Left: local %d %d %d global %d %d %d\n"
-			// 	, m_targetTimestampNs
-			// 	, int (Headspeed_XY.x)
-			// 	, int (Headspeed_XY.y)
-			// 	, int (Headspeed)
-			// 	, int (Leftlocalspeed_XY.x)
-			// 	, int (Leftlocalspeed_XY.y)
-			// 	, int (Leftlocalspeed)
-			// 	, int (Leftglobalspeed_XY.x)
-			// 	, int (Leftglobalspeed_XY.y)
-			// 	, int (Leftglobalspeed)
-			// 	);
-			// 	Txtwspeed("%llu Anglespeed: head %lf Left: local %lf global %lf \n"
-			// 	,m_targetTimestampNs
-			// 	,HeadAngSpeed_angle
-			// 	,LeftLocalSpeed_angle
-			// 	,LeftGlobalSpeed_angle	
-			// 	);
-			// }
-
-// Printf  Txt  offset
-            if(Settings::Instance().m_recordGaze && bprint)
+		if (Settings::Instance().m_recordGaze)
+		{
+			if(bprint)
 			{
+// Txt  speed
+				// TxtDeltaLocat("%llu speed head %d %d %d Left: local %d %d %d global %d %d %d\n"
+				// , m_targetTimestampNs
+				// , int (Headspeed_XY.x)
+				// , int (Headspeed_XY.y)
+				// , int (Headspeed)
+				// , int (Leftlocalspeed_XY.x)
+				// , int (Leftlocalspeed_XY.y)
+				// , int (Leftlocalspeed)
+				// , int (Leftglobalspeed_XY.x)
+				// , int (Leftglobalspeed_XY.y)
+				// , int (Leftglobalspeed)
+				// );
+				// Txtwspeed("%llu Anglespeed: head %lf Left: local %lf global %lf \n"
+				// ,m_targetTimestampNs
+				// ,HeadAngSpeed_angle
+				// ,LeftLocalSpeed_angle
+				// ,LeftGlobalSpeed_angle	
+				// );
+
+// Txt  offset
 				TxtDeltaLocat("%llu variation head %d %d %d Left: local %d %d %d global %d %d %d\n"
 				, m_targetTimestampNs
 				, int (LHeadGazeLoactDel.x)
@@ -291,18 +307,20 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				,LeftheadDirection
 				,LeftLocalDirection
 				,LeftGlobDirection	
-				);       
-				TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
-			    ,m_targetTimestampNs
-			    ,m_GazeOffset[0].x
-			    ,m_GazeOffset[0].y
-			    ,m_GazeOffset[1].x+1
-			    ,m_GazeOffset[1].y
-			    ,m_GazeOffset[0].x*width
-			    ,m_GazeOffset[0].y*height
-			    ,(m_GazeOffset[1].x+1)*width
-			    ,(m_GazeOffset[1].y)*height
-			    );
+				);
+
+			TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
+			,m_targetTimestampNs
+			,m_GazeOffset[0].x
+			,m_GazeOffset[0].y
+			,m_GazeOffset[1].x+1
+			,m_GazeOffset[1].y
+			,m_GazeOffset[0].x*width
+			,m_GazeOffset[0].y*height
+			,(m_GazeOffset[1].x+1)*width
+			,(m_GazeOffset[1].y)*height
+			);
+			
 			TxtPrint("%llu position %lf %lf %lf orientation %lf %lf %lf %lf\n"
 			,m_targetTimestampNs
 			,pose->motion.position[0]
@@ -315,7 +333,7 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			);
 
 			}
-			}
+		}
 		}
 		else {
 			m_targetTimestampNs = 0;
@@ -465,7 +483,7 @@ void OvrDirectModeComponent::CopyTexture(uint32_t layerCount) {
 		//   //Info("GazeOffset Send to Encoder:(%f,%f) (%f,%f)\n",m_GazeOffset[0].x, m_GazeOffset[0].y, m_GazeOffset[1].x, m_GazeOffset[1].y);
 		// }
 		// Copy entire texture to staging so we can read the pixels to send to remote device.
-		m_pEncoder->CopyToStaging(pTexture, bounds, layerCount,false, presentationTime, submitFrameIndex,"", debugText, m_GazeOffset[0],m_GazeOffset[1], m_gazeinfo);
+		m_pEncoder->CopyToStaging(pTexture, bounds, layerCount,false, presentationTime, submitFrameIndex,"", debugText, m_GazeOffset[0],m_GazeOffset[1], m_wspeed);
 
 		m_pD3DRender->GetContext()->Flush();
 	}
@@ -544,6 +562,20 @@ void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffs
 
 }
 
+void QuatToAngle(FfiQuat LGazeQuat,FfiGazeOPOffset *LGazeangle)
+{
+	vr::HmdQuaternion_t LeftGazeQuat = HmdQuaternion_Init(
+                LGazeQuat.w,
+				LGazeQuat.x,
+				LGazeQuat.y,
+				LGazeQuat.z
+       			 );
+	vr::HmdVector3d_t ZAix = {0.0, 0.0, -1};//ZAix is (0,0,1)or(0,0,-1)
+	vr::HmdVector3d_t LeftGazeVector = vrmath::quaternionRotateVector(LeftGazeQuat,ZAix);
+	LGazeangle->x = atanf(-1*LeftGazeVector.v[0]/LeftGazeVector.v[2])*180/PI;
+	LGazeangle->y = atanf(-1*LeftGazeVector.v[1]/LeftGazeVector.v[2])*180/PI;
+
+}
 
 void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffset* LNDCLocat , FfiGazeOPOffset* RNDCLocat , double *LGazeVector ,double *RGazeVector)
 {

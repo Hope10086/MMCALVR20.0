@@ -36,7 +36,7 @@
 		void Initialize(std::shared_ptr<CD3DRender> d3dRender);
 
 		bool CopyToStaging(ID3D11Texture2D *pTexture[][2], vr::VRTextureBounds_t bounds[][2], int layerCount, bool recentering
-			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText, FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset,  GazeHistory gazeinfo);
+			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText, FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset, FfiAnglespeed wspeed);
 
 		virtual void Run();
 
@@ -66,13 +66,7 @@
 
 		void RoiSizezero();
 
-		void COF0set();
 
-		void COF1set();
-
-		void COF0reset();
-
-		void COF1reset();
 
 		void QPDistribution();
 		
@@ -83,7 +77,7 @@
 		uint64_t m_presentationTime;
 		uint64_t m_targetTimestampNs;
 		FfiGazeOPOffset m_GazeOffset[2] = {{0.621,0.395},{0.338,0.395}};
-		GazeHistory m_gazeinfo;
+		FfiAnglespeed m_wspeed={0,0,0};
 
 		std::shared_ptr<FrameRender> m_FrameRender;
 
@@ -96,10 +90,7 @@
 		std::atomic_bool m_centresizereset = false;
 		std::atomic_bool m_qpmodezero = false;
 		std::atomic_bool m_roisizezero = false;
-		std::atomic_bool m_cof0set = false;
-		std::atomic_bool m_cof1set = false;
-		std::atomic_bool m_cof0reset = false;
-		std::atomic_bool m_cof1reset = false;
+
 		std::atomic_bool m_QPDistribution = false;
 	};
 

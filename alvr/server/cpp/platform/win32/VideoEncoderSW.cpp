@@ -117,8 +117,12 @@ void VideoEncoderSW::Shutdown() {
 	Debug("Successfully shutdown VideoEncoderSW.\n");
 }
 
-void VideoEncoderSW::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze ,GazeHistory m_gazeinfo) {
+void VideoEncoderSW::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze ,FfiAnglespeed wspeed) {
 	// Handle bitrate changes
+//SK
+	Info("11111111");
+//SK
+
 	auto params = GetDynamicEncoderParams();
 	if (params.updated) {
 		m_codecContext->bit_rate = params.bitrate_bps;
@@ -140,7 +144,7 @@ void VideoEncoderSW::Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTi
 	// Copy texture and map it to memory
 	/// SteamVR crashes if the swapchain textures are set to staging, which is needed to be read by the CPU.
 	/// Unless there's another solution we have to copy the texture every time, which is gonna be another performance hit.
-	HRESULT hr = CopyTexture(pTexture);
+	HRESULT hr = CopyTexture(pTexture);   //pTexture to m_stagingTexMap
 	if(FAILED(hr)) {
 		Error("Failed to copy texture to staging: %p %ls", hr, GetErrorStr(hr).c_str());
 		return;

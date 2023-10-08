@@ -89,7 +89,7 @@ class Settings {
     int m_centresize=0;
     // QP mode 
     int m_delatQPmode = 0;
-    int m_MaxQp = 51;
+    int m_MaxQp = 43;   //The default is 43QP
     //拟合系数delta
     float m_cof0delta=0;
     float m_cof1delta=0;
@@ -103,10 +103,17 @@ class Settings {
     bool newlogpath =true;
 
     bool m_tdmode = false;
-    float m_speedthreshold=60;
+    float m_speedthreshold=100;
+    bool m_usertype =0;  //Default player type
 
-    //TD QP_
-    int m_tdroideltaqp =0 ;
-    int m_tdnonroideltaqp =0 ;
-    int m_tdsubroideltaqp =0 ;
+    double headspeed_angle=0;   //head angle speed
+    double localspeed_angle=0;   //local
+    double globalspeed_angle=0;  //global
+    
+    bool forcebetter = false;  //As soon as the map, coding quality is forced to get better
+
+    bool setmap=false;
+    FfiGazeOPOffset map_globalangle;
+
+    int picturetype=0;
 };

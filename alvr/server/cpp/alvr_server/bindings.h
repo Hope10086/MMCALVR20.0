@@ -37,20 +37,6 @@ struct FfiGazeOPOffset
     double x;
     double y;
 };
-
-struct GazeHistory
-{   
-    unsigned long long  FrameTimestampNs;
-    unsigned long long  GazeTimestampNs;
-    // Head   Direction  's  Angle  Speed& Pixels Speed in Left View
-    double HeadDirectionAS;
-    FfiGazeOPOffset  HeadDirectionPS;
-    // Left Gaze Direction Direction  's Delta Angle & Delta Pixels in Left View
-    double GazeDirectionAS;
-    FfiGazeOPOffset GazeDirectionPS;
-
-};
-
 struct FfiEuler
 {
     float Yaw;
@@ -194,10 +180,11 @@ extern "C" void CentreSizeset();
 extern "C" void CentreSizereset();
 extern "C" void QpModezero();
 extern "C" void RoiSizezero();
-extern "C" void COF0set();
-extern "C" void COF1set();
-extern "C" void COF0reset();
-extern "C" void COF1reset();
+extern "C" void COF0sub();
+extern "C" void COF1sub();
+extern "C" void COF0add();
+extern "C" void COF1add();
+extern "C" void Setmap();
 extern "C" void QPDistribution();
 extern "C" void RecordGaze();
 extern "C" void StopRecordGaze();
@@ -206,11 +193,10 @@ extern "C" void MaxQpAdd();
 extern "C" void TDmode();
 extern "C" void SpeedThresholdadd();
 extern "C" void SpeedThresholdsub();
+extern "C" void Usertypes();
 extern "C" void GazeVisual();
 extern "C" void LogLatency(const char *stringPtr, ...) ;
 extern "C" void CloseTxtFile();
-extern "C" void  TDDelatQPAdd();
-extern "C" void  TDDelatQPZero();
 
 
 // NalParsing.cpp

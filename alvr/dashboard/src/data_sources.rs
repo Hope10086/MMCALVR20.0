@@ -181,18 +181,18 @@ impl DataSources {
                                 | ServerRequest::CentreSizereset
                                 | ServerRequest::QpModezero
                                 | ServerRequest::RoiSizezero
-                                | ServerRequest::COF0set
-                                | ServerRequest::COF1set
-                                | ServerRequest::COF0reset
-                                | ServerRequest::COF1reset
+                                | ServerRequest::COF0sub
+                                | ServerRequest::COF1sub
+                                | ServerRequest::COF0add
+                                | ServerRequest::COF1add
+                                | ServerRequest::Setmap
                                 | ServerRequest::QPDistribution
                                 | ServerRequest::MaxQpSub 
                                 | ServerRequest::MaxQpAdd 
                                 | ServerRequest::TDmode
-                                | ServerRequest::TDQPAdd
-                                | ServerRequest::TDQPZero
                                 | ServerRequest::SpeedThresholdadd
                                 | ServerRequest::SpeedThresholdsub
+                                | ServerRequest::Usertypes
                                 | ServerRequest::GazeVisual=> {
                                     warn!("Cannot perform action, streamer is not connected.")
                                 }

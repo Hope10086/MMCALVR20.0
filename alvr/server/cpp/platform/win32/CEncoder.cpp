@@ -77,18 +77,19 @@
 		}
 
 		bool CEncoder::CopyToStaging(ID3D11Texture2D *pTexture[][2], vr::VRTextureBounds_t bounds[][2], int layerCount, bool recentering
-			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText,  FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset,  GazeHistory gazeinfo)
+			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText,  FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset, FfiAnglespeed wspeed)
 		{
 			m_presentationTime = presentationTime;
 			m_targetTimestampNs = targetTimestampNs;
-
+			//Info("Source file:CEncoder.cpp\n");
+			//Info("Recive GazeOffset = (%lf,%lf) (%lf,%lf)\n",leftGazeOffset.x, leftGazeOffset.y, rightGazeOffset.x, rightGazeOffset.y);
 			m_GazeOffset[0] = leftGazeOffset;
 			m_GazeOffset[1] = rightGazeOffset;
 
-			m_gazeinfo = gazeinfo ;
-
+			m_wspeed=wspeed;
+			//TxtPrint("Frame Render Time %llu ",m_targetTimestampNs);
 			m_FrameRender->Startup();
-			m_FrameRender->RenderFrame(pTexture, bounds, layerCount, recentering, message, debugText, m_GazeOffset[0], m_GazeOffset[1]);
+			m_FrameRender->RenderFrame(pTexture, bounds, layerCount, recentering, message, debugText, m_GazeOffset[0], m_GazeOffset[1]); 
 			return true;
 		}
 
@@ -120,16 +121,19 @@
 				{
 					    m_roisizeset =false;
 						Settings::Instance().m_RoiSize = (Settings::Instance().m_RoiSize+1)%40 ;
+						
 				}
 				if (m_centresizeset)
 				{
 					    m_centresizeset =false;
 						Settings::Instance().m_centresize = (Settings::Instance().m_centresize+1)%40 ;
+						Info("Centre Size: %d×%d",2*Settings::Instance().m_centresize+1, 2*Settings::Instance().m_centresize+1);  
 				}
 				if (m_centresizereset)
 				{
 					    m_centresizereset =false;
 						Settings::Instance().m_centresize = 0 ;
+						Info("Centre Size: %d×%d",2*Settings::Instance().m_centresize+1, 2*Settings::Instance().m_centresize+1); 
 				}
 
 				if (m_qpmodezero)
@@ -144,36 +148,19 @@
 						Settings::Instance().m_RoiSize = 0;
 
 				}		
-				if(m_cof0set)
-				{
-					m_cof0set=false;
-					Settings::Instance().m_cof0delta = Settings::Instance().m_cof0delta-0.5;
-				}
-				if(m_cof1set)
-				{
-					m_cof1set=false;
-					Settings::Instance().m_cof1delta = Settings::Instance().m_cof1delta-0.5;
-				}
-				if(m_cof0reset)
-				{
-					m_cof0reset=false;
-					Settings::Instance().m_cof0delta=0;
-				}
-				if(m_cof1reset)
-				{
-					m_cof1reset=false;
-					Settings::Instance().m_cof1delta=0;
-				}
+				
+				
 				if(m_QPDistribution)
 				{
 					m_QPDistribution=false;
 					Settings::Instance().m_QPDistribution=(Settings::Instance().m_QPDistribution+1)%3;  //三种模式
+					Info("distribution mode: %d",Settings::Instance().m_QPDistribution);  
 				}
 
 
 				if (m_FrameRender->GetTexture())
 				{
-					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1], m_gazeinfo);
+					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1], m_wspeed);
 				}
 
 				m_encodeFinished.Set();
@@ -221,8 +208,5 @@
 		void CEncoder::CentreSizereset() { m_centresizereset =true;}
 		void CEncoder::QpModezero() { m_qpmodezero = true;}
 		void CEncoder::RoiSizezero() { m_roisizezero = true;}
-		void CEncoder::COF0set() { m_cof0set = true;}
-		void CEncoder::COF1set() { m_cof1set = true;}
-		void CEncoder::COF0reset() {  m_cof0reset = true;}
-		void CEncoder::COF1reset() {  m_cof1reset = true;}
+
 		void CEncoder::QPDistribution() {  m_QPDistribution = true;}

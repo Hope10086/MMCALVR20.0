@@ -301,8 +301,6 @@ void CEncoder::InsertIDR() { m_scheduler.InsertIDR(); }
 void CEncoder::CaptureFrame() { m_captureFrame = true; }
 void CEncoder::QpModeset() { m_qpmodeset = true;}
 void CEncoder::RoiSizeset() { m_roisize =true;}
-void CEncoder::COF0set() { m_cof0set =true;}
-void CEncoder::COF1set() { m_cof1set =true;}
-void CEncoder::COF0reset() { m_cof1reset =true;}
-void CEncoder::COF1reset() { m_cof1reset =true;}
+
+
 void CEncoder::QPDistribution() { m_QPDistribution=true;}

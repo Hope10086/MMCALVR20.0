@@ -17,6 +17,5 @@ class VideoEncoder {
                           bool insertIDR,
                           FfiGazeOPOffset NDCLeftGaze, 
                           FfiGazeOPOffset NDCRightGaze,
-                          GazeHistory m_gazeinfo) = 0;
-
+                          FfiAnglespeed wspeed) = 0;
 };

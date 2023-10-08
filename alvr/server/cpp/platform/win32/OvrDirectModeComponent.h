@@ -71,16 +71,19 @@ private:
 	FfiQuat m_preGazeQuat[2];
 	FfiQuat m_GlobalQuat[2];
 	FfiQuat m_preGlobalQuat[2];
-
-	GazeHistory m_gazeinfo;
-
-
+	FfiEuler m_headEuler;
+	FfiEuler m_preheadEuler;
+	FfiEuler m_gazeEuler;
+	FfiEuler m_pregazeEuler;
+	FfiEuler m_eyeEuler;
+	FfiEuler m_preeyeEuler;
 	FfiAnglespeed m_wspeed;
 
 };
 
 void GazeQuatToNDCLocation(FfiQuat LGazeQuat ,FfiQuat RGazeQuat	,FfiGazeOPOffset *LNDCLocat , FfiGazeOPOffset *RNDCLocat);
 void GazeQuatToNDCLocation(FfiQuat LGazeQuat ,FfiQuat RGazeQuat	,FfiGazeOPOffset *LNDCLocat , FfiGazeOPOffset *RNDCLocat , double *RGazeVector ,double *LGazeVector);
+void QuatToAngle(FfiQuat LGazeQuat,FfiGazeOPOffset *LGazeangle);
 FfiGazeOPOffset DeltaLocationCal(FfiGazeOPOffset nowNDCLocat , FfiGazeOPOffset preNDCLocat);
 FfiQuat QuatFmt( vr::HmdQuaternion_t  rawQuat);
 FfiQuat DelatQuatCal( FfiQuat preQuat , FfiQuat nowQuat);

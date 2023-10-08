@@ -395,37 +395,85 @@ void RoiSizezero() {
 #endif
 }
 
-void COF0set() {
+void COF0sub() {
     #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->COF0set();
+     Settings::Instance().m_cof0delta = Settings::Instance().m_cof0delta-1;
+     if(Settings::Instance().m_usertype)  //viewer
+     {
+        Info("cof0: %f",27.54+Settings::Instance().m_cof0delta);
+     }
+     else   //gamer
+     {
+        Info("cof0: %f",30.96+Settings::Instance().m_cof0delta);
+     }
+#endif
+}
+
+void COF0add() {
+    #ifndef __APPLE__
+    Settings::Instance().m_cof0delta = Settings::Instance().m_cof0delta+1;
+    if(Settings::Instance().m_usertype)  //viewer
+     {
+        Info("cof0: %f",27.54+Settings::Instance().m_cof0delta);
+     }
+     else   //gamer
+     {
+        Info("cof0: %f",30.96+Settings::Instance().m_cof0delta);
+     }
+#endif
+}
+
+void COF1sub() {
+    #ifndef __APPLE__
+    Settings::Instance().m_cof1delta = Settings::Instance().m_cof1delta-0.5;
+    if(Settings::Instance().m_usertype)  //viewer
+     {
+        Info("cof1: %f",0.01004+Settings::Instance().m_cof1delta);
+     }
+     else   //gamer
+     {
+        Info("cof1: %f",0.01065+Settings::Instance().m_cof1delta);
+     }
+#endif
+}
+
+void COF1add() {
+    #ifndef __APPLE__
+     Settings::Instance().m_cof1delta = Settings::Instance().m_cof1delta+0.5;
+     if(Settings::Instance().m_usertype)  //viewer
+     {
+        Info("cof1: %f",0.01004+Settings::Instance().m_cof1delta);
+     }
+     else   //gamer
+     {
+        Info("cof1: %f",0.01065+Settings::Instance().m_cof1delta);
+     }
+#endif
+}
+
+void Usertypes(){
+    #ifndef __APPLE__
+    Settings::Instance().m_usertype=!Settings::Instance().m_usertype;
+    Settings::Instance().m_cof0delta=0; //When switching user types, the coefficients are also reset
+    Settings::Instance().m_cof1delta=0;
+    if(Settings::Instance().m_usertype)
+    {
+        Info("You're a viewer, cof0:%f, cof1:%f",27.54+Settings::Instance().m_cof0delta,0.01004+Settings::Instance().m_cof1delta);
+    }
+    else
+    {
+         Info("You're a gamer, cof0:%f, cof1:%f",30.96+Settings::Instance().m_cof0delta,0.01065+Settings::Instance().m_cof1delta);
     }
 #endif
 }
 
-void COF1set() {
+void Setmap() {
     #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->COF1set();
-    }
+     Settings::Instance().setmap=true;
+     Info("The map location is set");
 #endif
 }
 
-void COF0reset() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->COF0reset();
-    }
-#endif
-}
-
-void COF1reset() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->COF1reset();
-    }
-#endif
-}
 void QPDistribution() {
     #ifndef __APPLE__
     if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
@@ -448,10 +496,12 @@ void MaxQpSub(){
     if ( Settings::Instance().m_MaxQp > 21)
     {
         Settings::Instance().m_MaxQp = Settings::Instance().m_MaxQp -1;
+        Info("Max Qp = %d\n",Settings::Instance().m_MaxQp);
     }
     else
     {
         Settings::Instance().m_MaxQp = 21;
+        Info("Max Qp = %d\n",Settings::Instance().m_MaxQp);
     }    
 #endif
 }
@@ -461,10 +511,12 @@ void MaxQpAdd(){
     if ( Settings::Instance().m_MaxQp < 51)
     {
         Settings::Instance().m_MaxQp = Settings::Instance().m_MaxQp +1;
+        Info("Max Qp = %d\n",Settings::Instance().m_MaxQp);
     }
     else
     {
         Settings::Instance().m_MaxQp = 51;
+        Info("Max Qp = %d\n",Settings::Instance().m_MaxQp);
     }    
 #endif
 }
@@ -472,18 +524,21 @@ void MaxQpAdd(){
 void TDmode(){
     #ifndef __APPLE__
     Settings::Instance().m_tdmode=!Settings::Instance().m_tdmode;
+    Info("TD mode:%d",Settings::Instance().m_tdmode);
 #endif
 }
 
 void SpeedThresholdadd(){
     #ifndef __APPLE__
     Settings::Instance().m_speedthreshold=Settings::Instance().m_speedthreshold+30;
+    Info("speed threshold:%f",Settings::Instance().m_speedthreshold);
 #endif
 }
 
 void SpeedThresholdsub(){
     #ifndef __APPLE__
     Settings::Instance().m_speedthreshold=Settings::Instance().m_speedthreshold-30;
+    Info("speed threshold:%f",Settings::Instance().m_speedthreshold);
 #endif
 }
 
@@ -504,25 +559,4 @@ void LogLatency(const char *stringPtr, ...) {
 void CloseTxtFile(){
 
     LogFileClose();
-}
-
-void TDDelatQPAdd()
-{
-    Settings::Instance().m_tdroideltaqp =Settings::Instance().m_tdroideltaqp +1;
-    Settings::Instance().m_tdsubroideltaqp =Settings::Instance().m_tdsubroideltaqp +1;
-    Settings::Instance().m_tdnonroideltaqp =Settings::Instance().m_tdnonroideltaqp +1;
-    Info("TD Delat QP: %d %d %d \n "
-    ,Settings::Instance().m_tdroideltaqp 
-    ,Settings::Instance().m_tdsubroideltaqp
-    ,Settings::Instance().m_tdnonroideltaqp
-    );
-
-}
-
-void TDDelatQPZero()
-{
-
-    Settings::Instance().m_tdroideltaqp = 0;
-    Settings::Instance().m_tdsubroideltaqp= 0;
-    Settings::Instance().m_tdnonroideltaqp = 0;
 }

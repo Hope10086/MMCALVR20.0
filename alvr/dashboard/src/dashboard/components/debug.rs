@@ -32,18 +32,7 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[3].button("RoiSize zero").clicked() {
             request = Some(ServerRequest::RoiSizezero);
         }
-        if ui[0].button("COF0 set").clicked() {
-            request = Some(ServerRequest::COF0set);
-        }
-        if ui[1].button("COF1 set").clicked() {
-            request = Some(ServerRequest::COF1set);
-        }
-        if ui[2].button("COF0 reset").clicked() {
-            request = Some(ServerRequest::COF0reset);
-        }
-        if ui[3].button("COF1 reset").clicked() {
-            request = Some(ServerRequest::COF1reset);
-        }
+        
         
         if ui[0].button("QP Mode").clicked() {
             request = Some(ServerRequest::QPDistribution);
@@ -64,25 +53,40 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[1].button("MaxQp Add").clicked() {   
             request = Some(ServerRequest ::MaxQpAdd);
         }
-        if ui[2].button("Speed Threshold add").clicked() {   
-            request = Some(ServerRequest ::SpeedThresholdadd);
-        }
-        if ui[3].button("Speed Threshold sub").clicked() {   
-            request = Some(ServerRequest ::SpeedThresholdsub);
-        }
         
-        if ui[0].button("TD Mode").clicked() {   
+        if ui[2].button("TD Mode").clicked() {   
             request = Some(ServerRequest ::TDmode);
         }
-        if ui[1].button("TD QP Add").clicked() {
-            request = Some(ServerRequest::TDQPAdd);
+        if ui[3].button("Speed Threshold add").clicked() {   
+            request = Some(ServerRequest ::SpeedThresholdadd);
         }
-        if ui[2].button("TD QP Zero").clicked() {
-            request = Some(ServerRequest::TDQPZero);
+        if ui[0].button("Speed Threshold sub").clicked() {   
+            request = Some(ServerRequest ::SpeedThresholdsub);
         }
 
+        if ui[1].button("COF0 sub").clicked() {
+            request = Some(ServerRequest::COF0sub);
+        }
+        if ui[2].button("COF0 add").clicked() {
+            request = Some(ServerRequest::COF0add);
+        }
+        if ui[3].button("COF1 sub").clicked() {
+            request = Some(ServerRequest::COF1sub);
+        }
+        if ui[0].button("COF1 add").clicked() {
+            request = Some(ServerRequest::COF1add);
+        }
+        
+        if ui[1].button("Set constant area").clicked() {
+            request = Some(ServerRequest::Setmap);
+        }
+        
+        if ui[2].button("User types").clicked() {
+            request = Some(ServerRequest::Usertypes);
+        }
+
+
     });
-    
 
     
 

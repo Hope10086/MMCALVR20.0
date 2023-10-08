@@ -10,6 +10,7 @@
 */
 
 #include "NvEncoder.h"
+#include "alvr_server/Settings.h"
 
 #ifndef _WIN32
 #include <cstring>
@@ -486,7 +487,12 @@ void NvEncoder::EncodeFrame(std::vector<std::vector<uint8_t>> &vPacket, NV_ENC_P
     if (nvStatus == NV_ENC_SUCCESS || nvStatus == NV_ENC_ERR_NEED_MORE_INPUT)
     {
         m_iToSend++;
-        GetEncodedPacket(m_vBitstreamOutputBuffer, vPacket, true);
+//SK
+        // NV_ENC_LOCK_BITSTREAM lockBitstreamData = { NV_ENC_LOCK_BITSTREAM_VER };
+        // lockBitstreamData.outputBitstream = m_vBitstreamOutputBuffer[bfrIdx];
+        // lockBitstreamData.pictureType;
+//SK
+        GetEncodedPacket(m_vBitstreamOutputBuffer, vPacket, true);   //图片类型
     }
     else
     {
@@ -593,7 +599,9 @@ void NvEncoder::GetEncodedPacket(std::vector<NV_ENC_OUTPUT_PTR> &vOutputBuffer, 
         lockBitstreamData.outputBitstream = vOutputBuffer[m_iGot % m_nEncoderBuffer];
         lockBitstreamData.doNotWait = false;
         NVENC_API_CALL(m_nvenc.nvEncLockBitstream(m_hEncoder, &lockBitstreamData));
-  
+//SK
+        Settings::Instance().picturetype = lockBitstreamData.pictureType;
+//SK
         uint8_t *pData = (uint8_t *)lockBitstreamData.bitstreamBufferPtr;
         if (vPacket.size() < i + 1)
         {

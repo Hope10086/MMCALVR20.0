@@ -62,7 +62,7 @@ public:
 	void Initialize();
 	void Shutdown();
 
-	void Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, GazeHistory m_gazeinfo);
+	void Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR, FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, FfiAnglespeed wspeed);
 	void Receive(AMFDataPtr data);
 private:	
 	static const wchar_t *START_TIME_PROPERTY;

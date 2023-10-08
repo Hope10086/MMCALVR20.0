@@ -26,7 +26,7 @@ public:
 	void Initialize();
 	void Shutdown();
 
-	void Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR,FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, GazeHistory m_gazeinfo);
+	void Transmit(ID3D11Texture2D *pTexture, uint64_t presentationTime, uint64_t targetTimestampNs, bool insertIDR,FfiGazeOPOffset NDCLeftGaze, FfiGazeOPOffset NDCRightGaze, FfiAnglespeed wspeed);
 private:
 	void FillEncodeConfig(NV_ENC_INITIALIZE_PARAMS &initializeParams, int refreshRate, int renderWidth, int renderHeight, uint64_t bitrate_bps);
 	void CreateGazepointTexture(D3D11_TEXTURE2D_DESC m_srcDesc);
@@ -35,8 +35,6 @@ private:
 	std::shared_ptr<NvEncoder> m_NvNecoder;
 
 	std::shared_ptr<CD3DRender> m_pD3DRender;
-
-    std::list<GazeHistory> m_gazeBuffer;
 
 	int m_codec;
 	int m_refreshRate;

@@ -937,7 +937,7 @@ pub fn session_settings_default() -> SettingsDefault {
                     intra_refresh_period: -1,
                     intra_refresh_count: -1,
                     max_num_ref_frames: -1,
-                    gop_length: 32,
+                    gop_length: 256,
                     p_frame_strategy: -1,
                     rate_control_mode: -1,
                     rc_buffer_size: -1,
