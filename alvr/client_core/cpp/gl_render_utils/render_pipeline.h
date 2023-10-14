@@ -43,6 +43,10 @@ namespace gl_render_utils {
                        size_t uniformBlockSize = 0);
 
         void Render(const RenderState &renderState, const void *uniformBlockData = nullptr) const;
+        
+        GLuint GetProgram() const {
+        return mProgram;
+    }
 
         ~RenderPipeline();
 

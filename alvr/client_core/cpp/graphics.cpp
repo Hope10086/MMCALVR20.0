@@ -2,6 +2,7 @@
 #include "ffr.h"
 #include "gltf_model.h"
 #include "srgb_correction_pass.h"
+#include "GaussianBlurPass.h"
 #include "utils.h"
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -71,6 +72,7 @@ typedef struct {
     GltfModel *lobbyScene;
     std::unique_ptr<FFR> ffr;
     std::unique_ptr<SrgbCorrectionPass> srgbCorrectionPass;
+    std::unique_ptr<GaussianBlurPass> gaussianBlurPass;
     bool enableFFR;
     GLuint streamRenderTexture;
 } ovrRenderer;
@@ -540,16 +542,42 @@ void ovrRenderer_Create(ovrRenderer *renderer,
                         bool isLobby) {
     if (!isLobby) {
         renderer->srgbCorrectionPass = std::make_unique<SrgbCorrectionPass>(streamTexture);
+      // 
         renderer->enableFFR = ffrData.enabled;
+
         if (renderer->enableFFR) {
             FoveationVars fv = CalculateFoveationVars(ffrData);
             renderer->srgbCorrectionPass->Initialize(fv.optimizedEyeWidth, fv.optimizedEyeHeight);
-            renderer->ffr = std::make_unique<FFR>(renderer->srgbCorrectionPass->GetOutputTexture());
-            renderer->ffr->Initialize(fv);
-            renderer->streamRenderTexture = renderer->ffr->GetOutputTexture()->GetGLTexture();
+            if (true) // shn bool for opening  gaussian
+            {
+              renderer->gaussianBlurPass = std::make_unique<GaussianBlurPass>(renderer->srgbCorrectionPass->GetOutputTexture());
+              renderer->gaussianBlurPass->Initialize(fv.optimizedEyeWidth, fv.optimizedEyeHeight);
+
+              renderer->ffr = std::make_unique<FFR>(renderer->gaussianBlurPass->GetOutputTexture());
+              renderer->ffr->Initialize(fv);
+              renderer->streamRenderTexture = renderer->ffr->GetOutputTexture()->GetGLTexture();
+            }
+            else
+            {
+              renderer->ffr = std::make_unique<FFR>(renderer->srgbCorrectionPass->GetOutputTexture());
+              renderer->ffr->Initialize(fv);
+              renderer->streamRenderTexture = renderer->ffr->GetOutputTexture()->GetGLTexture();
+            }
+
         } else {
             renderer->srgbCorrectionPass->Initialize(width, height);
-            renderer->streamRenderTexture = renderer->srgbCorrectionPass->GetOutputTexture()->GetGLTexture();
+
+               if (true) // bool for opening  gaussian
+               {
+                renderer->gaussianBlurPass = std::make_unique<GaussianBlurPass>(renderer->srgbCorrectionPass->GetOutputTexture());
+                renderer->gaussianBlurPass->Initialize(width, height);
+                renderer->streamRenderTexture = renderer->gaussianBlurPass->GetOutputTexture()->GetGLTexture();
+               }
+               else
+               {
+                 renderer->streamRenderTexture = renderer->srgbCorrectionPass->GetOutputTexture()->GetGLTexture();
+               }
+           
         }
     }
 
@@ -851,11 +879,20 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
                eglGetNativeClientBufferANDROID((const AHardwareBuffer *)streamHardwareBuffer));
         GL(EGLImageKHR image = eglCreateImageKHR(
                g_ctx.eglDisplay, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID, clientBuffer, nullptr));
+ // change GLTexture
+        int width = g_ctx.streamTexture->GetWidth();
+        int height = g_ctx.streamTexture->GetHeight();
 
+        
         GL(glBindTexture(GL_TEXTURE_EXTERNAL_OES, g_ctx.streamTexture->GetGLTexture()));
         GL(glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, (GLeglImageOES)image));
 
         renderer->srgbCorrectionPass->Render();
+        if (true)
+        {
+            renderer->gaussianBlurPass->Render();
+        }
+        
         if (renderer->enableFFR) {
             renderer->ffr->Render();
         }

@@ -158,7 +158,10 @@ void FFR::Initialize(FoveationVars fv) {
     auto decompressAxisAlignedShaderStr =
         ffrCommonShaderStr + DECOMPRESS_AXIS_ALIGNED_FRAGMENT_SHADER;
     mDecompressAxisAlignedPipeline = unique_ptr<RenderPipeline>(
-        new RenderPipeline({mInputSurface}, QUAD_2D_VERTEX_SHADER, decompressAxisAlignedShaderStr));
+        new RenderPipeline(
+            {mInputSurface},
+            QUAD_2D_VERTEX_SHADER,
+            decompressAxisAlignedShaderStr));
 }
 
 void FFR::Render() const {

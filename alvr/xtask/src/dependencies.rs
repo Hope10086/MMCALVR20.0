@@ -94,7 +94,7 @@ pub fn prepare_windows_deps(skip_admin_priv: bool) {
         .unwrap();
     }
 
-    prepare_x264_windows();
+    //prepare_x264_windows();
     prepare_ffmpeg_windows();
 }
 
