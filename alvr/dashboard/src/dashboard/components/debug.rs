@@ -74,6 +74,14 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[1].button("Speed Threshold sub").clicked() {   
             request = Some(ServerRequest ::SpeedThresholdsub);
         }
+        if ui[2].button("GauBlur Enble").clicked() {
+            request = Some(ServerRequest ::GaussianBlurEnble(true))
+            
+        }
+        if ui[3].button("GauBlur Unenble").clicked() {
+            request = Some(ServerRequest ::GaussianBlurEnble(false))
+            
+        }
 
     });
     

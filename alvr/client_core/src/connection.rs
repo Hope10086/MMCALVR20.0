@@ -10,11 +10,11 @@ use crate::{
     IS_RESUMED, IS_STREAMING, STATISTICS_MANAGER, STATISTICS_SENDER, TRACKING_SENDER,
 };
 use alvr_audio::AudioDevice;
-use alvr_common::{glam::UVec2, prelude::*, ALVR_VERSION, HEAD_ID};
+use alvr_common::{glam::{UVec2, bool}, prelude::*, ALVR_VERSION, HEAD_ID};
 use alvr_packets::{
     BatteryPacket, ClientConnectionResult, ClientControlPacket, Haptics, ServerControlPacket,
     StreamConfigPacket, VideoPacketHeader, VideoStreamingCapabilities, AUDIO, HAPTICS, STATISTICS,
-    TRACKING, VIDEO,
+    TRACKING, VIDEO, ServerRequest,
 };
 use alvr_session::{settings_schema::Switch, SessionDesc};
 use alvr_sockets::{
@@ -61,6 +61,7 @@ const RETRY_CONNECT_MIN_INTERVAL: Duration = Duration::from_secs(1);
 const NETWORK_KEEPALIVE_INTERVAL: Duration = Duration::from_secs(1);
 const CONNECTION_RETRY_INTERVAL: Duration = Duration::from_secs(1);
 const BATTERY_POLL_INTERVAL: Duration = Duration::from_secs(60);
+
 
 fn set_hud_message(message: &str) {
     let message = format!(

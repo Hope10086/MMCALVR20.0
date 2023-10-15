@@ -141,6 +141,13 @@ async fn http_api(
                     ServerRequest::MaxQpAdd => unsafe {crate::MaxQpAdd()},
                     ServerRequest::GazeVisual=>unsafe {crate::GazeVisual()},
                     ServerRequest::TDmode=>unsafe {crate::TDmode()},
+                    ServerRequest::GaussianBlurEnble(gbflag)=> {
+                        if  gbflag == true {
+                            for x in 1..2  {
+                                info!( "GaussionBlur Enable! {}times",x);                              
+                            }                          
+                        }
+                    },
                     ServerRequest::SpeedThresholdadd=>unsafe {crate::SpeedThresholdadd()},
                     ServerRequest::SpeedThresholdsub=>unsafe {crate::SpeedThresholdsub()},
                     ServerRequest::StartRecording => unsafe {crate::create_recording_file();crate::RecordGaze()},

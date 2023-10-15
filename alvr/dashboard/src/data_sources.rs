@@ -10,7 +10,7 @@ use std::{
     str::FromStr,
     sync::{mpsc, Arc},
     thread::{self, JoinHandle},
-    time::{Duration, Instant},
+    time::{Duration, Instant}, //arch::x86_64::_CMP_TRUE_UQ,
 };
 use tungstenite::http::Uri;
 
@@ -189,6 +189,8 @@ impl DataSources {
                                 | ServerRequest::MaxQpSub 
                                 | ServerRequest::MaxQpAdd 
                                 | ServerRequest::TDmode
+                                | ServerRequest::GaussianBlurEnble(false)
+                                | ServerRequest::GaussianBlurEnble(true)
                                 | ServerRequest::SpeedThresholdadd
                                 | ServerRequest::SpeedThresholdsub
                                 | ServerRequest::GazeVisual=> {

@@ -117,7 +117,7 @@ pub struct Tracking {
     pub hand_skeletons: [Option<[Pose; 26]>; 2],
     pub face_data: FaceData,
 }
-
+//  shn
 #[derive(Serialize, Deserialize)]
 pub struct Haptics {
     pub device_id: u64,
@@ -250,4 +250,5 @@ pub enum ServerRequest {
     GetDriverList,
     RestartSteamvr,
     ShutdownSteamvr,
+    GaussianBlurEnble(bool),
 }
