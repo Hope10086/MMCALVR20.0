@@ -191,3 +191,12 @@ pub fn render_stream(hardware_buffer: *mut std::ffi::c_void, swapchain_indices: 
         renderStreamNative(hardware_buffer, swapchain_indices.as_ptr());
     }
 }
+
+
+pub fn update_gaussion_message (flag :bool)
+{
+    #[cfg(target_os = "android")]
+    unsafe {
+        updategussionflg(flag);
+    }
+}

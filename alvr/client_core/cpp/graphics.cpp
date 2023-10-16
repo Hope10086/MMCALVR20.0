@@ -18,6 +18,8 @@ const int MAX_PROGRAM_TEXTURES = 8;
 const int HUD_TEXTURE_WIDTH = 1280;
 const int HUD_TEXTURE_HEIGHT = 720;
 
+bool GaussionFlag = true;
+
 //glm::mat4 FixedmvpMatrix[2];
 /// Integer version of ovrRectf
 typedef struct Recti_ {
@@ -548,7 +550,7 @@ void ovrRenderer_Create(ovrRenderer *renderer,
         if (renderer->enableFFR) {
             FoveationVars fv = CalculateFoveationVars(ffrData);
             renderer->srgbCorrectionPass->Initialize(fv.optimizedEyeWidth, fv.optimizedEyeHeight);
-            if (true) // shn bool for opening  gaussian
+            if (GaussionFlag) // shn bool for opening  gaussian
             {
               renderer->gaussianBlurPass = std::make_unique<GaussianBlurPass>(renderer->srgbCorrectionPass->GetOutputTexture());
               renderer->gaussianBlurPass->Initialize(fv.optimizedEyeWidth, fv.optimizedEyeHeight);
@@ -567,7 +569,7 @@ void ovrRenderer_Create(ovrRenderer *renderer,
         } else {
             renderer->srgbCorrectionPass->Initialize(width, height);
 
-               if (true) // bool for opening  gaussian
+               if (GaussionFlag) // bool for opening  gaussian
                {
                 renderer->gaussianBlurPass = std::make_unique<GaussianBlurPass>(renderer->srgbCorrectionPass->GetOutputTexture());
                 renderer->gaussianBlurPass->Initialize(width, height);
@@ -888,7 +890,7 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
         GL(glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, (GLeglImageOES)image));
 
         renderer->srgbCorrectionPass->Render();
-        if (true)
+        if (GaussionFlag)
         {
             renderer->gaussianBlurPass->Render();
         }
@@ -904,4 +906,10 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
     eyeInputs[0].swapchainIndex = swapchainIndices[0];
     eyeInputs[1].swapchainIndex = swapchainIndices[1];
     ovrRenderer_RenderFrame(renderer, eyeInputs, false);
+}
+
+
+void updategussionflg( bool flag)
+{
+  GaussionFlag =flag;
 }

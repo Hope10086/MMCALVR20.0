@@ -586,3 +586,11 @@ pub unsafe extern "C" fn alvr_render_stream_opengl(
         [*swapchain_indices, *swapchain_indices.offset(1)],
     );
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn alvr_update_gaussion_message(
+    flag:bool,
+){
+    opengl::update_gaussion_message(flag);
+
+}

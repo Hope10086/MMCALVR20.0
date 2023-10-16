@@ -676,7 +676,7 @@ pub fn entry_point() {
                                 create_swapchain(&xr_session, stream_view_resolution),
                             ]
                         });
-
+//shn start stream 
                         alvr_client_core::opengl::start_stream(
                             view_resolution,
                             [
@@ -734,6 +734,7 @@ pub fn entry_point() {
                                     .duration(xr::Duration::from_nanos(duration.as_nanos() as _)),
                             )
                             .unwrap();
+                        alvr_client_core::opengl::update_gaussion_message(true);
                     }
                     _ => panic!(),
                 }
@@ -780,7 +781,7 @@ pub fn entry_point() {
             let display_time;
             let views;
             let view_resolution;
-            if is_streaming.value() {
+            if is_streaming.value() {//render_stream
                 let frame_poll_deadline = Instant::now()
                     + Duration::from_secs_f32(
                         frame_interval.as_secs_f32() * DECODER_MAX_TIMEOUT_MULTIPLIER,
@@ -826,7 +827,7 @@ pub fn entry_point() {
                 display_time = timestamp;
 
                 view_resolution = stream_view_resolution;
-            } else {
+            } else {  //render_lobby
                 display_time = vsync_time;
 
                 views = xr_session
