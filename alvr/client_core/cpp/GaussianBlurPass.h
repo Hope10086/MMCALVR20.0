@@ -6,6 +6,37 @@
 #include <vector>
 #include <GLES3/gl3.h>
 
+
+struct GaussianKernel3
+{
+   float a ;
+
+   float center ;
+   float weight ;
+};
+
+struct GaussianKernel5
+{
+   float a ;
+   float b ;
+
+   float center ;
+   float weight ;
+};
+
+struct GaussianKernel7
+{
+   float a ;
+   float b ;
+   float c ;
+
+   float center ;
+   float weight ;
+};
+
+
+
+
 class GaussianBlurPass {
 public:
     GaussianBlurPass(gl_render_utils::Texture *inputTexture);

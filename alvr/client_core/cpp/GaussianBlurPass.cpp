@@ -20,8 +20,9 @@ const string BLUR_COMMON_SHADER_FORMAT = R"glsl(#version 300 es
     const float a = (%f);
     const float b = (%f);
     const float c = (%f);
+    const float kernelWeight = (%f);
     float kernel[5] = float[5](a, b, c, b ,a);
-    const float kernelWeight = 6.0;
+    
 
 
     )glsl";
@@ -76,17 +77,20 @@ void GaussianBlurPass::Initialize(uint32_t width, uint32_t height) {
     //Texture may be 3684 x 1920 because it will  scaled before rendering
 
     //Gaussian kernel 
-    const float a= 1;
-    const float b= 1;
-    const float c= 2;
+    GaussianKernel5 Kernel = {1.0 , 1.0, 2.0, 6.0};
+    // const float a= 1;   
+    // const float b= 1;
+    // const float c= 2;
+    // const float kernelweight = 6.0;//(2a +2b +c)
     int iwidth = 2*width;
     int iheight =  height;
     auto  blurCommonShaderStr = string_format(BLUR_COMMON_SHADER_FORMAT,
                                              iwidth,
                                              iheight,
-                                             a,
-                                             b,
-                                             c/2
+                                             Kernel.a,
+                                             Kernel.b,
+                                             Kernel.center /2,
+                                             Kernel.weight
                                              );
 
 
