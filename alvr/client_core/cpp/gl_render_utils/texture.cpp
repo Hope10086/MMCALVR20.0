@@ -27,15 +27,7 @@ Texture::Texture(bool external,
     GL(glBindTexture(mTarget, mGLTexture));
     if (!oes && !external && width != 0 && height != 0) {
         if (!content.empty()) {
-            GL(glTexImage2D(mTarget,
-                            0,
-                            internalFormat,
-                            width,
-                            height,
-                            0,
-                            format,
-                            GL_UNSIGNED_BYTE,
-                            &content[0]));
+            GL(glTexImage2D(mTarget,0,internalFormat, width,height,0,format,GL_UNSIGNED_BYTE,&content[0]));
         } else {
             GL(glTexStorage2D(mTarget, 1, internalFormat, width, height));
         }

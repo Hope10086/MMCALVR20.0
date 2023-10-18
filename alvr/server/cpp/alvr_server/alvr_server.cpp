@@ -136,7 +136,7 @@ class DriverProvider : public vr::IServerTrackedDeviceProvider {
                     id = RIGHT_HAND_ID;
                 }
 
-                HapticsSend(id, haptics.fDurationSeconds, haptics.fFrequency, haptics.fAmplitude);
+                HapticsSend(id, haptics.fDurationSeconds, haptics.fFrequency, haptics.fAmplitude, true);
             }
 #ifdef __linux__
             else if (event.eventType == vr::VREvent_ChaperoneUniverseHasChanged) {
@@ -178,6 +178,8 @@ unsigned int RGBTOYUV420_SHADER_COMP_SPV_LEN;
 const char *g_sessionPath;
 const char *g_driverRootDir;
 
+bool gaussionblurflag = false;
+
 void (*LogError)(const char *stringPtr);
 void (*LogWarn)(const char *stringPtr);
 void (*LogInfo)(const char *stringPtr);
@@ -186,7 +188,7 @@ void (*LogPeriodically)(const char *tag, const char *stringPtr);
 void (*DriverReadyIdle)(bool setDefaultChaprone);
 void (*InitializeDecoder)(const unsigned char *configBuffer, int len, int codec);
 void (*VideoSend)(unsigned long long targetTimestampNs, unsigned char *buf, int len, bool isIdr);
-void (*HapticsSend)(unsigned long long path, float duration_s, float frequency, float amplitude);
+void (*HapticsSend)(unsigned long long path, float duration_s, float frequency, float amplitude , bool gaussflag);
 void (*ShutdownRuntime)();
 unsigned long long (*PathStringToHash)(const char *path);
 void (*ReportPresent)(unsigned long long timestamp_ns, unsigned long long offset_ns);
@@ -504,4 +506,10 @@ void LogLatency(const char *stringPtr, ...) {
 void CloseTxtFile(){
 
     LogFileClose();
+}
+
+void UpdateGaussionFlag(bool flag){
+
+   gaussionblurflag = flag  ;
+
 }
