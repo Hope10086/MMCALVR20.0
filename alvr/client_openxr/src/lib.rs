@@ -22,7 +22,7 @@ use std::{
 };
 
 const IPD_CHANGE_EPS: f32 = 0.001;
-const DECODER_MAX_TIMEOUT_MULTIPLIER: f32 = 0.8;
+const DECODER_MAX_TIMEOUT_MULTIPLIER: f32 = 1.2;
 
 // Platform of the device. It is used to match the VR runtime and enable features conditionally.
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -735,6 +735,12 @@ pub fn entry_point() {
                             )
                             .unwrap();
                     }
+                    ClientCoreEvent::Gaussion { flag, strategynum 
+                    } => {
+
+                        alvr_client_core::opengl::update_gaussion_message(flag ,strategynum);
+
+                    }
                     _ => panic!(),
                 }
             }
@@ -795,7 +801,7 @@ pub fn entry_point() {
                 if let Some(pair) = frame_result {
                     pair} 
                 else {
-                    warn!("Timed out when waiting for frame!");
+                   // warn!("Timed out when waiting for frame!");
                     (vsync_time, ptr::null_mut())
                 };
 

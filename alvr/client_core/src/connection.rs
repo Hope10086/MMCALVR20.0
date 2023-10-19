@@ -12,9 +12,9 @@ use crate::{
 use alvr_audio::AudioDevice;
 use alvr_common::{glam::{UVec2, bool}, prelude::*, ALVR_VERSION, HEAD_ID};
 use alvr_packets::{
-    BatteryPacket, ClientConnectionResult, ClientControlPacket, Haptics, ServerControlPacket,
+    BatteryPacket, ClientConnectionResult, ClientControlPacket, Haptics,Gaussion, ServerControlPacket,
     StreamConfigPacket, VideoPacketHeader, VideoStreamingCapabilities, AUDIO, HAPTICS, STATISTICS,
-    TRACKING, VIDEO, ServerRequest,
+    TRACKING, VIDEO, GAUSSION, 
 };
 use alvr_session::{settings_schema::Switch, SessionDesc};
 use alvr_sockets::{
@@ -410,6 +410,21 @@ async fn stream_pipeline(
         }
     };
 
+    let gaussion_receive_loop = {
+
+        let mut receiver = stream_socket
+                .subscribe_to_stream::<Gaussion>(GAUSSION)
+                .await?;
+        async move {
+            loop {
+                let gaussioninfo = receiver.recv_header_only().await?;
+                EVENT_QUEUE.lock().push_back(ClientCoreEvent::Gaussion {
+                     flag: (gaussioninfo.flag), strategynum: (gaussioninfo.strategynum) });
+            }
+        }
+
+    };
+
     let game_audio_loop: BoxFuture<_> = if let Switch::Enabled(config) = settings.audio.game_audio {
         let device = AudioDevice::new_output(None, None).map_err(err!())?;
 
@@ -544,6 +559,7 @@ async fn stream_pipeline(
         res = spawn_cancelable(video_receive_loop) => res,
         res = spawn_cancelable(haptics_receive_loop) => res,
         res = spawn_cancelable(control_send_loop) => res,
+        res = spawn_cancelable(gaussion_receive_loop) => res,
 
         // keep these loops on the current task
         res = keepalive_sender_loop => res,

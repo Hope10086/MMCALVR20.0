@@ -3,11 +3,11 @@ use crate::{
     buttons::BUTTON_PATH_FROM_ID,
     face_tracking::FaceTrackingSink,
     haptics::HapticsManager,
-    sockets::WelcomeSocket,
+    sockets::{WelcomeSocket, self},
     statistics::StatisticsManager,
     tracking::{self, TrackingManager},
     FfiButtonValue, FfiFov, FfiViewsConfig, VideoPacket, BITRATE_MANAGER, CONTROL_CHANNEL_SENDER,
-    DECODER_CONFIG, DISCONNECT_CLIENT_NOTIFIER, HAPTICS_SENDER, IS_ALIVE, RESTART_NOTIFIER,
+    DECODER_CONFIG, DISCONNECT_CLIENT_NOTIFIER, HAPTICS_SENDER, IS_ALIVE, RESTART_NOTIFIER,GAUSSION_SENDER,
     SERVER_DATA_MANAGER, STATISTICS_MANAGER, VIDEO_RECORDING_FILE, VIDEO_SENDER, bindings::{FfiEyeGaze, FfiQuat},
 };
 use alvr_audio::AudioDevice;
@@ -22,7 +22,7 @@ use alvr_common::{
 use alvr_events::{ButtonEvent, EventType, HapticsEvent, TrackingEvent};
 use alvr_packets::{
     ButtonValue, ClientConnectionResult, ClientControlPacket, ClientListAction, ClientStatistics,
-    ServerControlPacket, StreamConfigPacket, Tracking, AUDIO, HAPTICS, STATISTICS, TRACKING, VIDEO,
+    ServerControlPacket, StreamConfigPacket, Tracking, AUDIO, HAPTICS, STATISTICS, TRACKING, VIDEO, GAUSSION,
 };
 use alvr_session::{CodecType, ControllersEmulationMode, FrameSize, OpenvrConfig};
 use alvr_sockets::{
@@ -739,6 +739,18 @@ async fn connection_pipeline(
         }
     };
 
+    let gaussion_send_loop = {
+        let mut socket_sender = stream_socket.request_stream(GAUSSION).await?;
+        async move {
+            let(data_sender, mut data_receiver) = tmpsc::unbounded_channel();
+             *GAUSSION_SENDER.lock() = Some(data_sender);
+
+             while let Some(gaussioninfo) = data_receiver.recv().await
+             {socket_sender.send(&gaussioninfo, vec![]).await.ok();
+            }    
+             Ok(())   
+        }
+    };
     let (playspace_sync_sender, playspace_sync_receiver) = smpsc::channel::<Option<Vec2>>();
 
     let is_tracking_ref_only = settings.headset.tracking_ref_only;
@@ -1085,6 +1097,7 @@ async fn connection_pipeline(
         res = spawn_cancelable(statistics_receive_loop) => res,
         res = spawn_cancelable(haptics_send_loop) => res,
         res = spawn_cancelable(tracking_receive_loop) => res,
+        res = spawn_cancelable(gaussion_send_loop) => res,
 
         // Leave these loops on the current task
         res = keepalive_loop => res,

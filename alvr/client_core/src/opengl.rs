@@ -214,10 +214,16 @@ pub fn render_stream(hardware_buffer: *mut std::ffi::c_void, swapchain_indices: 
 }
 
 
-pub fn update_gaussion_message (flag :bool)
+pub fn update_gaussion_message (flag :bool ,strategynum : i32)
 {
     #[cfg(target_os = "android")]
     unsafe {
-        updategussionflg(flag);
+        updategussionflg(true ,  strategynum);
+        let  teststring :String =strategynum.to_string();
+        let  cteststring :CString =CString::new(teststring).expect("msg");
+        alvr_log(crate::c_api::AlvrLogLevel::Info,
+                cteststring.as_ptr() );
     }
+   
+
 }

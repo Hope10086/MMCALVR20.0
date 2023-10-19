@@ -179,6 +179,7 @@ const char *g_sessionPath;
 const char *g_driverRootDir;
 
 bool gaussionblurflag = false;
+int  strategynum =0 ;
 
 void (*LogError)(const char *stringPtr);
 void (*LogWarn)(const char *stringPtr);
@@ -189,6 +190,7 @@ void (*DriverReadyIdle)(bool setDefaultChaprone);
 void (*InitializeDecoder)(const unsigned char *configBuffer, int len, int codec);
 void (*VideoSend)(unsigned long long targetTimestampNs, unsigned char *buf, int len, bool isIdr);
 void (*HapticsSend)(unsigned long long path, float duration_s, float frequency, float amplitude , bool gaussflag);
+void (*GaussionSend)( bool enable , int num);
 void (*ShutdownRuntime)();
 unsigned long long (*PathStringToHash)(const char *path);
 void (*ReportPresent)(unsigned long long timestamp_ns, unsigned long long offset_ns);
@@ -508,8 +510,21 @@ void CloseTxtFile(){
     LogFileClose();
 }
 
-void UpdateGaussionFlag(bool flag){
+void UpdateGaussionFlag(bool flag ,int delatnum){
 
-   gaussionblurflag = flag  ;
+   gaussionblurflag = flag ;
+   strategynum = strategynum + delatnum;
+   if (strategynum < 0)
+   {
+      strategynum =0;
+   }
+   if  (strategynum >5)
+   {
+      strategynum =5;
+   }
+
+   GaussionSend(flag,strategynum);
 
 }
+
+

@@ -88,6 +88,10 @@ pub enum ClientCoreEvent {
         timestamp: Duration,
         nal: Vec<u8>,
     },
+    Gaussion{
+        flag :bool,
+        strategynum :i32,
+    },
 }
 
 pub fn manufacturer_name() -> String {

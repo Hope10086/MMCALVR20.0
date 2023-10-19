@@ -33,7 +33,7 @@ use alvr_common::{
 use alvr_events::EventType;
 use alvr_filesystem::{self as afs, Layout};
 use alvr_packets::{
-    ClientListAction, DecoderInitializationConfig, Haptics, ServerControlPacket, VideoPacketHeader,
+    ClientListAction, DecoderInitializationConfig, Haptics, ServerControlPacket, VideoPacketHeader, Gaussion,
 };
 use alvr_server_io::ServerDataManager;
 use alvr_session::CodecType;
@@ -89,6 +89,8 @@ static CONTROL_CHANNEL_SENDER: Lazy<Mutex<Option<mpsc::UnboundedSender<ServerCon
 static VIDEO_SENDER: Lazy<Mutex<Option<mpsc::Sender<VideoPacket>>>> =
     Lazy::new(|| Mutex::new(None));
 static HAPTICS_SENDER: Lazy<Mutex<Option<mpsc::UnboundedSender<Haptics>>>> =
+    Lazy::new(|| Mutex::new(None));
+static GAUSSION_SENDER: Lazy<Mutex<Option<mpsc::UnboundedSender<Gaussion>>>> =
     Lazy::new(|| Mutex::new(None));
 static VIDEO_MIRROR_SENDER: Lazy<Mutex<Option<broadcast::Sender<Vec<u8>>>>> =
     Lazy::new(|| Mutex::new(None));
@@ -420,6 +422,18 @@ pub unsafe extern "C" fn HmdDriverFactory(
             sender.send(haptics).ok();
         }
     }
+   extern "C" fn gaussion_send(gaussflag : bool , strategynum:i32) {
+         if let Some(sender) = &*GAUSSION_SENDER.lock(){
+
+            let gaussioninfo = Gaussion{
+                flag: gaussflag,
+                strategynum,
+            };
+            sender.send(gaussioninfo).ok();
+
+         }
+   }
+    
 
     pub extern "C" fn driver_ready_idle(set_default_chap: bool) {
         IS_ALIVE.set(true);
@@ -519,6 +533,7 @@ pub unsafe extern "C" fn HmdDriverFactory(
     InitializeDecoder = Some(initialize_decoder);
     VideoSend = Some(video_send);
     HapticsSend = Some(haptics_send);
+    GaussionSend = Some(gaussion_send);
     ShutdownRuntime = Some(_shutdown_runtime);
     PathStringToHash = Some(path_string_to_hash);
     ReportPresent = Some(report_present);

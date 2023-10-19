@@ -16,6 +16,7 @@ pub const HAPTICS: u16 = 1;
 pub const AUDIO: u16 = 2;
 pub const VIDEO: u16 = 3;
 pub const STATISTICS: u16 = 4;
+pub const GAUSSION : u16 = 5;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct VideoStreamingCapabilities {
@@ -117,13 +118,18 @@ pub struct Tracking {
     pub hand_skeletons: [Option<[Pose; 26]>; 2],
     pub face_data: FaceData,
 }
-//  shn
+
 #[derive(Serialize, Deserialize)]
 pub struct Haptics {
     pub device_id: u64,
     pub duration: Duration,
     pub frequency: f32,
     pub amplitude: f32,
+}
+#[derive(Serialize, Deserialize)]
+pub struct  Gaussion{
+    pub flag :bool,
+    pub strategynum :i32,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

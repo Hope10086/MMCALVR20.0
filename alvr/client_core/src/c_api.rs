@@ -60,6 +60,11 @@ pub enum AlvrEvent {
         codec: AlvrCodec,
     },
     FrameReady,
+    Gaussion{
+        flag :bool,
+        strategynum :i32,
+    },
+
 }
 
 #[repr(C)]
@@ -246,6 +251,9 @@ pub extern "C" fn alvr_poll_event(out_event: *mut AlvrEvent) -> bool {
 
                 AlvrEvent::FrameReady
             }
+            ClientCoreEvent::Gaussion { flag, strategynum }   =>{
+                AlvrEvent::Gaussion { flag: (flag), strategynum: (strategynum) }
+             },
         };
 
         unsafe { *out_event = event };
@@ -589,8 +597,9 @@ pub unsafe extern "C" fn alvr_render_stream_opengl(
 
 #[no_mangle]
 pub unsafe extern "C" fn alvr_update_gaussion_message(
-    flag:bool,
+    flag: bool,
+    strategynum: i32,
 ){
-    opengl::update_gaussion_message(flag);
+    opengl::update_gaussion_message(flag,strategynum);
 
 }
