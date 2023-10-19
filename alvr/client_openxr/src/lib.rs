@@ -676,7 +676,7 @@ pub fn entry_point() {
                                 create_swapchain(&xr_session, stream_view_resolution),
                             ]
                         });
-//shn start stream 
+//start stream 
                         alvr_client_core::opengl::start_stream(
                             view_resolution,
                             [
@@ -792,10 +792,11 @@ pub fn entry_point() {
                     thread::yield_now();
                 }
 
-                let (timestamp, hardware_buffer) = if let Some(pair) = frame_result {
-                    pair
-                } else {
-                    //warn!("Timed out when waiting for frame!");
+                let (timestamp, hardware_buffer) = 
+                if let Some(pair) = frame_result {
+                    pair} 
+                else {
+                    warn!("Timed out when waiting for frame!");
                     (vsync_time, ptr::null_mut())
                 };
 
