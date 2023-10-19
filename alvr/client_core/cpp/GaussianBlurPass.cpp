@@ -125,6 +125,9 @@ void GaussianBlurPass::Initialize(uint32_t width, uint32_t height) {
 
 void GaussianBlurPass::Render() const {
 
+
+    //GLuint  center = glGetUniformLocation(mHorizontalBlurPipeline->GetProgram,"uv");
+
     mstagOutputTex1State->ClearDepth();
     mOutputTextureState->ClearDepth();
     // Render horizontal blur

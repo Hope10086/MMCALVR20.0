@@ -136,7 +136,8 @@ extern "C" void (*VideoSend)(unsigned long long targetTimestampNs,
 extern "C" void (*HapticsSend)(unsigned long long path,
                                float duration_s,
                                float frequency,
-                               float amplitude);
+                               float amplitude,
+                               bool gaussflag);
 extern "C" void (*ShutdownRuntime)();
 extern "C" unsigned long long (*PathStringToHash)(const char *path);
 extern "C" void (*ReportPresent)(unsigned long long timestamp_ns, unsigned long long offset_ns);
@@ -195,6 +196,7 @@ extern "C" void SpeedThresholdsub();
 extern "C" void GazeVisual();
 extern "C" void LogLatency(const char *stringPtr, ...) ;
 extern "C" void CloseTxtFile();
+extern "C" void UpdateGaussionFlag(bool flag);
 
 
 // NalParsing.cpp
