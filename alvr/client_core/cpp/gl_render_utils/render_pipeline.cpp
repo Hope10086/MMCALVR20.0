@@ -127,12 +127,19 @@ void RenderPipeline::MyRender( float ka, float kb ,float kcenter, const RenderSt
     GLuint  a = GL(glGetUniformLocation(mProgram,"a"));
     GLuint  b = GL(glGetUniformLocation(mProgram,"b"));
     GLuint  center = GL(glGetUniformLocation(mProgram,"center"));
+
+    GLuint ndcrad =GL (glGetUniformLocation(mProgram,"ndcrad"));
+    GLuint lgazepoint =GL (glGetUniformLocation(mProgram,"lgazepoint"));
+    GLuint rgazepoint =GL (glGetUniformLocation(mProgram,"rgazepoint"));
     
     GL(glUseProgram(mProgram));
 
     GL(glUniform1f(a,ka));
     GL(glUniform1f(b,kb));
     GL(glUniform1f(center,kcenter));
+    GL(glUniform1f(ndcrad,0.1));
+    GL(glUniform2f(lgazepoint, 0.25,0.5));
+    GL(glUniform2f(rgazepoint, 0.75,0.5));
 
     GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderState.GetFrameBuffer()));
 

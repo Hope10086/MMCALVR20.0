@@ -22,7 +22,7 @@ use std::{
 };
 
 const IPD_CHANGE_EPS: f32 = 0.001;
-const DECODER_MAX_TIMEOUT_MULTIPLIER: f32 = 1.2;
+const DECODER_MAX_TIMEOUT_MULTIPLIER: f32 = 0.2;
 
 // Platform of the device. It is used to match the VR runtime and enable features conditionally.
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -792,7 +792,8 @@ pub fn entry_point() {
                         frame_interval.as_secs_f32() * DECODER_MAX_TIMEOUT_MULTIPLIER,
                     );
                 let mut frame_result = None;
-                while frame_result.is_none() && Instant::now() < frame_poll_deadline {
+                while frame_result.is_none() && Instant::now() < frame_poll_deadline 
+                {
                     frame_result = alvr_client_core::get_frame();
                     thread::yield_now();
                 }
@@ -801,7 +802,7 @@ pub fn entry_point() {
                 if let Some(pair) = frame_result {
                     pair} 
                 else {
-                   // warn!("Timed out when waiting for frame!");
+                    warn!("Timed out when waiting for frame!");
                     (vsync_time, ptr::null_mut())
                 };
 

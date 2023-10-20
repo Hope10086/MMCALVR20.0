@@ -54,11 +54,11 @@ private:
     std::unique_ptr<gl_render_utils::Texture> mOutputTexture;
     std::unique_ptr<gl_render_utils::RenderState> mOutputTextureState;
 
-    std::unique_ptr<gl_render_utils::Texture> mstagOutputTex1;
-    std::unique_ptr<gl_render_utils::RenderState> mstagOutputTex1State;
+  //  std::unique_ptr<gl_render_utils::Texture> mstagOutputTex1;
+  //  std::unique_ptr<gl_render_utils::RenderState> mstagOutputTex1State;
 
     std::unique_ptr<gl_render_utils::RenderPipeline> mHorizontalBlurPipeline;
-    std::unique_ptr<gl_render_utils::RenderPipeline> mVerticalBlurPipeline;
+  //  std::unique_ptr<gl_render_utils::RenderPipeline> mVerticalBlurPipeline;
 };
 
 

@@ -195,21 +195,22 @@ pub fn render_lobby(view_inputs: [RenderViewInput; 2]) {
 pub fn render_stream(hardware_buffer: *mut std::ffi::c_void, swapchain_indices: [u32; 2]) {
     #[cfg(target_os = "android")]
     unsafe {
-      //   alvr_log(crate::c_api::AlvrLogLevel::Info, "Render Beagin \n".as_ptr());
+
         let render_time_beagin = Instant::now();                                           
         renderStreamNative(hardware_buffer, swapchain_indices.as_ptr());
-      //   alvr_log( crate::c_api::AlvrLogLevel::Info,"Render End \n".as_ptr());
-      //  let mut InfoString = CString::new("render time:")
-      //                   .expect("InfoString CString Failed ");
-      //  let rendercost = (Instant::now() - render_time_beagin)
-      //                              .as_micros()
-      //                              .to_string();
-      //  let rendercost_cstr = CString::new(rendercost).expect("CString conversion failed") ;
-      //  let rendercost_cstr_u8 = rendercost_cstr
-      //                          .as_ptr()
-      //                           as *const u8;
-      //  alvr_log(crate::c_api::AlvrLogLevel::Info, InfoString.as_ptr() as *const u8);
-      //  alvr_log(crate::c_api::AlvrLogLevel::Info, rendercost_cstr_u8);
+
+      
+    //    let mut InfoString = CString::new("render time:")
+    //                     .expect("InfoString CString Failed ");
+    //    let rendercost = (Instant::now() - render_time_beagin)
+    //                                .as_micros()
+    //                                .to_string();
+    //    let rendercost_cstr = CString::new(rendercost).expect("CString conversion failed") ;
+    //    let rendercost_cstr_u8 = rendercost_cstr
+    //                            .as_ptr()
+    //                             as *const u8;
+    //    //alvr_log(crate::c_api::AlvrLogLevel::Info, InfoString.as_ptr() as *const u8);
+    //    alvr_log(crate::c_api::AlvrLogLevel::Info, rendercost_cstr_u8);
     }
 }
 
