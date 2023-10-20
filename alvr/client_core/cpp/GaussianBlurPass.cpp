@@ -31,6 +31,8 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
     uniform sampler2D inputTexture;
 
     void main() {
+        float kernelWeight = 2.0*a +2.0*b + 2.0*center;    
+        float kernel[5] = float[5](a, b, center, b ,a); 
         vec4 color = texture(inputTexture, uv);
         vec3 result = color.rgb * kernel[2];
        for (int i = -2; i <= 2; i++) {
