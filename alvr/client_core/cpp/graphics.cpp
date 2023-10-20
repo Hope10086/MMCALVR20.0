@@ -19,6 +19,7 @@ const int HUD_TEXTURE_WIDTH = 1280;
 const int HUD_TEXTURE_HEIGHT = 720;
 
 bool GaussionFlag = true;
+int GaussionStrategy = 0;
 
 //glm::mat4 FixedmvpMatrix[2];
 /// Integer version of ovrRectf
@@ -550,7 +551,8 @@ void ovrRenderer_Create(ovrRenderer *renderer,
         if (renderer->enableFFR) {
             FoveationVars fv = CalculateFoveationVars(ffrData);
             renderer->srgbCorrectionPass->Initialize(fv.optimizedEyeWidth, fv.optimizedEyeHeight);
-            if (GaussionFlag) // shn bool for opening  gaussian
+            // you need to Initialize before set next one 
+            if (true) // shn bool for opening  gaussian
             {
               renderer->gaussianBlurPass = std::make_unique<GaussianBlurPass>(renderer->srgbCorrectionPass->GetOutputTexture());
               renderer->gaussianBlurPass->Initialize(fv.optimizedEyeWidth, fv.optimizedEyeHeight);
@@ -569,7 +571,7 @@ void ovrRenderer_Create(ovrRenderer *renderer,
         } else {
             renderer->srgbCorrectionPass->Initialize(width, height);
 
-               if (GaussionFlag) // bool for opening  gaussian
+               if (true) // bool for opening  gaussian
                {
                 renderer->gaussianBlurPass = std::make_unique<GaussianBlurPass>(renderer->srgbCorrectionPass->GetOutputTexture());
                 renderer->gaussianBlurPass->Initialize(width, height);
@@ -888,10 +890,8 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
         GL(glBindTexture(GL_TEXTURE_EXTERNAL_OES, g_ctx.streamTexture->GetGLTexture()));
         GL(glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, (GLeglImageOES)image));
         renderer->srgbCorrectionPass->Render();
-        if (GaussionFlag)
-        {
-            renderer->gaussianBlurPass->Render();
-        }
+
+        renderer->gaussianBlurPass->Render();
         
         if (renderer->enableFFR) {
             renderer->ffr->Render();
@@ -909,5 +909,6 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
 
 void updategussionflg( bool flag , int strategynum)
 {
-  GaussionFlag =flag;
+  GaussionFlag = flag;
+  GaussionStrategy = strategynum;
 }
