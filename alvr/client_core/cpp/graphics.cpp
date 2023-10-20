@@ -891,7 +891,7 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
         GL(glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, (GLeglImageOES)image));
         renderer->srgbCorrectionPass->Render();
 
-        renderer->gaussianBlurPass->Render();
+        renderer->gaussianBlurPass->Render(GaussionStrategy);
         
         if (renderer->enableFFR) {
             renderer->ffr->Render();

@@ -4,15 +4,14 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
-#include <GLES3/gl3.h>
 
+#include <GLES3/gl3.h>
 
 struct GaussianKernel3
 {
    float a ;
 
    float center ;
-   float weight ;
 };
 
 struct GaussianKernel5
@@ -21,7 +20,6 @@ struct GaussianKernel5
    float b ;
 
    float center ;
-   float weight ;
 };
 
 struct GaussianKernel7
@@ -31,10 +29,15 @@ struct GaussianKernel7
    float c ;
 
    float center ;
-   float weight ;
+
 };
 
-
+   // GaussianKernel5 S0 = { 0 ,0 ,2 };
+   // GaussianKernel5 S1 = { 0 ,1 ,2 };
+   // GaussianKernel5 S2 = { 1, 2, 4 };
+   // GaussianKernel5 S3 = { 1, 2, 2 };
+   // GaussianKernel5 S4 = { 1 ,1 ,1 };
+   // GaussianKernel5 S5 = { 2 ,1 ,2 };
 
 
 class GaussianBlurPass {
@@ -42,7 +45,7 @@ public:
     GaussianBlurPass(gl_render_utils::Texture *inputTexture);
 
     void Initialize(uint32_t width, uint32_t height);
-    void Render() const;
+    void Render( int strategynum);
 
     gl_render_utils::Texture *GetOutputTexture() { return mOutputTexture.get(); }
 

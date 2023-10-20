@@ -121,6 +121,47 @@ void RenderPipeline::Render(const RenderState &renderState, const void *uniformB
     GL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
 }
 
+
+void RenderPipeline::MyRender( float ka, float kb ,float kcenter, const RenderState &renderState, const void *uniformBlockData)  {
+    
+    GLuint  a = GL(glGetUniformLocation(mProgram,"a"));
+    GLuint  b = GL(glGetUniformLocation(mProgram,"b"));
+    GLuint  center = GL(glGetUniformLocation(mProgram,"center"));
+    
+    GL(glUseProgram(mProgram));
+
+    GL(glUniform1f(a,ka));
+    GL(glUniform1f(b,kb));
+    GL(glUniform1f(center,kcenter));
+
+    GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderState.GetFrameBuffer()));
+
+    GL(glDisable(GL_SCISSOR_TEST));
+    GL(glDepthMask(GL_TRUE));
+    GL(glDisable(GL_CULL_FACE));
+    GL(glEnable(GL_DEPTH_TEST));
+    GL(glEnable(GL_BLEND));
+    GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    GL(glViewport(0,
+                  0,
+                  renderState.GetRenderTarget()->GetWidth(),
+                  renderState.GetRenderTarget()->GetHeight()));
+
+    for (size_t i = 0; i < mInputTexturesInfo.size(); i++) {
+        GL(glActiveTexture(GL_TEXTURE0 + i));
+        GL(glBindTexture(mInputTexturesInfo[i].texture->GetTarget(),
+                         mInputTexturesInfo[i].texture->GetGLTexture()));
+        GL(glUniform1i(mInputTexturesInfo[i].uniformLocation, i));
+    }
+
+    if (uniformBlockData != nullptr) {
+        GL(glBindBuffer(GL_UNIFORM_BUFFER, mBlockBuffer));
+        GL(glBufferSubData(GL_UNIFORM_BUFFER, 0, mUniformBlockSize, uniformBlockData));
+    }
+
+    GL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
+}
+
 RenderPipeline::~RenderPipeline() {
     if (GL_TRUE == glIsBuffer(mBlockBuffer)) {
         GL(glDeleteBuffers(1, &mBlockBuffer));
