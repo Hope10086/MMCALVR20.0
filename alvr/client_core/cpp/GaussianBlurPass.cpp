@@ -42,52 +42,80 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
 
         float kernel[5] = float[5](roia,roib ,roicenter ,roib ,roia);
-        float kernelWeight = (2.0*roia +2.0*roib + roicenter)*(2.0*roia +2.0*roib + roicenter);
+        float kernelWeight = (2.0*roia +2.0*roib + roicenter);
 
 
+        vec4 color = texture(inputTexture, uv);
+        vec3 result = vec3(0.0,0.0,0.0);
 
         if(  (length(uv.x-lgazepoint.x) < ndcradius.x && length(uv.y-lgazepoint.y) < ndcradius.y)
             || (length(uv.x-rgazepoint.x) < ndcradius.x && length(uv.y-rgazepoint.y) < ndcradius.y) )
         { 
-           kernelWeight = (2.0*roia +2.0*roib + roicenter)*(2.0*roia +2.0*roib + roicenter);
-            kernel[0] = roia;
-            kernel[1] = roib;
-            kernel[2] = roicenter;
-            kernel[3] = roib;
-            kernel[4] = roia;
+            vec4 nearsample =  texture(inputTexture , uv);
+            result = nearsample.rgb;
+
         }
         else
         {
-            kernelWeight = (2.0*a +2.0*b + center)*(2.0*a +2.0*b + center);    
+            kernelWeight = (2.0*a +2.0*b + center);    
             kernel[0] = a;
             kernel[1] = b;
             kernel[2] = center;
             kernel[3] = b;
             kernel[4] = a;
+            for (int i = -2; i <= 2; i++) {
+
+             ivec2 xoffset = ivec2(i, 0);  
+             vec4 nearsample = texture(inputTexture , uv + vec2(xoffset.x, 0.0) /TEXTURE_SIZE);
+             result += nearsample.rgb * kernel[i+2] / kernelWeight;
+            
+            }
         }
         
+        fragColor = vec4(result , color.a);
+    }
+)glsl";
+
+const string VERTICAL_BLUR_SHADER = R"glsl(
+    
+    in vec2 uv;
+    out vec4 fragColor;
+    uniform sampler2D inputTexture;
+
+    void main() {
+        vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
+
+        float kernel[5] = float[5](roia,roib ,roicenter ,roib ,roia);
+        float kernelWeight = (2.0*roia +2.0*roib + roicenter);
+
         vec4 color = texture(inputTexture, uv);
         vec3 result = vec3(0.0,0.0,0.0);
 
-        for (int i = -2; i <= 2; i++) {
-        ivec2 xoffset = ivec2(i, 0);  
-            
-            for( int j = -2 ;j <= 2; j++){
+        if(  (length(uv.x-lgazepoint.x) < ndcradius.x && length(uv.y-lgazepoint.y) < ndcradius.y)
+          || (length(uv.x-rgazepoint.x) < ndcradius.x && length(uv.y-rgazepoint.y) < ndcradius.y) )
+        { 
+            vec4 nearsample =  texture(inputTexture , uv);
+            result = nearsample.rgb;
+        }
+        else
+        {
+            kernelWeight = (2.0*a +2.0*b + center);    
+            kernel[0] = a;
+            kernel[1] = b;
+            kernel[2] = center;
+            kernel[3] = b;
+            kernel[4] = a;
+            for (int i = -2; i <= 2; i++) {
 
-                ivec2 yoffset = ivec2(0,j);
-
-                vec4 nearsample = texture(inputTexture , uv + vec2(xoffset.x, yoffset.y) /TEXTURE_SIZE);
-
-                result += nearsample.rgb * kernel[j+2] * kernel[i+2] / kernelWeight;
+             ivec2 yoffset = ivec2(0, i);  
+             vec4 nearsample = texture(inputTexture , uv + vec2(0.0, yoffset.y) /TEXTURE_SIZE);
+             result += nearsample.rgb * kernel[i+2] / kernelWeight;
             }
         }
 
         fragColor = vec4(result , color.a);
     }
 )glsl";
-
-
-
  }
 
 using namespace std;
@@ -110,9 +138,9 @@ void GaussianBlurPass::Initialize(uint32_t width, uint32_t height) {
 
     // Create  first blur shader output texture
 
-    // mstagOutputTex1.reset((new Texture(false, 0, false, width *2, height)));
-    // mstagOutputTex1State = make_unique<RenderState>(mstagOutputTex1.get());
-    // gl_render_utils::Texture* stagTexture = mstagOutputTex1.get();
+    mstagOutputTex1.reset((new Texture(false, 0, false, width *2, height)));
+    mstagOutputTex1State = make_unique<RenderState>(mstagOutputTex1.get());
+    gl_render_utils::Texture* stagTexture = mstagOutputTex1.get();
 
     // Create horizontal blur shader
     auto horizontalBlurShader = blurCommonShaderStr + HORIZONTAL_BLUR_SHADER;
@@ -123,18 +151,18 @@ void GaussianBlurPass::Initialize(uint32_t width, uint32_t height) {
         horizontalBlurShader));
   
     // Create vertical blur shader
-    // auto verticalBlurShader = blurCommonShaderStr + VERTICAL_BLUR_SHADER;
-    // mVerticalBlurPipeline = unique_ptr<RenderPipeline>(
-    //     new RenderPipeline(
-    //     {stagTexture},
-    //     QUAD_2D_VERTEX_SHADER,
-    //     verticalBlurShader ));
+    auto verticalBlurShader = blurCommonShaderStr + VERTICAL_BLUR_SHADER;
+    mVerticalBlurPipeline = unique_ptr<RenderPipeline>(
+        new RenderPipeline(
+        {stagTexture},
+        QUAD_2D_VERTEX_SHADER,
+        verticalBlurShader ));
 
 }
 
 void GaussianBlurPass::Render(int strategynum) {
 
-   // mstagOutputTex1State->ClearDepth();
+    mstagOutputTex1State->ClearDepth();
     mOutputTextureState->ClearDepth();
 
     GaussianKernel5  TotalStrategys[6] = { { 0.0 ,0.0 ,1.0 }, {0.0 ,1.0 ,2.0} ,{ 1.0, 2.0, 4.0 },
@@ -151,8 +179,8 @@ void GaussianBlurPass::Render(int strategynum) {
     }
     
     // Render horizontal blur
-    mHorizontalBlurPipeline->MyRender(Strategy.a,Strategy.b,Strategy.center,*mOutputTextureState);
+    mHorizontalBlurPipeline->MyRender(Strategy.a,Strategy.b,Strategy.center,*mstagOutputTex1State);
 
     // Render vertical blur
-   // mVerticalBlurPipeline->MyRender(Strategy.a,Strategy.b,Strategy.center,*mOutputTextureState);
+    mVerticalBlurPipeline->MyRender(Strategy.a,Strategy.b,Strategy.center,*mOutputTextureState);
 }
