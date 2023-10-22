@@ -1,6 +1,7 @@
 #pragma once
 
 #include "texture.h"
+#include "./gazeinfo.h"
 
 namespace gl_render_utils {
 
@@ -44,7 +45,7 @@ namespace gl_render_utils {
 
         void Render(const RenderState &renderState, const void *uniformBlockData = nullptr) const;
        
-        void MyRender(float ka, float kb ,float kcenter, const RenderState &renderState, const void *uniformBlockData = nullptr) ;
+        void MyRender(GaussianKernel5 NonRoiStrategy, GazeCenterInfo LeftCenter,GazeCenterInfo RightCenter, const RenderState &renderState, const void *uniformBlockData = nullptr) ;
         
         GLuint GetProgram() const {
         return mProgram;

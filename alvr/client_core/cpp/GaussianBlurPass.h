@@ -6,38 +6,7 @@
 #include <vector>
 
 #include <GLES3/gl3.h>
-
-struct GaussianKernel3
-{
-   float a ;
-
-   float center ;
-};
-
-struct GaussianKernel5
-{
-   float a ;
-   float b ;
-
-   float center ;
-};
-
-struct GaussianKernel7
-{
-   float a ;
-   float b ;
-   float c ;
-
-   float center ;
-
-};
-
-   // GaussianKernel5 S0 = { 0 ,0 ,2 };
-   // GaussianKernel5 S1 = { 0 ,1 ,2 };
-   // GaussianKernel5 S2 = { 1, 2, 4 };
-   // GaussianKernel5 S3 = { 1, 2, 2 };
-   // GaussianKernel5 S4 = { 1 ,1 ,1 };
-   // GaussianKernel5 S5 = { 2 ,1 ,2 };
+#include "gazeinfo.h"
 
 
 class GaussianBlurPass {

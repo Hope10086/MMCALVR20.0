@@ -122,7 +122,7 @@ void RenderPipeline::Render(const RenderState &renderState, const void *uniformB
 }
 
 
-void RenderPipeline::MyRender( float ka, float kb ,float kcenter, const RenderState &renderState, const void *uniformBlockData)  {
+void RenderPipeline::MyRender( GaussianKernel5 NonRoiStrategy, GazeCenterInfo LeftCenter, GazeCenterInfo RightCenter, const RenderState &renderState, const void *uniformBlockData)  {
     
     GLuint  a = GL(glGetUniformLocation(mProgram,"a"));
     GLuint  b = GL(glGetUniformLocation(mProgram,"b"));
@@ -134,12 +134,12 @@ void RenderPipeline::MyRender( float ka, float kb ,float kcenter, const RenderSt
     
     GL(glUseProgram(mProgram));
 
-    GL(glUniform1f(a,ka));
-    GL(glUniform1f(b,kb));
-    GL(glUniform1f(center,kcenter));
+    GL(glUniform1f(a,NonRoiStrategy.a));
+    GL(glUniform1f(b,NonRoiStrategy.b));
+    GL(glUniform1f(center,NonRoiStrategy.center));
     GL(glUniform1f(ndcrad,0.1));
-    GL(glUniform2f(lgazepoint, 0.25,0.5));
-    GL(glUniform2f(rgazepoint, 0.75,0.5));
+    GL(glUniform2f(lgazepoint, LeftCenter.x,LeftCenter.y));
+    GL(glUniform2f(rgazepoint, RightCenter.x, RightCenter.y));
 
     GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderState.GetFrameBuffer()));
 

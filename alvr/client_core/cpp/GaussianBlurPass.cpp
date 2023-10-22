@@ -165,9 +165,11 @@ void GaussianBlurPass::Render(int strategynum) {
     mstagOutputTex1State->ClearDepth();
     mOutputTextureState->ClearDepth();
 
-    GaussianKernel5  TotalStrategys[6] = { { 0.0 ,0.0 ,1.0 }, {0.0 ,1.0 ,2.0} ,{ 1.0, 2.0, 4.0 },
+
+GaussianKernel5  TotalStrategys[6] = { { 0.0 ,0.0 ,1.0 }, {0.0 ,1.0 ,2.0} ,{ 1.0, 2.0, 4.0 },
                                            { 1.0, 2.0, 2.0 }, {1.0 ,1.0 ,1.0 },{ 2.0 ,2.0 ,1.0 }
                                          };
+GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
     GaussianKernel5 Strategy;
 
     if (strategynum>=0 && strategynum<=5)
@@ -179,8 +181,8 @@ void GaussianBlurPass::Render(int strategynum) {
     }
     
     // Render horizontal blur
-    mHorizontalBlurPipeline->MyRender(Strategy.a,Strategy.b,Strategy.center,*mstagOutputTex1State);
+    mHorizontalBlurPipeline->MyRender(Strategy, DefaultGazeCenter[0], DefaultGazeCenter[1] , *mstagOutputTex1State);
 
     // Render vertical blur
-    mVerticalBlurPipeline->MyRender(Strategy.a,Strategy.b,Strategy.center,*mOutputTextureState);
+    mVerticalBlurPipeline->MyRender(Strategy,  DefaultGazeCenter[0], DefaultGazeCenter[1] , *mOutputTextureState);
 }
