@@ -6,6 +6,7 @@
 #include <memory>
 #include <sys/types.h>
 
+#include "gpulogger.h"
 
 using namespace std;
 using namespace gl_render_utils;
@@ -179,6 +180,7 @@ GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} };
     
     // Render horizontal blur
     mHorizontalBlurPipeline->MyRender(Strategy, LGazeCenter, RGazeCenter, 0.01,*mstagOutputTex1State);
+    Info("Horizontal Render cost is %d",mHorizontalBlurPipeline->timecost);
 
     // Render vertical blur
     mVerticalBlurPipeline->MyRender(Strategy,  LGazeCenter, RGazeCenter, 0.01, *mOutputTextureState);

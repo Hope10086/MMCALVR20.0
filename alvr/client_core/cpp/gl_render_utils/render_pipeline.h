@@ -46,10 +46,10 @@ namespace gl_render_utils {
         void Render(const RenderState &renderState, const void *uniformBlockData = nullptr) const;
        
         void MyRender(GaussianKernel5 NonRoiStrategy, GazeCenterInfo LeftCenter,GazeCenterInfo RightCenter,float roisizeconst , const RenderState &renderState, const void *uniformBlockData = nullptr) ;
-        
+         int timecost  =0;
         GLuint GetProgram() const {
         return mProgram;
-    }
+         }
 
         ~RenderPipeline();
 
@@ -66,5 +66,6 @@ namespace gl_render_utils {
 
         GLuint mBlockBuffer = 0;
         size_t mUniformBlockSize;
+        
     };
 }

@@ -885,6 +885,11 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
 
 
     if (streamHardwareBuffer != 0) {
+        const char *version = (const char*)glGetString(GL_VERSION);
+        const char *extensions = (const char*)glGetString(GL_EXTENSIONS);
+        if (strstr(extensions, "GL_EXT_disjoint_timer_query") != NULL) {
+        //GL(glEnable(GL_EXT_disjoint_timer_query));
+        }
         GL(EGLClientBuffer clientBuffer =
                eglGetNativeClientBufferANDROID((const AHardwareBuffer *)streamHardwareBuffer));
         GL(EGLImageKHR image = eglCreateImageKHR(

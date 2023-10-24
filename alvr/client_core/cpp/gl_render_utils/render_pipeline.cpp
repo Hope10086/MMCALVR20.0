@@ -1,6 +1,8 @@
 #include "render_pipeline.h"
 #include "../utils.h"
 
+#define GL_GLEXT_PROTOTYPES
+#define GL_EXT_disjoint_timer_query 1
 using namespace std;
 
 GLuint createShader(GLenum type, const string &shaderStr) {
@@ -89,6 +91,7 @@ RenderPipeline::RenderPipeline(const vector<const Texture *> &inputTextures,
         GL(glBindBufferBase(GL_UNIFORM_BUFFER, mBindingPointCounter, mBlockBuffer));
         mBindingPointCounter++;
     }
+
 }
 
 void RenderPipeline::Render(const RenderState &renderState, const void *uniformBlockData) const {
@@ -123,6 +126,14 @@ void RenderPipeline::Render(const RenderState &renderState, const void *uniformB
 
 void RenderPipeline::MyRender( GaussianKernel5 NonRoiStrategy, GazeCenterInfo LeftCenter, GazeCenterInfo RightCenter, float roisize, const RenderState &renderState, const void *uniformBlockData)  {
     
+
+
+    // GL(glEnable(GL_EXT_disjoint_timer_query));
+    GLuint queryID;
+    GL(glGenQueries(1, &queryID));
+    
+    GL(glBeginQuery(GL_TIME_ELAPSED_EXT, queryID));
+
     GLuint  a = GL(glGetUniformLocation(mProgram,"a"));
     GLuint  b = GL(glGetUniformLocation(mProgram,"b"));
     GLuint  center = GL(glGetUniformLocation(mProgram,"center"));
@@ -130,7 +141,6 @@ void RenderPipeline::MyRender( GaussianKernel5 NonRoiStrategy, GazeCenterInfo Le
     GLuint ndcrad =GL (glGetUniformLocation(mProgram,"ndcrad"));
     GLuint lgazepoint =GL (glGetUniformLocation(mProgram,"lgazepoint"));
     GLuint rgazepoint =GL (glGetUniformLocation(mProgram,"rgazepoint"));
-    
     GL(glUseProgram(mProgram));
 
     GL(glUniform1f(a,NonRoiStrategy.a));
@@ -172,6 +182,16 @@ void RenderPipeline::MyRender( GaussianKernel5 NonRoiStrategy, GazeCenterInfo Le
     }
 
     GL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
+
+    GL(glEndQuery(GL_TIME_ELAPSED_EXT));
+
+    GLuint available = 0;
+    while (!available) {
+      GL(glGetQueryObjectuiv(queryID, GL_QUERY_RESULT_AVAILABLE, &available));
+    }
+    GLuint elapsed_time;
+    GL(glGetQueryObjectuiv(queryID, GL_QUERY_RESULT, &elapsed_time));
+    timecost = elapsed_time;
 }
 
 RenderPipeline::~RenderPipeline() {

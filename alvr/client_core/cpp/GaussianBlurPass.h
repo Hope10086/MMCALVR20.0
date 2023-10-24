@@ -7,7 +7,7 @@
 
 #include <GLES3/gl3.h>
 #include "gazeinfo.h"
-
+#include "gpulogger.h"
 
 class GaussianBlurPass {
 public:

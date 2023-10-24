@@ -422,7 +422,7 @@ pub unsafe extern "C" fn HmdDriverFactory(
             sender.send(haptics).ok();
         }
     }
-   extern "C" fn gaussion_send(gaussflag : bool , strategynum:i32) {
+    extern "C" fn gaussion_send(gaussflag : bool , strategynum:i32) {
          if let Some(sender) = &*GAUSSION_SENDER.lock(){
 
             let gaussioninfo = Gaussion{
@@ -434,7 +434,6 @@ pub unsafe extern "C" fn HmdDriverFactory(
          }
    }
     
-
     pub extern "C" fn driver_ready_idle(set_default_chap: bool) {
         IS_ALIVE.set(true);
 

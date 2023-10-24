@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
 // keep order ^ v
 #include <GLES2/gl2ext.h>
 
