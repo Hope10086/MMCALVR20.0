@@ -44,4 +44,5 @@ extern "C" void renderLobbyNative(const FfiViewInput eyeInputs[2]);
 extern "C" void renderStreamNative(void *streamHardwareBuffer,
                                    const unsigned int swapchainIndices[2]);
 extern "C" void updategussionflg( bool flag , int strategynum);
-extern "C" void updategazecenter( float lx, float ly ,float rx , float ry);
+extern "C" void updategazecenter( unsigned long long longtargetTimestampNs ,float lx, float ly ,float rx , float ry);
+extern "C" void (*InfoLog)( const char *message);

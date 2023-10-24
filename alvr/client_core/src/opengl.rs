@@ -1,7 +1,7 @@
 #![allow(unused_variables)]
 
 use alvr_common::{glam::{UVec2, Quat, Vec3, bool, Vec2}, 
-                  Fov, Pose};
+                  Fov, Pose, prelude::info};
 use alvr_packets::FaceData;
 use alvr_session::FoveatedRenderingDesc;
 use glyph_brush_layout::{
@@ -11,9 +11,8 @@ use glyph_brush_layout::{
 
 use crate::c_api::{alvr_log};
 
-
 use std::{
-    time::{Duration, Instant}, ffi::CString, env::consts
+    time::{Duration, Instant}, ffi::{c_char, c_void, CStr, CString}, env::consts
 };
 
 #[cfg(target_os = "android")]
@@ -22,6 +21,13 @@ include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 const HUD_TEXTURE_WIDTH: usize = 1280;
 const HUD_TEXTURE_HEIGHT: usize = 720;
 const FONT_SIZE: f32 = 50_f32;
+
+#[no_mangle]
+pub unsafe extern "C" fn log_info_message(message: *const c_char) {
+    let message = CStr::from_ptr(message).to_str().unwrap();
+    info!("[ALVR GPU:]{message}");
+}
+
 
 pub struct RenderViewInput {
     pub pose: Pose,
@@ -197,6 +203,7 @@ pub fn render_lobby(view_inputs: [RenderViewInput; 2]) {
 pub fn render_stream(hardware_buffer: *mut std::ffi::c_void, swapchain_indices: [u32; 2]) {
     #[cfg(target_os = "android")]
     unsafe {
+        InfoLog =Some(log_info_message);
 
         let render_time_beagin = Instant::now();                                           
         renderStreamNative(hardware_buffer, swapchain_indices.as_ptr());
@@ -219,13 +226,13 @@ pub fn render_stream(hardware_buffer: *mut std::ffi::c_void, swapchain_indices: 
 
 pub fn update_gaussion_message (flag :bool ,strategynum : i32)
 {
-    #[cfg(target_os = "android")]
+   #[cfg(target_os = "android")]
     unsafe {
         updategussionflg(true ,  strategynum);
-        let  teststring :String =strategynum.to_string();
-        let  cteststring :CString =CString::new(teststring).expect("msg");
+        let  teststring  = CString::new(strategynum.to_string()).expect("msg");
+
         alvr_log(crate::c_api::AlvrLogLevel::Info,
-                cteststring.as_ptr() );
+            teststring.as_ptr() );
     }
 }
 pub fn to_local_eyes(
@@ -294,6 +301,7 @@ pub fn calculate_gazecenter( target_timestamp :Duration, rawfacedata: FaceData ,
             rawfacedata.eye_gazes);
         let local_gazecenter = get_gaze_center(rawfov, local_eye_gazes);
         updategazecenter(
+            target_timestamp.as_secs(),
             local_gazecenter[0].unwrap().x * 0.5,
             local_gazecenter[0].unwrap().y,
             local_gazecenter[1].unwrap().x *0.5 + 0.5,

@@ -22,6 +22,8 @@ bool GaussionFlag = true;
 int GaussionStrategy = 0;
 GazeCenterInfo GazeCenter[2] ={ {0.25,0.5} , {0.75,0.5} };
 
+void (*InfoLog)( const char *message);
+
 //glm::mat4 FixedmvpMatrix[2];
 /// Integer version of ovrRectf
 typedef struct Recti_ {
@@ -767,6 +769,8 @@ void initGraphicsNative() {
     g_ctx.streamTexture = std::make_unique<Texture>(false, 0, true);
     g_ctx.hudTexture = std::make_unique<Texture>(
         false, 0, false, 1280, 720, GL_RGBA8, GL_RGBA, std::vector<uint8_t>(1280 * 720 * 4, 0));
+
+       
 }
 
 void destroyGraphicsNative() {
@@ -879,6 +883,7 @@ void renderLobbyNative(const FfiViewInput eyeInputs[2]) {
 void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchainIndices[2]) {
     auto renderer = g_ctx.streamRenderer.get();
 
+
     if (streamHardwareBuffer != 0) {
         GL(EGLClientBuffer clientBuffer =
                eglGetNativeClientBufferANDROID((const AHardwareBuffer *)streamHardwareBuffer));
@@ -914,7 +919,7 @@ void updategussionflg( bool flag , int strategynum)
   GaussionStrategy = strategynum;
 }
 
-void updategazecenter( float lx,float ly ,float rx ,float ry)
+void updategazecenter( unsigned long long longtargetTimestampNs ,float lx,float ly ,float rx ,float ry)
 {
    GazeCenter[0].x = lx;
    GazeCenter[0].y = ly;
