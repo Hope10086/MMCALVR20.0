@@ -248,6 +248,7 @@ fn update_streaming_input(
 
     // Note: Here is assumed that views are on the same plane and orientation. The head position
     // is approximated as the center point between the eyes.
+    let viewfov = views[0];
     let head_position = (to_vec3(views[0].pose.position) + to_vec3(views[1].pose.position)) / 2.0;
     let head_orientation = to_quat(views[0].pose.orientation);
     let fixed_position = Vec3::new(0.000290 ,1.818829 ,0.020276 );
@@ -323,6 +324,29 @@ fn update_streaming_input(
         face_data,
     });
 
+    let face_data_client = if let Some(context) = &ctx.face_context {
+        FaceData {
+            eye_gazes: interaction::get_eye_gazes(
+                context,
+                &ctx.reference_space.read(),
+                //to_xr_time(now),
+                to_xr_time(target_timestamp),
+            ),
+            fb_face_expression: None,
+            htc_eye_expression: None,
+            htc_lip_expression: None,
+        }
+    } else {
+        Default::default()
+    };
+    alvr_client_core::opengl::calculate_gazecenter(
+        target_timestamp,
+        face_data_client, 
+        Pose {
+                    orientation: head_orientation,
+                    position: head_position,},
+                    to_fov(viewfov.fov),
+                        );
     interaction::update_buttons(
         ctx.platform,
         &ctx.xr_session,

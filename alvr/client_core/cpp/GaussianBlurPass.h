@@ -14,7 +14,7 @@ public:
     GaussianBlurPass(gl_render_utils::Texture *inputTexture);
 
     void Initialize(uint32_t width, uint32_t height);
-    void Render( int strategynum);
+    void Render( int strategynum ,GazeCenterInfo LGazeCenter ,GazeCenterInfo RGazeCenter);
 
     gl_render_utils::Texture *GetOutputTexture() { return mOutputTexture.get(); }
 

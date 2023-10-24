@@ -9,7 +9,7 @@ use alvr_common::{
     prelude::*,
     DeviceMotion, Fov, Pose,
 };
-use alvr_packets::{ButtonValue, Tracking};
+use alvr_packets::{ButtonValue, Tracking, FaceData};
 use alvr_session::{CodecType, FoveatedRenderingDesc};
 use std::{
     collections::VecDeque,
@@ -601,5 +601,15 @@ pub unsafe extern "C" fn alvr_update_gaussion_message(
     strategynum: i32,
 ){
     opengl::update_gaussion_message(flag,strategynum);
+}
+
+#[no_mangle]
+pub  unsafe extern "C" fn alvr_calculate_gazecenter( 
+    target_timestamp :Duration,
+    rawfacedata: FaceData ,
+    rawheadpose: Pose,
+    rawfov: Fov) 
+{
+    opengl::calculate_gazecenter(target_timestamp, rawfacedata, rawheadpose, rawfov) ;
 
 }

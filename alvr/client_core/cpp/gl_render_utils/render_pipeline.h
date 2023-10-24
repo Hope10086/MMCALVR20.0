@@ -45,7 +45,7 @@ namespace gl_render_utils {
 
         void Render(const RenderState &renderState, const void *uniformBlockData = nullptr) const;
        
-        void MyRender(GaussianKernel5 NonRoiStrategy, GazeCenterInfo LeftCenter,GazeCenterInfo RightCenter, const RenderState &renderState, const void *uniformBlockData = nullptr) ;
+        void MyRender(GaussianKernel5 NonRoiStrategy, GazeCenterInfo LeftCenter,GazeCenterInfo RightCenter,float roisizeconst , const RenderState &renderState, const void *uniformBlockData = nullptr) ;
         
         GLuint GetProgram() const {
         return mProgram;

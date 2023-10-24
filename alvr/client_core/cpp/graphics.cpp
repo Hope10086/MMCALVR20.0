@@ -20,6 +20,7 @@ const int HUD_TEXTURE_HEIGHT = 720;
 
 bool GaussionFlag = true;
 int GaussionStrategy = 0;
+GazeCenterInfo GazeCenter[2] ={ {0.25,0.5} , {0.75,0.5} };
 
 //glm::mat4 FixedmvpMatrix[2];
 /// Integer version of ovrRectf
@@ -891,7 +892,7 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
         GL(glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, (GLeglImageOES)image));
         renderer->srgbCorrectionPass->Render();
 
-        renderer->gaussianBlurPass->Render(GaussionStrategy);
+        renderer->gaussianBlurPass->Render(GaussionStrategy, GazeCenter[0], GazeCenter[1]);
         
         if (renderer->enableFFR) {
             renderer->ffr->Render();
@@ -911,4 +912,12 @@ void updategussionflg( bool flag , int strategynum)
 {
   GaussionFlag = flag;
   GaussionStrategy = strategynum;
+}
+
+void updategazecenter( float lx,float ly ,float rx ,float ry)
+{
+   GazeCenter[0].x = lx;
+   GazeCenter[0].y = ly;
+   GazeCenter[1].x = rx;
+   GazeCenter[1].y = ry;
 }

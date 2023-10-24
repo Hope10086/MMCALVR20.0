@@ -21,13 +21,13 @@ const string BLUR_COMMON_SHADER_FORMAT = R"glsl(#version 300 es
     uniform float b ;
     uniform float center ;
 
-    float roia = 0.0 ;
-    float roib = 0.0 ;
-    float roicenter = 1.0 ;
-    
     uniform float ndcrad ;
     uniform vec2 lgazepoint;
     uniform vec2 rgazepoint;
+
+    float roia = 0.0 ;
+    float roib = 0.0 ;
+    float roicenter = 1.0 ;
 
 
     )glsl";
@@ -49,14 +49,11 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
         vec3 result = vec3(0.0,0.0,0.0);
 
         if(  (length(uv.x-lgazepoint.x) < ndcradius.x && length(uv.y-lgazepoint.y) < ndcradius.y)
-            || (length(uv.x-rgazepoint.x) < ndcradius.x && length(uv.y-rgazepoint.y) < ndcradius.y) )
-        { 
+            || (length(uv.x-rgazepoint.x) < ndcradius.x && length(uv.y-rgazepoint.y) < ndcradius.y) ){ 
             vec4 nearsample =  texture(inputTexture , uv);
-            result = nearsample.rgb;
-
+            result =  vec3(0.0,0.0,0.0);
         }
-        else
-        {
+        else {
             kernelWeight = (2.0*a +2.0*b + center);    
             kernel[0] = a;
             kernel[1] = b;
@@ -160,7 +157,7 @@ void GaussianBlurPass::Initialize(uint32_t width, uint32_t height) {
 
 }
 
-void GaussianBlurPass::Render(int strategynum) {
+void GaussianBlurPass::Render(int strategynum ,GazeCenterInfo LGazeCenter ,GazeCenterInfo RGazeCenter) {
 
     mstagOutputTex1State->ClearDepth();
     mOutputTextureState->ClearDepth();
@@ -181,8 +178,8 @@ GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} };
     }
     
     // Render horizontal blur
-    mHorizontalBlurPipeline->MyRender(Strategy, DefaultGazeCenter[0], DefaultGazeCenter[1] , *mstagOutputTex1State);
+    mHorizontalBlurPipeline->MyRender(Strategy, LGazeCenter, RGazeCenter, 0.01,*mstagOutputTex1State);
 
     // Render vertical blur
-    mVerticalBlurPipeline->MyRender(Strategy,  DefaultGazeCenter[0], DefaultGazeCenter[1] , *mOutputTextureState);
+    mVerticalBlurPipeline->MyRender(Strategy,  LGazeCenter, RGazeCenter, 0.01, *mOutputTextureState);
 }

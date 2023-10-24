@@ -1,6 +1,8 @@
 #![allow(unused_variables)]
 
-use alvr_common::{glam::UVec2, Fov, Pose};
+use alvr_common::{glam::{UVec2, Quat, Vec3, bool, Vec2}, 
+                  Fov, Pose};
+use alvr_packets::FaceData;
 use alvr_session::FoveatedRenderingDesc;
 use glyph_brush_layout::{
     ab_glyph::{Font, FontRef, ScaleFont},
@@ -225,6 +227,87 @@ pub fn update_gaussion_message (flag :bool ,strategynum : i32)
         alvr_log(crate::c_api::AlvrLogLevel::Info,
                 cteststring.as_ptr() );
     }
-   
+}
+pub fn to_local_eyes(
+    raw_global_head: Pose,
+    raw_global_eyes: [Option<Pose>; 2],
+) -> [Option<Pose>; 2] {
+    [
+        raw_global_eyes[0].map(|e| raw_global_head.inverse() * e),
+        raw_global_eyes[1].map(|e| raw_global_head.inverse() * e),
+    ]
+}
 
+pub fn quat_conjugate(quat: &Quat) 
+-> Quat {
+         Quat::from_xyzw(-1.0*quat.x, -1.0*quat.y, -1.0*quat.z, quat.w)
+}
+
+pub fn quat_rotate_vector(
+    quat:&Quat,
+    vector:&Vec3,
+) ->Vec3 {
+     let pin = Quat::from_xyzw(vector.x, vector.y, vector.z, 0.0);
+     let conjugate =quat_conjugate(quat);
+     let pout = (quat.mul_quat(pin)).mul_quat(conjugate);
+    
+    Vec3 { x: (pout.x), y: (pout.y), z: (pout.z) }
+    
+}
+
+
+
+
+pub fn get_gaze_center( leftfpv:Fov, eyegaze: [Option<Pose>; 2],
+) ->[Option<Vec2> ;2]{
+         if let[Some(pose1),Some(pose2)]  = eyegaze {
+            // let contfov = Fov{
+            //     left:-0.942478,
+            //     right:0.698132,
+            //     up: 0.733038,
+            //     down:-0.942478};
+            let Zaix = Vec3{x:0.0,y:0.0,z:-1.0};
+            let leftvec = quat_rotate_vector(&pose1.orientation, &Zaix);    
+            let rightvec = quat_rotate_vector(&pose2.orientation, &Zaix);    
+           
+            let center1 = Some(Vec2 {
+                x:((-1.0*leftfpv.left.tan()+ (-1.0 * leftvec.x/leftvec.z) ))/(-1.0*leftfpv.left.tan()+leftfpv.right.tan()),
+                y:((     leftfpv.up.tan()+ (  1.0 * leftvec.y/leftvec.z) ))/(-1.0*leftfpv.down.tan()+leftfpv.up.tan()), 
+            });
+            let center2 = Some(Vec2 {
+                x:((     leftfpv.right.tan() +(-1.0 * rightvec.x/rightvec.z)) )/(-1.0*leftfpv.left.tan()+leftfpv.right.tan()),
+                y:((     leftfpv.up.tan()  +( 1.0 * rightvec.y/rightvec.z)) )/(-1.0*leftfpv.down.tan()+leftfpv.up.tan()), 
+            });
+            [center1, center2] 
+         }else {
+            let defaultcenter = Vec2 { x: 0.5, y: 0.5 };
+            [Some(defaultcenter),Some(defaultcenter)]
+         }
+}
+
+pub fn calculate_gazecenter( target_timestamp :Duration, rawfacedata: FaceData ,rawheadpose: Pose, rawfov: Fov) {
+    
+    #[cfg(target_os = "android")]
+    unsafe{
+        let local_eye_gazes = to_local_eyes(
+            rawheadpose,
+            rawfacedata.eye_gazes);
+        let local_gazecenter = get_gaze_center(rawfov, local_eye_gazes);
+        updategazecenter(
+            local_gazecenter[0].unwrap().x * 0.5,
+            local_gazecenter[0].unwrap().y,
+            local_gazecenter[1].unwrap().x *0.5 + 0.5,
+            local_gazecenter[1].unwrap().y
+        );
+        // let lxstr = (local_gazecenter[0].unwrap().x * 0.5).to_string();
+        // let lystr = local_gazecenter[0].unwrap().y.to_string();
+        // let lstr = format!("({}, {})", lxstr, lystr);
+
+        //    let fovlog =rawfov.down.to_string();
+
+        // alvr_log(crate::c_api::AlvrLogLevel::Info,
+        //     CString::new(fovlog).expect("msgerro")
+        //                                .as_ptr() 
+        //         );
+    }
 }
