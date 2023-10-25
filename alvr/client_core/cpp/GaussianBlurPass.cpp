@@ -26,11 +26,6 @@ const string BLUR_COMMON_SHADER_FORMAT = R"glsl(#version 300 es
     uniform vec2 lgazepoint;
     uniform vec2 rgazepoint;
 
-    float roia = 0.0 ;
-    float roib = 0.0 ;
-    float roicenter = 1.0 ;
-
-
     )glsl";
 
 const string HORIZONTAL_BLUR_SHADER = R"glsl(
@@ -42,35 +37,26 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
     void main() {
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
 
-        float kernel[5] = float[5](roia,roib ,roicenter ,roib ,roia);
-        float kernelWeight = (2.0*roia +2.0*roib + roicenter);
+        float kernel[5] = float[5](a,b,center,b,a);
+        float kernelWeight = (2.0*a +2.0*b + center);
 
+        vec3 IsLeftROI = (length(uv.x - lgazepoint.x) < ndcradius.x && length(uv.y - lgazepoint.y) < ndcradius.y) ? vec3(1.0) : vec3(0.0);
+        vec3 IsRightROI = (length(uv.x - rgazepoint.x) < ndcradius.x && length(uv.y - rgazepoint.y) < ndcradius.y) ? vec3(1.0) : vec3(0.0);
+        vec4 RoiValue = texture(inputTexture, uv);
 
-        vec4 color = texture(inputTexture, uv);
-        vec3 result = vec3(0.0,0.0,0.0);
+        vec3 leftonepiexl = texture(inputTexture , uv + vec2(-2.0, 0.0) /TEXTURE_SIZE).rgb;
+        vec3 lefttwopiexl = texture(inputTexture , uv + vec2(-1.0, 0.0) /TEXTURE_SIZE).rgb;
+        vec3 righttwoepiexl = texture(inputTexture , uv + vec2(1.0, 0.0) /TEXTURE_SIZE).rgb;
+        vec3 rightonepiexl = texture(inputTexture , uv + vec2(2.0, 0.0) /TEXTURE_SIZE).rgb;
 
-        if(  (length(uv.x-lgazepoint.x) < ndcradius.x && length(uv.y-lgazepoint.y) < ndcradius.y)
-            || (length(uv.x-rgazepoint.x) < ndcradius.x && length(uv.y-rgazepoint.y) < ndcradius.y) ){ 
-            vec4 nearsample =  texture(inputTexture , uv);
-            result =  vec3(0.0,0.0,0.0);
-        }
-        else {
-            kernelWeight = (2.0*a +2.0*b + center);    
-            kernel[0] = a;
-            kernel[1] = b;
-            kernel[2] = center;
-            kernel[3] = b;
-            kernel[4] = a;
-            for (int i = -2; i <= 2; i++) {
-
-             ivec2 xoffset = ivec2(i, 0);  
-             vec4 nearsample = texture(inputTexture , uv + vec2(xoffset.x, 0.0) /TEXTURE_SIZE);
-             result += nearsample.rgb * kernel[i+2] / kernelWeight;
+        vec3 NonRoiValue = (RoiValue.rgb * kernel[2]  
+                           +leftonepiexl * kernel[0]
+                           +lefttwopiexl * kernel[1]
+                           +righttwoepiexl * kernel[3]
+                           +rightonepiexl * kernel[4]
+                           )/kernelWeight;
             
-            }
-        }
-        
-        fragColor = vec4(result , color.a);
+        fragColor = vec4(RoiValue.rgb * (IsLeftROI +IsRightROI) + NonRoiValue * (1.0-IsRightROI -IsLeftROI), RoiValue.a);
     }
 )glsl";
 
@@ -83,8 +69,8 @@ const string VERTICAL_BLUR_SHADER = R"glsl(
     void main() {
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
 
-        float kernel[5] = float[5](roia,roib ,roicenter ,roib ,roia);
-        float kernelWeight = (2.0*roia +2.0*roib + roicenter);
+        float kernel[5] = float[5](a,b ,center ,b ,a);
+        float kernelWeight = (2.0*a +2.0*b + center);
 
         vec4 color = texture(inputTexture, uv);
         vec3 result = vec3(0.0,0.0,0.0);
@@ -97,12 +83,6 @@ const string VERTICAL_BLUR_SHADER = R"glsl(
         }
         else
         {
-            kernelWeight = (2.0*a +2.0*b + center);    
-            kernel[0] = a;
-            kernel[1] = b;
-            kernel[2] = center;
-            kernel[3] = b;
-            kernel[4] = a;
             for (int i = -2; i <= 2; i++) {
 
              ivec2 yoffset = ivec2(0, i);  
@@ -180,8 +160,9 @@ GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} };
     
     // Render horizontal blur
     mHorizontalBlurPipeline->MyRender(Strategy, LGazeCenter, RGazeCenter, 0.01,*mstagOutputTex1State);
-    Info("Horizontal Render cost is %d",mHorizontalBlurPipeline->timecost);
+    Info("HorizontalBlur Rendercost is %d us",mHorizontalBlurPipeline->timecost/1000);
 
     // Render vertical blur
     mVerticalBlurPipeline->MyRender(Strategy,  LGazeCenter, RGazeCenter, 0.01, *mOutputTextureState);
+    Info("VerticalBlur RenderCost is %d us" , mVerticalBlurPipeline->timecost /1000);
 }

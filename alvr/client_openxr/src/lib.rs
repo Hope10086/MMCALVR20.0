@@ -826,7 +826,7 @@ pub fn entry_point() {
                 if let Some(pair) = frame_result {
                     pair} 
                 else {
-                    warn!("Timed out when waiting for frame!");
+                    //warn!("Timed out when waiting for frame!");
                     (vsync_time, ptr::null_mut())
                 };
 

@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include "gpulogger.h"
 
 class SrgbCorrectionPass {
   public:

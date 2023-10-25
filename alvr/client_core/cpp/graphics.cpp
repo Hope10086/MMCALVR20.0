@@ -628,25 +628,16 @@ void renderEye(
         {
             GL(glUniform1i(renderer->lobbyProgram.UniformLocation[UNIFORM_VIEW_ID], eye));
         }
-    } else {
-        GL(glUseProgram(renderer->streamProgram.streamProgram));
-        if (renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID] >=
-            0) // NOTE: will not be present when multiview path is enabled.
-        {
-            GL(glUniform1i(renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID], eye));
-        }
-    }
-    GL(glEnable(GL_SCISSOR_TEST));
-    GL(glDepthMask(GL_TRUE));
-    GL(glEnable(GL_DEPTH_TEST));
-    GL(glDepthFunc(GL_LEQUAL));
-    GL(glEnable(GL_CULL_FACE));
-    GL(glCullFace(GL_BACK));
-    GL(glViewport(viewport->x, viewport->y, viewport->width, viewport->height));
-    GL(glScissor(viewport->x, viewport->y, viewport->width, viewport->height));
+      GL(glEnable(GL_SCISSOR_TEST));
+      GL(glDepthMask(GL_TRUE));
+      GL(glEnable(GL_DEPTH_TEST));
+      GL(glDepthFunc(GL_LEQUAL));
+      GL(glEnable(GL_CULL_FACE));
+      GL(glCullFace(GL_BACK));
+      GL(glViewport(viewport->x, viewport->y, viewport->width, viewport->height));
+      GL(glScissor(viewport->x, viewport->y, viewport->width, viewport->height));
 
-    if (isLobby) {
-        // For drawing back frace of the sphere in gltf
+                // For drawing back frace of the sphere in gltf
         GL(glDisable(GL_CULL_FACE));
         GL(glClearColor(0.88f, 0.95f, 0.95f, 1.0f));
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
@@ -655,9 +646,9 @@ void renderEye(
         GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
         GL(glUniformMatrix4fv(renderer->lobbyProgram.UniformLocation[UNIFORM_MVP_MATRIX],
-                              2,
-                              true,
-                              (float *)mvpMatrix));
+                                2,
+                                true,
+                                (float *)mvpMatrix));
         GL(glActiveTexture(GL_TEXTURE0));
 
         GL(glBindTexture(GL_TEXTURE_2D, renderer->hudTexture));
@@ -669,15 +660,36 @@ void renderEye(
                                         renderer->lobbyProgram.UniformLocation[UNIFORM_MODE]);
         GL(glBindVertexArray(0));
         GL(glBindTexture(GL_TEXTURE_2D, 0));
+
     } else {
+
+        GLuint queryID;
+        GL(glGenQueries(1, &queryID));
+        GL(glBeginQuery(GL_TIME_ELAPSED_EXT, queryID));
+        GL(glUseProgram(renderer->streamProgram.streamProgram));
+        if (renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID] >=
+            0) // NOTE: will not be present when multiview path is enabled.
+        {
+            GL(glUniform1i(renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID], eye));
+        }
+
+        GL(glEnable(GL_SCISSOR_TEST));
+        GL(glDepthMask(GL_TRUE));
+        GL(glEnable(GL_DEPTH_TEST));
+        GL(glDepthFunc(GL_LEQUAL));
+        GL(glEnable(GL_CULL_FACE));
+        GL(glCullFace(GL_BACK));
+        GL(glViewport(viewport->x, viewport->y, viewport->width, viewport->height));
+        GL(glScissor(viewport->x, viewport->y, viewport->width, viewport->height));
+
         GL(glClear(GL_DEPTH_BUFFER_BIT));
 
         GL(glBindVertexArray(renderer->Panel.VertexArrayObject));
 
         GL(glUniformMatrix4fv(renderer->streamProgram.UniformLocation[UNIFORM_MVP_MATRIX],
-                              2,
-                              true,
-                              (float *)mvpMatrix));
+                                2,
+                                true,
+                                (float *)mvpMatrix));
 
         GL(glUniform1f(renderer->streamProgram.UniformLocation[UNIFORM_ALPHA], 2.0f));
         GL(glActiveTexture(GL_TEXTURE0));
@@ -691,8 +703,14 @@ void renderEye(
         GL(glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0));
         GL(glActiveTexture(GL_TEXTURE1));
         GL(glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0));
-    }
 
+        GL(glEndQuery(GL_TIME_ELAPSED_EXT));
+        GL(glFinish());
+        GLuint elapsed_time;
+        GL(glGetQueryObjectuiv(queryID, GL_QUERY_RESULT, &elapsed_time));
+        int timecost = elapsed_time;
+        Info(" render [%d]eye is %d us",eye ,timecost /1000);  
+    }
     GL(glUseProgram(0));
 }
 

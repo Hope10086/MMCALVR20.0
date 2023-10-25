@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include "gl_render_utils/render_pipeline.h"
+#include "gpulogger.h"
 
 struct FFRData {
     bool enabled;

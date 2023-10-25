@@ -48,4 +48,5 @@ void SrgbCorrectionPass::Initialize(uint32_t width, uint32_t height) {
 void SrgbCorrectionPass::Render() const {
     mOutputTextureState->ClearDepth();
     mStagingPipeline->Render(*mOutputTextureState);
+    Info("SrgbCorrection RenderCost is %d us",mStagingPipeline->timecost /1000 );
 }

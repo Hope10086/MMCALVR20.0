@@ -94,7 +94,11 @@ RenderPipeline::RenderPipeline(const vector<const Texture *> &inputTextures,
 
 }
 
-void RenderPipeline::Render(const RenderState &renderState, const void *uniformBlockData) const {
+void RenderPipeline::Render(const RenderState &renderState, const void *uniformBlockData)  {
+    GLuint queryID;
+    GL(glGenQueries(1, &queryID));
+    GL(glBeginQuery(GL_TIME_ELAPSED_EXT, queryID));
+    
     GL(glUseProgram(mProgram));
     GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderState.GetFrameBuffer()));
 
@@ -122,16 +126,18 @@ void RenderPipeline::Render(const RenderState &renderState, const void *uniformB
     }
 
     GL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
+
+    GL(glEndQuery(GL_TIME_ELAPSED_EXT));
+    GL(glFinish());
+    GLuint elapsed_time;
+    GL(glGetQueryObjectuiv(queryID, GL_QUERY_RESULT, &elapsed_time));
+    timecost = elapsed_time;
 }
 
 void RenderPipeline::MyRender( GaussianKernel5 NonRoiStrategy, GazeCenterInfo LeftCenter, GazeCenterInfo RightCenter, float roisize, const RenderState &renderState, const void *uniformBlockData)  {
     
-
-
-    // GL(glEnable(GL_EXT_disjoint_timer_query));
     GLuint queryID;
     GL(glGenQueries(1, &queryID));
-    
     GL(glBeginQuery(GL_TIME_ELAPSED_EXT, queryID));
 
     GLuint  a = GL(glGetUniformLocation(mProgram,"a"));
@@ -184,11 +190,7 @@ void RenderPipeline::MyRender( GaussianKernel5 NonRoiStrategy, GazeCenterInfo Le
     GL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
 
     GL(glEndQuery(GL_TIME_ELAPSED_EXT));
-
-    GLuint available = 0;
-    while (!available) {
-      GL(glGetQueryObjectuiv(queryID, GL_QUERY_RESULT_AVAILABLE, &available));
-    }
+    GL(glFinish());
     GLuint elapsed_time;
     GL(glGetQueryObjectuiv(queryID, GL_QUERY_RESULT, &elapsed_time));
     timecost = elapsed_time;
