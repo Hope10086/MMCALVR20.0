@@ -149,9 +149,7 @@ GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} };
     
     // Render horizontal blur
     mHorizontalBlurPipeline->MyRender(Strategy, LGazeCenter, RGazeCenter, 0.01,*mstagOutputTex1State);
-    Info("HorizontalBlur Rendercost is %d us",mHorizontalBlurPipeline->timecost/1000);
 
     // Render vertical blur
     mVerticalBlurPipeline->MyRender(Strategy,  LGazeCenter, RGazeCenter, 0.01, *mOutputTextureState);
-    Info("VerticalBlur RenderCost is %d us" , mVerticalBlurPipeline->timecost /1000);
 }

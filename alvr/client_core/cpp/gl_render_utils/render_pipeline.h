@@ -43,7 +43,7 @@ namespace gl_render_utils {
                        const std::string &vertexShaderStr, const std::string &fragmentShaderStr,
                        size_t uniformBlockSize = 0);
 
-        void Render(const RenderState &renderState, const void *uniformBlockData = nullptr) ;
+        void Render(const RenderState &renderState, const void *uniformBlockData = nullptr)const ;
        
         void MyRender(GaussianKernel5 NonRoiStrategy, GazeCenterInfo LeftCenter,GazeCenterInfo RightCenter,float roisizeconst , const RenderState &renderState, const void *uniformBlockData = nullptr) ;
          int timecost  =0;

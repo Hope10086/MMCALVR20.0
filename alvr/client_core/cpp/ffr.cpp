@@ -167,5 +167,4 @@ void FFR::Initialize(FoveationVars fv) {
 void FFR::Render() const {
     mExpandedTextureState->ClearDepth();
     mDecompressAxisAlignedPipeline->Render(*mExpandedTextureState);
-    Info("FFR Rendercost is %d us" ,mDecompressAxisAlignedPipeline->timecost /1000);
 }

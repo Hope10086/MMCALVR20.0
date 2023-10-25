@@ -20,7 +20,9 @@ const int HUD_TEXTURE_HEIGHT = 720;
 
 bool GaussionFlag = true;
 int GaussionStrategy = 0;
+int SRendercount = 0;
 GazeCenterInfo GazeCenter[2] ={ {0.25,0.5} , {0.75,0.5} };
+
 
 void (*InfoLog)( const char *message);
 
@@ -662,10 +664,6 @@ void renderEye(
         GL(glBindTexture(GL_TEXTURE_2D, 0));
 
     } else {
-
-        GLuint queryID;
-        GL(glGenQueries(1, &queryID));
-        GL(glBeginQuery(GL_TIME_ELAPSED_EXT, queryID));
         GL(glUseProgram(renderer->streamProgram.streamProgram));
         if (renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID] >=
             0) // NOTE: will not be present when multiview path is enabled.
@@ -703,13 +701,6 @@ void renderEye(
         GL(glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0));
         GL(glActiveTexture(GL_TEXTURE1));
         GL(glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0));
-
-        GL(glEndQuery(GL_TIME_ELAPSED_EXT));
-        GL(glFinish());
-        GLuint elapsed_time;
-        GL(glGetQueryObjectuiv(queryID, GL_QUERY_RESULT, &elapsed_time));
-        int timecost = elapsed_time;
-        Info(" render [%d]eye is %d us",eye ,timecost /1000);  
     }
     GL(glUseProgram(0));
 }
@@ -864,7 +855,7 @@ void streamStartNative(FfiStreamConfig config) {
                         config.foveationCenterShiftY,
                         config.foveationEdgeRatioX,
                         config.foveationEdgeRatioY},
-                       false);
+                       false);      
 }
 
 void updateLobbyHudTexture(const unsigned char *data) {
@@ -900,8 +891,9 @@ void renderLobbyNative(const FfiViewInput eyeInputs[2]) {
 
 void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchainIndices[2]) {
     auto renderer = g_ctx.streamRenderer.get();
-
-
+    GLuint newTotalqueryID;
+    GL(glGenQueries(1, &newTotalqueryID));
+    GL(glBeginQuery(GL_TIME_ELAPSED_EXT, newTotalqueryID)); 
     if (streamHardwareBuffer != 0) {
         const char *version = (const char*)glGetString(GL_VERSION);
         const char *extensions = (const char*)glGetString(GL_EXTENSIONS);
@@ -933,8 +925,14 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
     eyeInputs[0].swapchainIndex = swapchainIndices[0];
     eyeInputs[1].swapchainIndex = swapchainIndices[1];
     ovrRenderer_RenderFrame(renderer, eyeInputs, false);
-}
+    GL(glEndQuery(GL_TIME_ELAPSED_EXT));
+    GL(glFinish());
 
+    GLuint elapsed_time;
+    glGetQueryObjectuiv(newTotalqueryID, GL_QUERY_RESULT_EXT, &elapsed_time);
+    Info(" Frame [%d] Render cost: %d us",SRendercount ,elapsed_time/1000>0? elapsed_time/1000 :-1 );
+    SRendercount++;
+}
 
 void updategussionflg( bool flag , int strategynum)
 {
