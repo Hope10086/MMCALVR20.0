@@ -15,33 +15,27 @@ namespace {
 
 const string BLUR_COMMON_SHADER_FORMAT = R"glsl(#version 300 es
     #extension GL_OES_EGL_image_external_essl3 : enable
-    precision highp float;
-
+    precision mediump float;
     const vec2 TEXTURE_SIZE = vec2(%i,%i);
     uniform float a ;
     uniform float b ;
     uniform float center ;
-
     uniform float ndcrad ;
     uniform vec2 lgazepoint;
     uniform vec2 rgazepoint;
 
     )glsl";
-
 const string HORIZONTAL_BLUR_SHADER = R"glsl(
-    
     in vec2 uv;
     out vec4 fragColor;
     uniform sampler2D inputTexture;
-
     void main() {
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
-
         float kernel[5] = float[5](a,b,center,b,a);
         float kernelWeight = (2.0*a +2.0*b + center);
 
-        vec3 IsLeftROI = (length(uv.x - lgazepoint.x) < ndcradius.x && length(uv.y - lgazepoint.y) < ndcradius.y) ? vec3(1.0) : vec3(0.0);
-        vec3 IsRightROI = (length(uv.x - rgazepoint.x) < ndcradius.x && length(uv.y - rgazepoint.y) < ndcradius.y) ? vec3(1.0) : vec3(0.0);
+        vec3 IsLeftROI=(length(uv.x-lgazepoint.x)<ndcradius.x && length(uv.y-lgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
+        vec3 IsRightROI=(length(uv.x-rgazepoint.x)<ndcradius.x && length(uv.y-rgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
         vec4 RoiValue = texture(inputTexture, uv);
 
         vec3 leftonepiexl = texture(inputTexture , uv + vec2(-2.0, 0.0) /TEXTURE_SIZE).rgb;
@@ -68,30 +62,25 @@ const string VERTICAL_BLUR_SHADER = R"glsl(
 
     void main() {
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
-
-        float kernel[5] = float[5](a,b ,center ,b ,a);
+        float kernel[5] = float[5](a,b,center,b,a);
         float kernelWeight = (2.0*a +2.0*b + center);
+        vec3 IsLeftROI=(length(uv.x-lgazepoint.x)<ndcradius.x && length(uv.y-lgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
+        vec3 IsRightROI=(length(uv.x-rgazepoint.x)<ndcradius.x && length(uv.y-rgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
+        vec4 RoiValue = texture(inputTexture, uv);
 
-        vec4 color = texture(inputTexture, uv);
-        vec3 result = vec3(0.0,0.0,0.0);
+        vec3 leftonepiexl = texture(inputTexture , uv + vec2(0.0, -2.0) /TEXTURE_SIZE).rgb;
+        vec3 lefttwopiexl = texture(inputTexture , uv + vec2(0.0, -1.0) /TEXTURE_SIZE).rgb;
+        vec3 righttwoepiexl = texture(inputTexture , uv + vec2(0.0, 1.0) /TEXTURE_SIZE).rgb;
+        vec3 rightonepiexl = texture(inputTexture , uv + vec2(0.0, 2.0) /TEXTURE_SIZE).rgb;
 
-        if(  (length(uv.x-lgazepoint.x) < ndcradius.x && length(uv.y-lgazepoint.y) < ndcradius.y)
-          || (length(uv.x-rgazepoint.x) < ndcradius.x && length(uv.y-rgazepoint.y) < ndcradius.y) )
-        { 
-            vec4 nearsample =  texture(inputTexture , uv);
-            result = nearsample.rgb;
-        }
-        else
-        {
-            for (int i = -2; i <= 2; i++) {
-
-             ivec2 yoffset = ivec2(0, i);  
-             vec4 nearsample = texture(inputTexture , uv + vec2(0.0, yoffset.y) /TEXTURE_SIZE);
-             result += nearsample.rgb * kernel[i+2] / kernelWeight;
-            }
-        }
-
-        fragColor = vec4(result , color.a);
+        vec3 NonRoiValue = (RoiValue.rgb * kernel[2]  
+                           +leftonepiexl * kernel[0]
+                           +lefttwopiexl * kernel[1]
+                           +righttwoepiexl * kernel[3]
+                           +rightonepiexl * kernel[4]
+                           )/kernelWeight;
+            
+        fragColor = vec4(RoiValue.rgb * (IsLeftROI +IsRightROI) + NonRoiValue * (1.0-IsRightROI -IsLeftROI), RoiValue.a);
     }
 )glsl";
  }
