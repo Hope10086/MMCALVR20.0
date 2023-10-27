@@ -205,7 +205,7 @@ pub fn render_stream(hardware_buffer: *mut std::ffi::c_void, swapchain_indices: 
     unsafe {
         InfoLog =Some(log_info_message);
 
-        let render_time_beagin = Instant::now();                                           
+    //   let render_time_beagin = Instant::now();                                           
         renderStreamNative(hardware_buffer, swapchain_indices.as_ptr());
 
       
@@ -224,15 +224,17 @@ pub fn render_stream(hardware_buffer: *mut std::ffi::c_void, swapchain_indices: 
 }
 
 
-pub fn update_gaussion_message (flag :bool ,strategynum : i32)
+pub fn update_gaussion_message (flag :bool ,strategynum : i32 ,roisize:f32)
 {
    #[cfg(target_os = "android")]
     unsafe {
-        updategussionflg(true ,  strategynum);
-        let  teststring  = CString::new(strategynum.to_string()).expect("msg");
+        updategussionflg(flag ,  strategynum,roisize);
+        let  strategy  = strategynum.to_string();
+        let  roiradius = roisize.to_string();
+        let gaussionset = CString::new(format!("(Weight Strategy:{}, ROI radius:{})", strategy, roiradius)).expect("gaussionset failed");
 
         alvr_log(crate::c_api::AlvrLogLevel::Info,
-            teststring.as_ptr() );
+            gaussionset.as_ptr() );
     }
 }
 pub fn to_local_eyes(

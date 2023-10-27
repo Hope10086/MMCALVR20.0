@@ -67,6 +67,9 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[2].button("TD Mode").clicked() {   
             request = Some(ServerRequest ::TDmode);
         }
+        if ui[3].button(" Enable Gaussion").clicked() {
+            request = Some(ServerRequest::GaussionBlurEnble);
+        }
 
         if ui[0].button("Speed Threshold add").clicked() {   
             request = Some(ServerRequest ::SpeedThresholdadd);
@@ -74,13 +77,19 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[1].button("Speed Threshold sub").clicked() {   
             request = Some(ServerRequest ::SpeedThresholdsub);
         }
-        if ui[2].button("GauBlur Enble").clicked() {
-            request = Some(ServerRequest ::GaussianBlurEnble(true))
+        if ui[2].button("StrategyAdd").clicked() {
+            request = Some(ServerRequest ::GaussianBlurStrategy(true))
             
         }
-        if ui[3].button("GauBlur Unenble").clicked() {
-            request = Some(ServerRequest ::GaussianBlurEnble(false))
+        if ui[3].button("StrategySub").clicked() {
+            request = Some(ServerRequest ::GaussianBlurStrategy(false))
             
+        }
+        if ui[0].button("GaussianSizeAdd").clicked() {   
+            request = Some(ServerRequest ::GaussionBlurRoiSize(true));
+        }
+        if ui[1].button("GaussianSizeSub").clicked() {   
+            request = Some(ServerRequest ::GaussionBlurRoiSize(false));
         }
 
     });

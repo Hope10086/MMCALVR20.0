@@ -130,6 +130,7 @@ pub struct Haptics {
 pub struct  Gaussion{
     pub flag :bool,
     pub strategynum :i32,
+    pub roisize :f32,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -256,5 +257,7 @@ pub enum ServerRequest {
     GetDriverList,
     RestartSteamvr,
     ShutdownSteamvr,
-    GaussianBlurEnble(bool),
+    GaussianBlurStrategy(bool),
+    GaussionBlurEnble,
+    GaussionBlurRoiSize(bool),
 }

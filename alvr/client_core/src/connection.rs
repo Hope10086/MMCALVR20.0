@@ -419,7 +419,10 @@ async fn stream_pipeline(
             loop {
                 let gaussioninfo = receiver.recv_header_only().await?;
                 EVENT_QUEUE.lock().push_back(ClientCoreEvent::Gaussion {
-                     flag: (gaussioninfo.flag), strategynum: (gaussioninfo.strategynum) });
+                     flag: (gaussioninfo.flag), 
+                     strategynum: (gaussioninfo.strategynum),
+                     roisize :( gaussioninfo.roisize)
+                     });
             }
         }
 

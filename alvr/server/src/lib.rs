@@ -422,12 +422,13 @@ pub unsafe extern "C" fn HmdDriverFactory(
             sender.send(haptics).ok();
         }
     }
-    extern "C" fn gaussion_send(gaussflag : bool , strategynum:i32) {
+    extern "C" fn gaussion_send(gaussflag : bool , strategynum:i32 , roisize:f32) {
          if let Some(sender) = &*GAUSSION_SENDER.lock(){
 
             let gaussioninfo = Gaussion{
                 flag: gaussflag,
                 strategynum,
+                roisize,
             };
             sender.send(gaussioninfo).ok();
 

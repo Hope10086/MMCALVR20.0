@@ -18,9 +18,10 @@ const int MAX_PROGRAM_TEXTURES = 8;
 const int HUD_TEXTURE_WIDTH = 1280;
 const int HUD_TEXTURE_HEIGHT = 720;
 
-bool GaussionFlag = true;
+bool GaussionFlag = false;
 int GaussionStrategy = 0;
 int SRendercount = 0;
+float ndcroirad = 0.01;
 GazeCenterInfo GazeCenter[2] ={ {0.25,0.5} , {0.75,0.5} };
 
 
@@ -195,9 +196,28 @@ in lowp vec2 uv;
 in lowp vec4 fragmentColor;
 out lowp vec4 outColor;
 uniform sampler2D Texture0;
+uniform float a ;
+uniform float center ;
+uniform float ndcrad ;
+uniform vec2 gazepoint;
 void main()
-{
-    outColor = texture(Texture0, uv);
+{       const vec2 TEXTURE_SIZE = vec2(5184.0,2592.0);
+        vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
+        float noo = a;
+        float yes = center;
+        float kernelWeight = (4.0 * noo + 1.0 * yes);
+        vec3 IsROI=(length(uv.x-gazepoint.x)<ndcradius.x && length(uv.y-gazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
+        vec4 RoiValue = texture(Texture0, uv);
+        vec3 leftonepiexl = texture(Texture0 , uv + vec2(-4.0, 0.0) /TEXTURE_SIZE).rgb;
+        vec3 rightonepiexl = texture(Texture0 , uv + vec2(4.0, 0.0) /TEXTURE_SIZE).rgb;
+        vec3 uponeepiexl = texture(Texture0 , uv + vec2(0.0, 4.0) /TEXTURE_SIZE).rgb;
+        vec3 downoneepiexl = texture(Texture0 , uv + vec2(0.0, -4.0) /TEXTURE_SIZE).rgb;
+        vec3 NonRoiValue = (RoiValue.rgb * yes 
+                            +leftonepiexl * noo
+                            +rightonepiexl * noo
+                            +uponeepiexl * noo
+                            +downoneepiexl * noo)/kernelWeight;
+    outColor = vec4(RoiValue.rgb *IsROI + NonRoiValue * (1.0-IsROI), RoiValue.a);
 }
 )glsl";
 
@@ -557,7 +577,7 @@ void ovrRenderer_Create(ovrRenderer *renderer,
             FoveationVars fv = CalculateFoveationVars(ffrData);
             renderer->srgbCorrectionPass->Initialize(fv.optimizedEyeWidth, fv.optimizedEyeHeight);
             // you need to Initialize before set next one 
-            if (true) // shn bool for opening  gaussian
+            if (false) // shn bool for opening  gaussian
             {
               renderer->gaussianBlurPass = std::make_unique<GaussianBlurPass>(renderer->srgbCorrectionPass->GetOutputTexture());
               renderer->gaussianBlurPass->Initialize(fv.optimizedEyeWidth, fv.optimizedEyeHeight);
@@ -576,7 +596,7 @@ void ovrRenderer_Create(ovrRenderer *renderer,
         } else {
             renderer->srgbCorrectionPass->Initialize(width, height);
 
-               if (true) // bool for opening  gaussian
+               if (false) // bool for opening  gaussian
                {
                 renderer->gaussianBlurPass = std::make_unique<GaussianBlurPass>(renderer->srgbCorrectionPass->GetOutputTexture());
                 renderer->gaussianBlurPass->Initialize(width, height);
@@ -664,7 +684,44 @@ void renderEye(
         GL(glBindTexture(GL_TEXTURE_2D, 0));
 
     } else {
+        //left and right is different
+        GaussianKernel5  TotalStrategys[6] = { { 0.0 ,0.0 ,1.0 }, {0.0 ,1.0 ,2.0} ,{ 1.0, 2.0, 4.0 },
+                                           { 1.0, 2.0, 2.0 }, {1.0 ,1.0 ,1.0 },{ 2.0 ,2.0 ,1.0 }
+                                         };
+        GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
+        GaussianKernel5 Strategy;
+        if (GaussionFlag && GaussionStrategy>=0 && GaussionStrategy<=5)
+        {
+            Strategy = TotalStrategys[GaussionStrategy];
+        }
+        else
+        {   Strategy = TotalStrategys[0];
+        }
+        GLuint  a = GL(glGetUniformLocation(renderer->streamProgram.streamProgram,"a"));
+        GLuint center = GL(glGetUniformLocation(renderer->streamProgram.streamProgram,"center"));
+        GLuint ndcrad =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"ndcrad"));
+        GLuint gazepoint =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"gazepoint"));
+
         GL(glUseProgram(renderer->streamProgram.streamProgram));
+
+        GL(glUniform1f(a,Strategy.a));
+        GL(glUniform1f(center,Strategy.center));
+        if (ndcroirad >0.2)
+        {
+            GL(glUniform1f(ndcrad,0.2));
+        }
+        else if(ndcroirad >0){
+            GL(glUniform1f(ndcrad,ndcroirad));
+        }
+        else{ GL(glUniform1f(ndcrad,0.01));}
+        if (eye == 0)
+        {
+            GL(glUniform2f(gazepoint, GazeCenter[0].x,GazeCenter[0].y));
+        }
+        else
+        {
+            GL(glUniform2f(gazepoint, GazeCenter[1].x,GazeCenter[1].y));
+        }
         if (renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID] >=
             0) // NOTE: will not be present when multiview path is enabled.
         {
@@ -891,9 +948,9 @@ void renderLobbyNative(const FfiViewInput eyeInputs[2]) {
 
 void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchainIndices[2]) {
     auto renderer = g_ctx.streamRenderer.get();
-    GLuint newTotalqueryID;
-    GL(glGenQueries(1, &newTotalqueryID));
-    GL(glBeginQuery(GL_TIME_ELAPSED_EXT, newTotalqueryID)); 
+    // GLuint newTotalqueryID;
+    // GL(glGenQueries(1, &newTotalqueryID));
+    // GL(glBeginQuery(GL_TIME_ELAPSED_EXT, newTotalqueryID)); 
     if (streamHardwareBuffer != 0) {
         const char *version = (const char*)glGetString(GL_VERSION);
         const char *extensions = (const char*)glGetString(GL_EXTENSIONS);
@@ -912,7 +969,7 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
         GL(glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, (GLeglImageOES)image));
         renderer->srgbCorrectionPass->Render();
 
-        renderer->gaussianBlurPass->Render(GaussionStrategy, GazeCenter[0], GazeCenter[1]);
+     //   renderer->gaussianBlurPass->Render(GaussionStrategy, GazeCenter[0], GazeCenter[1]);
         
         if (renderer->enableFFR) {
             renderer->ffr->Render();
@@ -925,19 +982,20 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
     eyeInputs[0].swapchainIndex = swapchainIndices[0];
     eyeInputs[1].swapchainIndex = swapchainIndices[1];
     ovrRenderer_RenderFrame(renderer, eyeInputs, false);
-    GL(glEndQuery(GL_TIME_ELAPSED_EXT));
-    GL(glFinish());
 
-    GLuint elapsed_time;
-    glGetQueryObjectuiv(newTotalqueryID, GL_QUERY_RESULT_EXT, &elapsed_time);
-    Info(" Frame [%d] Render cost: %d us",SRendercount ,elapsed_time/1000>0? elapsed_time/1000 :-1 );
-    SRendercount++;
+    // GL(glEndQuery(GL_TIME_ELAPSED_EXT));
+    // GL(glFinish());
+    // GLuint elapsed_time;
+    // glGetQueryObjectuiv(newTotalqueryID, GL_QUERY_RESULT_EXT, &elapsed_time);
+    // Info(" Frame [%d] Render cost: %d us",SRendercount ,elapsed_time/1000>0? elapsed_time/1000 :-1 );
+    // SRendercount++;
 }
 
-void updategussionflg( bool flag , int strategynum)
+void updategussionflg( bool flag , int strategynum ,float roisize)
 {
   GaussionFlag = flag;
   GaussionStrategy = strategynum;
+  ndcroirad = roisize;
 }
 
 void updategazecenter( unsigned long long longtargetTimestampNs ,float lx,float ly ,float rx ,float ry)

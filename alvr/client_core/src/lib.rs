@@ -91,6 +91,7 @@ pub enum ClientCoreEvent {
     Gaussion{
         flag :bool,
         strategynum :i32,
+        roisize : f32,
     },
 }
 

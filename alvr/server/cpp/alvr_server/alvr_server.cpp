@@ -180,6 +180,7 @@ const char *g_driverRootDir;
 
 bool gaussionblurflag = false;
 int  strategynum =0 ;
+float roiradius =0.01;
 
 void (*LogError)(const char *stringPtr);
 void (*LogWarn)(const char *stringPtr);
@@ -190,7 +191,7 @@ void (*DriverReadyIdle)(bool setDefaultChaprone);
 void (*InitializeDecoder)(const unsigned char *configBuffer, int len, int codec);
 void (*VideoSend)(unsigned long long targetTimestampNs, unsigned char *buf, int len, bool isIdr);
 void (*HapticsSend)(unsigned long long path, float duration_s, float frequency, float amplitude , bool gaussflag);
-void (*GaussionSend)( bool enable , int num);
+void (*GaussionSend)( bool enable , int num ,float roisize);
 void (*ShutdownRuntime)();
 unsigned long long (*PathStringToHash)(const char *path);
 void (*ReportPresent)(unsigned long long timestamp_ns, unsigned long long offset_ns);
@@ -510,9 +511,8 @@ void CloseTxtFile(){
     LogFileClose();
 }
 
-void UpdateGaussionFlag(bool flag ,int delatnum){
-
-   gaussionblurflag = flag ;
+void UpdateGaussionStrategy(int delatnum){
+   
    strategynum = strategynum + delatnum;
    if (strategynum < 0)
    {
@@ -522,9 +522,25 @@ void UpdateGaussionFlag(bool flag ,int delatnum){
    {
       strategynum =5;
    }
-
-   GaussionSend(flag,strategynum);
-
+   GaussionSend(gaussionblurflag,strategynum,roiradius);
 }
 
+void UpdateGaussionRoiSize(float RoiSizeRad){
+    
+    roiradius = roiradius +RoiSizeRad;
+    if (roiradius <0)
+    {
+       roiradius = 0;
+    }
+    if (roiradius > 0.4)
+    {
+        roiradius = 0.4;
+    }
+    GaussionSend(gaussionblurflag,strategynum,roiradius);
+}
+
+void GaussionEnable(){
+   gaussionblurflag = !gaussionblurflag ;
+   GaussionSend(gaussionblurflag,strategynum,roiradius);
+}
 

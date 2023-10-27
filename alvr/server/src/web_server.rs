@@ -141,15 +141,23 @@ async fn http_api(
                     ServerRequest::MaxQpAdd => unsafe {crate::MaxQpAdd()},
                     ServerRequest::GazeVisual=>unsafe {crate::GazeVisual()},
                     ServerRequest::TDmode=>unsafe {crate::TDmode()},
-                    ServerRequest::GaussianBlurEnble(gbflag)=>  unsafe {                                        
-                        if  gbflag == true {
-                            crate::UpdateGaussionFlag(gbflag, 1);
+                    ServerRequest::GaussianBlurStrategy(gbstra)=>  unsafe {                                        
+                        if  gbstra == true {
+                            crate::UpdateGaussionStrategy(1);
                         }
                         else {
-                            crate::UpdateGaussionFlag(gbflag, -1)
+                            crate::UpdateGaussionStrategy(-1)
                         }
-                       
                     },
+                    ServerRequest::GaussionBlurRoiSize(gbroi) => unsafe {
+                        if gbroi ==true {
+                            crate::UpdateGaussionRoiSize(0.01)
+                        }
+                        else {
+                            crate::UpdateGaussionRoiSize(-0.01)
+                        }
+                    },
+                    ServerRequest::GaussionBlurEnble =>unsafe {crate::GaussionEnable()},
                     ServerRequest::SpeedThresholdadd=>unsafe {crate::SpeedThresholdadd()},
                     ServerRequest::SpeedThresholdsub=>unsafe {crate::SpeedThresholdsub()},
                     ServerRequest::StartRecording => unsafe {crate::create_recording_file();crate::RecordGaze()},
