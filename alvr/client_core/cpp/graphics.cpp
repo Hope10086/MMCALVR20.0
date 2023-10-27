@@ -19,11 +19,15 @@ const int HUD_TEXTURE_WIDTH = 1280;
 const int HUD_TEXTURE_HEIGHT = 720;
 
 bool GaussionFlag = false;
+bool TDenabled = false;
 int GaussionStrategy = 0;
 int SRendercount = 0;
 float ndcroirad = 0.01;
 GazeCenterInfo GazeCenter[2] ={ {0.25,0.5} , {0.75,0.5} };
+OriAngle m_Angle ,pre_Angle;
 
+unsigned long long m_targetTimestampNs =0;
+unsigned long long pre_targetTimestampNs =0;
 
 void (*InfoLog)( const char *message);
 
@@ -217,7 +221,7 @@ void main()
                             +rightonepiexl * noo
                             +uponeepiexl * noo
                             +downoneepiexl * noo)/kernelWeight;
-    outColor = vec4(RoiValue.rgb *IsROI + NonRoiValue * (1.0-IsROI), RoiValue.a);
+    outColor = vec4(RoiValue.rgb * IsROI + NonRoiValue * (1.0-IsROI), RoiValue.a);
 }
 )glsl";
 
@@ -998,10 +1002,26 @@ void updategussionflg( bool flag , int strategynum ,float roisize)
   ndcroirad = roisize;
 }
 
-void updategazecenter( unsigned long long longtargetTimestampNs ,float lx,float ly ,float rx ,float ry)
+void updategazecenter( unsigned long long targetTimestampNs ,float headx, float heady, float gazex, float gazey ,float lx,float ly ,float rx ,float ry)
 {
-   GazeCenter[0].x = lx;
-   GazeCenter[0].y = ly;
-   GazeCenter[1].x = rx;
-   GazeCenter[1].y = ry;
+    pre_targetTimestampNs = m_targetTimestampNs;
+    pre_Angle = m_Angle;
+
+    m_targetTimestampNs = targetTimestampNs;
+    m_Angle.head_x = headx;
+    m_Angle.head_y = heady;
+    m_Angle.gaze_x = gazex;
+    m_Angle.gaze_y = gazey;
+
+    GazeCenter[0].x = lx;
+    GazeCenter[0].y = ly;
+    GazeCenter[1].x = rx;
+    GazeCenter[1].y = ry;
+
+    if(abs((m_Angle.head_x - pre_Angle.head_x)/(m_targetTimestampNs -pre_targetTimestampNs)) > 100){
+        TDenabled = true;
+    }
+    else{
+        TDenabled = false;
+    }
 }

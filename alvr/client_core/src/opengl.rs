@@ -241,10 +241,17 @@ pub fn to_local_eyes(
     raw_global_head: Pose,
     raw_global_eyes: [Option<Pose>; 2],
 ) -> [Option<Pose>; 2] {
-    [
-        raw_global_eyes[0].map(|e| raw_global_head.inverse() * e),
-        raw_global_eyes[1].map(|e| raw_global_head.inverse() * e),
-    ]
+    if let [Some(p1) ,Some(p2)] =raw_global_eyes  {
+
+        [ Some(raw_global_head.inverse() * p1) ,Some(raw_global_head.inverse() * p2)]
+    }
+    else {
+        let constPose = Pose{
+            orientation: Quat::from_xyzw(0.0, 0.0, 0.0, 1.0),
+            position : Vec3 { x: (0.0), y: (0.0), z: (0.0) }
+        };
+         [ Some(constPose) , Some(constPose)]
+    }
 }
 
 pub fn quat_conjugate(quat: &Quat) 
@@ -264,17 +271,10 @@ pub fn quat_rotate_vector(
     
 }
 
-
-
-
 pub fn get_gaze_center( leftfpv:Fov, eyegaze: [Option<Pose>; 2],
 ) ->[Option<Vec2> ;2]{
          if let[Some(pose1),Some(pose2)]  = eyegaze {
-            // let contfov = Fov{
-            //     left:-0.942478,
-            //     right:0.698132,
-            //     up: 0.733038,
-            //     down:-0.942478};
+
             let Zaix = Vec3{x:0.0,y:0.0,z:-1.0};
             let leftvec = quat_rotate_vector(&pose1.orientation, &Zaix);    
             let rightvec = quat_rotate_vector(&pose2.orientation, &Zaix);    
@@ -294,30 +294,55 @@ pub fn get_gaze_center( leftfpv:Fov, eyegaze: [Option<Pose>; 2],
          }
 }
 
+pub fn get_ori_angle(quat:Option<Quat> ) ->Option<Vec2> {
+
+    if let Some(q) = quat  {
+        let RadToAngle = 180.0 /3.14159265358;
+        let directionvec = quat_rotate_vector(&q, &Vec3{x:0.0,y:0.0,z:1.0});
+        let horizontalrad = RadToAngle * (-1.0 *directionvec.x ).atan2( directionvec.z);
+        let verticalrad =  RadToAngle * (-1.0 *directionvec.y ).atan2( directionvec.z);
+        Some( Vec2 { x: (horizontalrad), y: (verticalrad) })
+    }else {
+        Some( Vec2 { x: (0.0), y: (0.0) })
+    }
+} 
+
 pub fn calculate_gazecenter( target_timestamp :Duration, rawfacedata: FaceData ,rawheadpose: Pose, rawfov: Fov) {
     
-    #[cfg(target_os = "android")]
+  #[cfg(target_os = "android")]
     unsafe{
         let local_eye_gazes = to_local_eyes(
             rawheadpose,
             rawfacedata.eye_gazes);
         let local_gazecenter = get_gaze_center(rawfov, local_eye_gazes);
+        let head_angle = get_ori_angle(Some(rawheadpose.orientation));
+        let leftgaze_angle = get_ori_angle(Some(local_eye_gazes[0].unwrap().orientation));
+
         updategazecenter(
             target_timestamp.as_secs(),
+            head_angle.unwrap().x,
+            head_angle.unwrap().y,
+            leftgaze_angle.unwrap().x,
+            leftgaze_angle.unwrap().y,
             local_gazecenter[0].unwrap().x * 0.5,
             local_gazecenter[0].unwrap().y,
             local_gazecenter[1].unwrap().x *0.5 + 0.5,
             local_gazecenter[1].unwrap().y
+
         );
+
+        let str1 = head_angle.unwrap().x.to_string();
+        let str2 = head_angle.unwrap().y.to_string();
+        let str3 = leftgaze_angle.unwrap().x.to_string();
+        let str4 = leftgaze_angle.unwrap().y.to_string();
+        let anglestr = format!("(Head: [{},{}], Gaze[{},{}])",str1,str2,str3,str4);
         // let lxstr = (local_gazecenter[0].unwrap().x * 0.5).to_string();
         // let lystr = local_gazecenter[0].unwrap().y.to_string();
         // let lstr = format!("({}, {})", lxstr, lystr);
 
         //    let fovlog =rawfov.down.to_string();
-
-        // alvr_log(crate::c_api::AlvrLogLevel::Info,
-        //     CString::new(fovlog).expect("msgerro")
-        //                                .as_ptr() 
-        //         );
+        alvr_log(crate::c_api::AlvrLogLevel::Info,
+        CString::new(anglestr).expect("anglestrerro")
+                                      .as_ptr() );
     }
 }
