@@ -151,10 +151,10 @@ async fn http_api(
                     },
                     ServerRequest::GaussionBlurRoiSize(gbroi) => unsafe {
                         if gbroi ==true {
-                            crate::UpdateGaussionRoiSize(0.01)
+                            crate::UpdateGaussionRoiSize(0.0061728395)
                         }
                         else {
-                            crate::UpdateGaussionRoiSize(-0.01)
+                            crate::UpdateGaussionRoiSize(-0.0061728395)
                         }
                     },
                     ServerRequest::GaussionBlurEnble =>unsafe {crate::GaussionEnable()},

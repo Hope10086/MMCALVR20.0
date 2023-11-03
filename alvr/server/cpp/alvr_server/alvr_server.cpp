@@ -180,7 +180,7 @@ const char *g_driverRootDir;
 
 bool gaussionblurflag = false;
 int  strategynum =0 ;
-float roiradius =0.01;
+float roiradius =0.00;
 
 void (*LogError)(const char *stringPtr);
 void (*LogWarn)(const char *stringPtr);
@@ -518,9 +518,9 @@ void UpdateGaussionStrategy(int delatnum){
    {
       strategynum =0;
    }
-   if  (strategynum >5)
+   if  (strategynum >7)
    {
-      strategynum =5;
+      strategynum =7;
    }
    GaussionSend(gaussionblurflag,strategynum,roiradius);
 }

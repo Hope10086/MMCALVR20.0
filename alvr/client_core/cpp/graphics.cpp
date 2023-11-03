@@ -22,12 +22,15 @@ bool GaussionFlag = false;
 bool TDenabled = false;
 int GaussionStrategy = 0;
 int SRendercount = 0;
-float ndcroirad = 0.01;
+float ndcroirad = 0.00;
 GazeCenterInfo GazeCenter[2] ={ {0.25,0.5} , {0.75,0.5} };
 OriAngle m_Angle ,pre_Angle;
 
 unsigned long long m_targetTimestampNs =0;
 unsigned long long pre_targetTimestampNs =0;
+
+unsigned long long gaze_targetTimestampNs =0;
+unsigned long long pregaze_targetTimestampNs =0;
 
 void (*InfoLog)( const char *message);
 
@@ -207,21 +210,11 @@ uniform vec2 gazepoint;
 void main()
 {       const vec2 TEXTURE_SIZE = vec2(5184.0,2592.0);
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
-        float noo = a;
-        float yes = center;
-        float kernelWeight = (4.0 * noo + 1.0 * yes);
-        vec3 IsROI=(length(uv.x-gazepoint.x)<ndcradius.x && length(uv.y-gazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
+        float qselect = center ;
+        vec3 IsROI= ( length(uv.x-gazepoint.x)<ndcradius.x && length(uv.y-gazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
         vec4 RoiValue = texture(Texture0, uv);
-        vec3 leftonepiexl = texture(Texture0 , uv + vec2(-4.0, 0.0) /TEXTURE_SIZE).rgb;
-        vec3 rightonepiexl = texture(Texture0 , uv + vec2(4.0, 0.0) /TEXTURE_SIZE).rgb;
-        vec3 uponeepiexl = texture(Texture0 , uv + vec2(0.0, 4.0) /TEXTURE_SIZE).rgb;
-        vec3 downoneepiexl = texture(Texture0 , uv + vec2(0.0, -4.0) /TEXTURE_SIZE).rgb;
-        vec3 NonRoiValue = (RoiValue.rgb * yes 
-                            +leftonepiexl * noo
-                            +rightonepiexl * noo
-                            +uponeepiexl * noo
-                            +downoneepiexl * noo)/kernelWeight;
-    outColor = vec4(RoiValue.rgb * IsROI + NonRoiValue * (1.0-IsROI), RoiValue.a);
+        vec3 NonRoiValue = round(RoiValue.rgb * qselect )/qselect;
+    outColor = vec4(RoiValue.rgb* IsROI + NonRoiValue * (1.0-IsROI), RoiValue.a);
 }
 )glsl";
 
@@ -689,12 +682,13 @@ void renderEye(
 
     } else {
         //left and right is different
-        GaussianKernel5  TotalStrategys[6] = { { 0.0 ,0.0 ,1.0 }, {0.0 ,1.0 ,2.0} ,{ 1.0, 2.0, 4.0 },
-                                           { 1.0, 2.0, 2.0 }, {1.0 ,1.0 ,1.0 },{ 2.0 ,2.0 ,1.0 }
-                                         };
+        GaussianKernel5  TotalStrategys[8] = { { 0.0 ,0.0 ,10000.0 },{1.0 ,1.0 ,128.0 },
+                                               { 1.0, 1.0, 96.0 }, { 1.0 ,1.0 ,72.0 },
+                                               { 1.0, 1.0, 64.0 }, { 1.0, 1.0, 56.0 },
+                                               { 1.0, 1.0, 48.0 }, { 1.0 ,1.0, 36.0 } };
         GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
         GaussianKernel5 Strategy;
-        if (GaussionFlag && GaussionStrategy>=0 && GaussionStrategy<=5)
+        if ( GaussionFlag && GaussionStrategy>=0 && GaussionStrategy<= 7)
         {
             Strategy = TotalStrategys[GaussionStrategy];
         }
@@ -717,7 +711,7 @@ void renderEye(
         else if(ndcroirad >0){
             GL(glUniform1f(ndcrad,ndcroirad));
         }
-        else{ GL(glUniform1f(ndcrad,0.01));}
+        else{ GL(glUniform1f(ndcrad,0.00));}
         if (eye == 0)
         {
             GL(glUniform2f(gazepoint, GazeCenter[0].x,GazeCenter[0].y));
@@ -1002,23 +996,32 @@ void updategussionflg( bool flag , int strategynum ,float roisize)
   ndcroirad = roisize;
 }
 
-void updategazecenter( unsigned long long targetTimestampNs ,float headx, float heady, float gazex, float gazey ,float lx,float ly ,float rx ,float ry)
-{
+void updategazecenter( __uint128_t targetTimestampNs ,float headx, float heady, float gazex, float gazey ,float lx,float ly ,float rx ,float ry)
+{  
+    
     pre_targetTimestampNs = m_targetTimestampNs;
-    pre_Angle = m_Angle;
-
+    pre_Angle.head_x = m_Angle.head_x;
+    pre_Angle.head_y = m_Angle.head_y;
     m_targetTimestampNs = targetTimestampNs;
     m_Angle.head_x = headx;
     m_Angle.head_y = heady;
-    m_Angle.gaze_x = gazex;
-    m_Angle.gaze_y = gazey;
 
+    if (m_Angle.gaze_x != gazex)
+    {
+      pregaze_targetTimestampNs = gaze_targetTimestampNs;  
+      gaze_targetTimestampNs = targetTimestampNs;
+      pre_Angle.gaze_x = m_Angle.gaze_x;
+      pre_Angle.gaze_y = m_Angle.gaze_y;
+      m_Angle.gaze_x = gazex;
+      m_Angle.gaze_y = gazey;
+    }
     GazeCenter[0].x = lx;
     GazeCenter[0].y = ly;
     GazeCenter[1].x = rx;
     GazeCenter[1].y = ry;
-
-    if(abs((m_Angle.head_x - pre_Angle.head_x)/(m_targetTimestampNs -pre_targetTimestampNs)) > 100){
+    float headspeed = 1000000*(m_Angle.head_x - pre_Angle.head_x)/(m_targetTimestampNs - pre_targetTimestampNs);
+    float gazespeed = 1000000*(m_Angle.gaze_x - pre_Angle.gaze_x)/(gaze_targetTimestampNs - pregaze_targetTimestampNs);
+    if(abs(headspeed) >=100 || abs(gazespeed) >=100){
         TDenabled = true;
     }
     else{

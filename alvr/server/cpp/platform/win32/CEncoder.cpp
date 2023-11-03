@@ -106,9 +106,9 @@
 				if (m_captureFrame)
 					{
 						// capture pictures sequence 
-				        Settings::Instance().m_capturePicture ^= m_captureFrame;
-				        // capture signal picture
 				        //Settings::Instance().m_capturePicture ^= m_captureFrame;
+				        // capture signal picture
+				        Settings::Instance().m_capturePicture = m_captureFrame;
 						m_captureFrame = false; 
 						//Info("m_captureFrame has been set");						
 					}

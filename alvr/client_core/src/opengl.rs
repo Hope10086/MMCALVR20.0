@@ -231,7 +231,9 @@ pub fn update_gaussion_message (flag :bool ,strategynum : i32 ,roisize:f32)
         updategussionflg(flag ,  strategynum,roisize);
         let  strategy  = strategynum.to_string();
         let  roiradius = roisize.to_string();
-        let gaussionset = CString::new(format!("(Weight Strategy:{}, ROI radius:{})", strategy, roiradius)).expect("gaussionset failed");
+        let  eog = ((180.0/3.1415926) *2.0* (roisize *5184.0/1169.54).atan()) 
+                                                    .to_string();
+        let gaussionset = CString::new(format!("(Strategy:{}, ROI radius:{} EOA: {}°)", strategy, roiradius ,eog)).expect("gaussionset failed");
 
         alvr_log(crate::c_api::AlvrLogLevel::Info,
             gaussionset.as_ptr() );
@@ -293,6 +295,19 @@ pub fn get_gaze_center( leftfpv:Fov, eyegaze: [Option<Pose>; 2],
             [Some(defaultcenter),Some(defaultcenter)]
          }
 }
+pub fn  get_safe_gaze( eyegaze: [Option<Pose>; 2],)
+->[Option<Pose>; 2]{
+    if let[Some(pose1),Some(pose2)]  = eyegaze {
+        [eyegaze[0], eyegaze[1]] 
+     }else {
+        let defaultpose = Pose{
+            orientation: Quat::from_xyzw(0.0, 0.0, 0.0, 1.0),
+            position: Vec3 { x: (0.0), y: (0.0), z: (0.0) }
+        };
+        [Some(defaultpose),Some(defaultpose)]
+     }
+    
+}
 
 pub fn get_ori_angle(quat:Option<Quat> ) ->Option<Vec2> {
 
@@ -309,17 +324,18 @@ pub fn get_ori_angle(quat:Option<Quat> ) ->Option<Vec2> {
 
 pub fn calculate_gazecenter( target_timestamp :Duration, rawfacedata: FaceData ,rawheadpose: Pose, rawfov: Fov) {
     
-  #[cfg(target_os = "android")]
+   #[cfg(target_os = "android")]
     unsafe{
         let local_eye_gazes = to_local_eyes(
             rawheadpose,
             rawfacedata.eye_gazes);
         let local_gazecenter = get_gaze_center(rawfov, local_eye_gazes);
         let head_angle = get_ori_angle(Some(rawheadpose.orientation));
-        let leftgaze_angle = get_ori_angle(Some(local_eye_gazes[0].unwrap().orientation));
+        let safegaze = get_safe_gaze(rawfacedata.eye_gazes);
+        let leftgaze_angle = get_ori_angle(Some(safegaze[0].unwrap().orientation));
 
         updategazecenter(
-            target_timestamp.as_secs(),
+            target_timestamp.as_micros(),
             head_angle.unwrap().x,
             head_angle.unwrap().y,
             leftgaze_angle.unwrap().x,
@@ -330,19 +346,20 @@ pub fn calculate_gazecenter( target_timestamp :Duration, rawfacedata: FaceData ,
             local_gazecenter[1].unwrap().y
 
         );
+        // let str0 = target_timestamp.as_micros().to_string();
 
-        let str1 = head_angle.unwrap().x.to_string();
-        let str2 = head_angle.unwrap().y.to_string();
-        let str3 = leftgaze_angle.unwrap().x.to_string();
-        let str4 = leftgaze_angle.unwrap().y.to_string();
-        let anglestr = format!("(Head: [{},{}], Gaze[{},{}])",str1,str2,str3,str4);
-        // let lxstr = (local_gazecenter[0].unwrap().x * 0.5).to_string();
-        // let lystr = local_gazecenter[0].unwrap().y.to_string();
-        // let lstr = format!("({}, {})", lxstr, lystr);
+        // let str1 = head_angle.unwrap().x.to_string();
+        // let str2 = head_angle.unwrap().y.to_string();
+        // let str3 = leftgaze_angle.unwrap().x.to_string();
+        // let str4 = leftgaze_angle.unwrap().y.to_string();
+        // let anglestr = format!("(time:{} Head: [{},{}], Gaze[{},{}])",str0, str1,str2,str3,str4);
+        // // let lxstr = (local_gazecenter[0].unwrap().x * 0.5).to_string();
+        // // let lystr = local_gazecenter[0].unwrap().y.to_string();
+        // // let lstr = format!("({}, {})", lxstr, lystr);
 
-        //    let fovlog =rawfov.down.to_string();
-        alvr_log(crate::c_api::AlvrLogLevel::Info,
-        CString::new(anglestr).expect("anglestrerro")
-                                      .as_ptr() );
+        // //    let fovlog =rawfov.down.to_string();
+        // alvr_log(crate::c_api::AlvrLogLevel::Info,
+        // CString::new(anglestr).expect("anglestrerro")
+        //                               .as_ptr() );
     }
 }

@@ -115,7 +115,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 {
 	if(wspeed.w_eye!=0)
 	{
-		m_prewspeed=wspeed;
+		m_prewspeed = wspeed;
 	}
 
 	//Info("%f %f %f   pre:%f %f %f",wspeed.w_head,wspeed.w_gaze,wspeed.w_eye,m_prewspeed.w_head,m_prewspeed.w_gaze,m_prewspeed.w_eye);
@@ -194,16 +194,17 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	{
 	wchar_t buf[1024];	
 	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%dx%d-%llu.dds", inputDesc.Width,inputDesc.Height,targetTimestampNs);
-	//_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%llu.dds",targetTimestampNs);
+	_snwprintf_s(buf, sizeof(buf), L"D:\\AX\\Logs\\ScreenDDS\\%llu.dds",targetTimestampNs);
 	//_snwprintf_s(buf, sizeof(buf), L"E:\\alvrdata\\ScreenDDS\\%llu.dds",targetTimestampNs);
 	//_snwprintf_s(buf, sizeof(buf), L"C:\\SHN\\ALVREXE\\OutPut\\SaveDDS\\%llu.dds",targetTimestampNs);
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 	std::wstring wpath = converter.from_bytes(g_driverRootDir)+L"\\dds\\" ;
-	_snwprintf_s(buf, sizeof(buf), (wpath+L"%llu.dds").c_str(),targetTimestampNs);
-		
+	//_snwprintf_s(buf, sizeof(buf), (wpath+L"%llu.dds").c_str(),targetTimestampNs);
 	    HRESULT hr = DirectX::SaveDDSTextureToFile(m_pD3DRender->GetContext(), pInputTexture, buf);
         if(FAILED (hr))
         Info("Failed to save DDS texture  %llu to file",targetTimestampNs);
+		// Capture one picture
+	    Settings::Instance().m_capturePicture = false;
 	}
 	NV_ENC_PIC_PARAMS picParams = {};
 	if (insertIDR) {
@@ -218,7 +219,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		{
 			macrosize = 16;
 		}
-		int Roi_qpDelta = -30; //51-30=21  // may be changed in switch
+		int Roi_qpDelta = -20; //51-20=31  // may be changed in switch
 		int nRoi_qpDelta = -Settings::Instance().m_delatQPmode;
 		int Roi_Size = Settings::Instance().m_RoiSize;
 		int countx = Roi_Size*(float(encDesc.Width)/float(2*2592));
@@ -227,7 +228,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		//Info("Delta QP Mode: %d  \n", Settings::Instance().m_delatQPmode);
 		//Info("Roi MacroSize(single) = %dX%d \n", countx,county);		
 		float ZDepth = 2592/(tanf(0.942478)+tanf(0.698132));
-		float angle = (2*atanf((2*Roi_Size+1)*16/ZDepth))*(180/(4*atanf(1)));
+		float angle = (2*atanf((2*Roi_Size+1)*macrosize/ZDepth))*(180/(4*atanf(1)));
 		if (m_QpModechange != Settings::Instance().m_delatQPmode)
 		{
 			m_QpModechange = Settings::Instance().m_delatQPmode;
@@ -305,8 +306,8 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		    hist_rightgazeMac_Vx = rightgazeMac_Vx;
 		    hist_rightgazeMac_Vy = rightgazeMac_Vy;
         //
-		float distance=0;
-		float FOV=0;   //Dgree °
+		float distance= 0;
+		float FOV = 0;   //Dgree °
 		int expect_qp=51;
 		int max_qp = Settings::Instance().m_MaxQp;
 		if (m_QPMaxchange != max_qp)
