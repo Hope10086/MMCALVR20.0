@@ -9,6 +9,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <mutex>
 
+#include "gpulogger.h"
 using namespace gl_render_utils;
 
 const float NEAR = 0.1;
@@ -203,18 +204,26 @@ in lowp vec2 uv;
 in lowp vec4 fragmentColor;
 out lowp vec4 outColor;
 uniform sampler2D Texture0;
-uniform float a ;
-uniform float center ;
 uniform float ndcrad ;
 uniform vec2 gazepoint;
+uniform float Qa; 
+uniform float Qb; 
 void main()
 {       const vec2 TEXTURE_SIZE = vec2(5184.0,2592.0);
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
-        float qselect = center ;
         vec3 IsROI= ( length(uv.x-gazepoint.x)<ndcradius.x && length(uv.y-gazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
         vec4 RoiValue = texture(Texture0, uv);
-        vec3 NonRoiValue = round(RoiValue.rgb * qselect )/qselect;
-    outColor = vec4(RoiValue.rgb* IsROI + NonRoiValue * (1.0-IsROI), RoiValue.a);
+
+        float Y = 0.299 * RoiValue.r + 0.587 * RoiValue.g + 0.114 * RoiValue.b;
+        float U = 0.492 * (RoiValue.b - Y);
+        float V = 0.877 * (RoiValue.r - Y);
+        
+        Y = round(Y * Qa) / Qa;
+        U = round(U * Qb) / Qb;
+        V = round(V * Qb) / Qb;
+
+        vec3 NonRoiValue =vec3(Y + 1.13983*V , Y-0.39465*U-0.58060*V , Y+2.03211*U);
+        outColor = vec4(RoiValue.rgb* IsROI + NonRoiValue * (1.0-IsROI), RoiValue.a);
 }
 )glsl";
 
@@ -682,10 +691,10 @@ void renderEye(
 
     } else {
         //left and right is different
-        GaussianKernel5  TotalStrategys[8] = { { 0.0 ,0.0 ,10000.0 },{1.0 ,1.0 ,128.0 },
-                                               { 1.0, 1.0, 96.0 }, { 1.0 ,1.0 ,72.0 },
-                                               { 1.0, 1.0, 64.0 }, { 1.0, 1.0, 56.0 },
-                                               { 1.0, 1.0, 48.0 }, { 1.0 ,1.0, 36.0 } };
+        GaussianKernel5  TotalStrategys[8] = { { 1000.0 ,0.0 ,10000.0 },{128.0 ,1.0 ,128.0 },
+                                               { 128.0, 1.0, 96.0 }, { 128.0 ,1.0 ,72.0 },
+                                               { 128.0, 1.0, 64.0 }, { 128.0, 1.0, 56.0 },
+                                               { 128.0, 1.0, 48.0 }, { 128.0 ,1.0, 36.0 } };
         GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
         GaussianKernel5 Strategy;
         if ( GaussionFlag && GaussionStrategy>=0 && GaussionStrategy<= 7)
@@ -695,15 +704,16 @@ void renderEye(
         else
         {   Strategy = TotalStrategys[0];
         }
-        GLuint  a = GL(glGetUniformLocation(renderer->streamProgram.streamProgram,"a"));
-        GLuint center = GL(glGetUniformLocation(renderer->streamProgram.streamProgram,"center"));
+        GLuint  Qa = GL(glGetUniformLocation(renderer->streamProgram.streamProgram,"Qa"));
+        GLuint  Qb = GL(glGetUniformLocation(renderer->streamProgram.streamProgram,"Qb"));
+
         GLuint ndcrad =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"ndcrad"));
         GLuint gazepoint =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"gazepoint"));
 
         GL(glUseProgram(renderer->streamProgram.streamProgram));
 
-        GL(glUniform1f(a,Strategy.a));
-        GL(glUniform1f(center,Strategy.center));
+        GL(glUniform1f(Qa , Strategy.center));
+        GL(glUniform1f(Qb , Strategy.a));
         if (ndcroirad >0.2)
         {
             GL(glUniform1f(ndcrad,0.2));
@@ -985,20 +995,14 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
     // GL(glFinish());
     // GLuint elapsed_time;
     // glGetQueryObjectuiv(newTotalqueryID, GL_QUERY_RESULT_EXT, &elapsed_time);
-    // Info(" Frame [%d] Render cost: %d us",SRendercount ,elapsed_time/1000>0? elapsed_time/1000 :-1 );
     // SRendercount++;
 }
 
-void updategussionflg( bool flag , int strategynum ,float roisize)
 {
-  GaussionFlag = flag;
-  GaussionStrategy = strategynum;
-  ndcroirad = roisize;
 }
 
 void updategazecenter( __uint128_t targetTimestampNs ,float headx, float heady, float gazex, float gazey ,float lx,float ly ,float rx ,float ry)
 {  
-    
     pre_targetTimestampNs = m_targetTimestampNs;
     pre_Angle.head_x = m_Angle.head_x;
     pre_Angle.head_y = m_Angle.head_y;
