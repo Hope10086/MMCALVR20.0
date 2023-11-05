@@ -63,6 +63,8 @@ name = "android.permission.INTERNET"
 [[package.metadata.android.uses_permission]]
 name = "android.permission.RECORD_AUDIO"
 [[package.metadata.android.uses_permission]]
+name = "android.permission.WRITE_EXTERNAL_STORAGE"
+[[package.metadata.android.uses_permission]]
 name = "android.permission.WAKE_LOCK"
 [[package.metadata.android.uses_permission]]
 name = "org.khronos.openxr.permission.OPENXR"

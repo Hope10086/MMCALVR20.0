@@ -4,8 +4,8 @@ pub mod android;
 #[cfg(target_os = "android")]
 pub use android::{
     acquire_wifi_lock, battery_status, context, device_model, local_ip, manufacturer_name,
-    release_wifi_lock, try_get_permission, video_decoder_split, vm, VideoDecoderDequeuer,
-    VideoDecoderEnqueuer, MICROPHONE_PERMISSION,
+    release_wifi_lock, try_get_permission,get_internal_storage_path, video_decoder_split, vm, VideoDecoderDequeuer,
+    VideoDecoderEnqueuer, MICROPHONE_PERMISSION,EXTERNAL_STORAGE_PERMISSION,
 };
 
 #[cfg(not(target_os = "android"))]

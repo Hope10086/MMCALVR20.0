@@ -32,6 +32,9 @@ use std::{
 
 pub const MICROPHONE_PERMISSION: &str = "android.permission.RECORD_AUDIO";
 
+pub const EXTERNAL_STORAGE_PERMISSION:  &str ="android.permission.WRITE_EXTERNAL_STORAGE";
+
+
 static WIFI_LOCK: Lazy<Mutex<Option<GlobalRef>>> = Lazy::new(|| Mutex::new(None));
 
 struct FakeThreadSafe<T>(T);
@@ -141,6 +144,31 @@ fn get_system_service<'a>(env: &mut JNIEnv<'a>, service_name: &str) -> JObject<'
     .unwrap()
     .l()
     .unwrap()
+}
+
+pub fn get_internal_storage_path() ->String
+{
+    let vm = vm();
+    let mut env = vm.attach_current_thread().unwrap();
+    let files_dir = env
+        .call_method(
+            unsafe { JObject::from_raw(context()) },
+            "getFilesDir",
+            "()Ljava/io/File;",
+            &[],
+        )
+        .unwrap()
+        .l()
+        .unwrap(); // 
+    let path_jstring = env
+        .call_method(files_dir, "getAbsolutePath", "Ljava/lang/String;", &[])
+        .unwrap()
+        .l()
+        .unwrap(); //
+    let path_string = env.get_string((&path_jstring).into()).unwrap(); // 将 JString 转换为 String
+    
+    let file_path = path_string.to_string_lossy().into_owned();
+    file_path
 }
 
 // Note: tried and failed to use libc

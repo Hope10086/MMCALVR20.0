@@ -1,5 +1,6 @@
 #![allow(unused_variables)]
 
+use crate::platform;
 use alvr_common::{glam::{UVec2, Quat, Vec3, bool, Vec2}, 
                   Fov, Pose, prelude::info};
 use alvr_packets::FaceData;
@@ -16,11 +17,14 @@ use std::{
     time::{Duration, Instant}, 
     ffi::{c_char, c_void, CStr, CString},
     env::consts,
-    io::prelude::*,
+    io::prelude::*, fmt::format,
 };
 
 #[cfg(target_os = "android")]
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
+#[cfg(target_os = "android")]
+pub use platform::get_internal_storage_path;
 
 const HUD_TEXTURE_WIDTH: usize = 1280;
 const HUD_TEXTURE_HEIGHT: usize = 720;
@@ -34,10 +38,14 @@ pub unsafe extern "C" fn log_info_message(message: *const c_char) {
 
 #[no_mangle]
 pub unsafe extern "C" fn png_create(filename: *const c_char ,width:i32 ,height:i32 ,comps: i32,data: *const u8){
-    let filename_cstr = CStr::from_ptr(filename);
-    let filename_str = filename_cstr.to_str().expect("Invalid filename");
+    let filename_str = CStr::from_ptr(filename)
+                                    .to_str()
+                                    .expect("Invalid filename");
     let c_full_path = CString::new(filename_str).expect("CString conversion failed");
-    let mut writer = ImageWriter::new("output.png");
+    let dir_path =  platform::get_internal_storage_path();
+
+    let full_path = format!("{}/{}", &*dir_path, c_full_path.to_str().expect("CString to_str failed"));
+    let mut writer = ImageWriter::new(&*full_path);
     writer.write_png(width, height, comps, data);
 }
 

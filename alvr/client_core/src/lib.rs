@@ -115,9 +115,13 @@ pub fn initialize(
 
     #[cfg(target_os = "android")]
     platform::try_get_permission(platform::MICROPHONE_PERMISSION);
+
+    #[cfg(target_os = "android")]
+    platform::try_get_permission(platform::EXTERNAL_STORAGE_PERMISSION);
+
+
     #[cfg(target_os = "android")]
     platform::acquire_wifi_lock();
-
     IS_ALIVE.set(true);
     EXTERNAL_DECODER.set(external_decoder);
 
