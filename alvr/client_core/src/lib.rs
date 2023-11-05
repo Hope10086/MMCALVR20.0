@@ -92,6 +92,7 @@ pub enum ClientCoreEvent {
         flag :bool,
         strategynum :i32,
         roisize : f32,
+        capflag : bool,
     },
 }
 

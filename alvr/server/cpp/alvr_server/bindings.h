@@ -138,7 +138,7 @@ extern "C" void (*HapticsSend)(unsigned long long path,
                                float frequency,
                                float amplitude,
                                bool gaussflag);
-extern "C" void (*GaussionSend)( bool enable , int num,float roisize);
+extern "C" void (*GaussionSend)( bool enable , int num,float roisize ,bool capflag);
 extern "C" void (*ShutdownRuntime)();
 extern "C" unsigned long long (*PathStringToHash)(const char *path);
 extern "C" void (*ReportPresent)(unsigned long long timestamp_ns, unsigned long long offset_ns);
@@ -200,6 +200,7 @@ extern "C" void CloseTxtFile();
 extern "C" void UpdateGaussionStrategy(int delatnum);
 extern "C" void GaussionEnable();
 extern "C" void UpdateGaussionRoiSize(float RoiSizeRad);
+extern "C" void ClientCapture();
 
 
 // NalParsing.cpp

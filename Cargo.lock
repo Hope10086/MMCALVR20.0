@@ -197,6 +197,7 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
+ "stb_image_write_rust",
  "tokio",
  "walkdir",
 ]
@@ -4093,6 +4094,11 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "stb_image_write_rust"
+version = "1.16.1"
+source = "git+https://github.com/StbRust/stb_image_write_rust.git#c748c623734278105747690b05e1638b7cc0df09"
 
 [[package]]
 name = "str-buf"

@@ -176,6 +176,7 @@ impl DataSources {
                                 | ServerRequest::StartRecording
                                 | ServerRequest::StopRecording
                                 | ServerRequest::QpModeset 
+                                | ServerRequest::ClientCapture
                                 | ServerRequest::RoiSizeset
                                 | ServerRequest::CentreSizeset
                                 | ServerRequest::CentreSizereset

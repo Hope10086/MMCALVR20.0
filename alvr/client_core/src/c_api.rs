@@ -251,7 +251,7 @@ pub extern "C" fn alvr_poll_event(out_event: *mut AlvrEvent) -> bool {
 
                 AlvrEvent::FrameReady
             }
-            ClientCoreEvent::Gaussion { flag, strategynum ,roisize }   =>{
+            ClientCoreEvent::Gaussion { flag, strategynum ,roisize,capflag }   =>{
                 AlvrEvent::Gaussion { flag: (flag), strategynum: (strategynum) }
              },
         };
@@ -600,8 +600,9 @@ pub unsafe extern "C" fn alvr_update_gaussion_message(
     flag: bool,
     strategynum: i32,
     roisize : f32,
+    capflag :bool,
 ){
-    opengl::update_gaussion_message(flag,strategynum,roisize);
+    opengl::update_gaussion_message(flag,strategynum,roisize,capflag);
 }
 
 #[no_mangle]

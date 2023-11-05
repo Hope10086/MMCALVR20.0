@@ -91,12 +91,11 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[1].button("GaussianSizeSub").clicked() {   
             request = Some(ServerRequest ::GaussionBlurRoiSize(false));
         }
-
+        if ui[2].button("Client Capture").clicked() {
+            request = Some(ServerRequest::ClientCapture)
+        }
     });
     
-
-    
-
 
     request
 }

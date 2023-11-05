@@ -421,7 +421,8 @@ async fn stream_pipeline(
                 EVENT_QUEUE.lock().push_back(ClientCoreEvent::Gaussion {
                      flag: (gaussioninfo.flag), 
                      strategynum: (gaussioninfo.strategynum),
-                     roisize :( gaussioninfo.roisize)
+                     roisize :( gaussioninfo.roisize),
+                     capflag:(gaussioninfo.capflag)
                      });
             }
         }

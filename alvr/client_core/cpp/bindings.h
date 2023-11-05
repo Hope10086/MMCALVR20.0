@@ -43,9 +43,10 @@ extern "C" void updateLobbyHudTexture(const unsigned char *data);
 extern "C" void renderLobbyNative(const FfiViewInput eyeInputs[2]);
 extern "C" void renderStreamNative(void *streamHardwareBuffer,
                                    const unsigned int swapchainIndices[2]);
-extern "C" void updategussionflg( bool flag , int strategynum, float roisize);
+extern "C" void updategussionflg( bool flag , int strategynum, float roisize,bool capflag);
 extern "C" void updategazecenter( __uint128_t targetTimestampNs ,
                                 float headx, float heady, float gazex, float gazey ,
                                 float lx,float ly ,float rx ,float ry
                                 );
-extern "C" void (*InfoLog)( const char *message);
+extern "C" void (*InfoLog) (const char *message);
+extern "C" void (*PngCreate)( const char *filename , int width , int height ,int comps , const unsigned char* data);

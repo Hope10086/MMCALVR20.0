@@ -131,6 +131,7 @@ pub struct  Gaussion{
     pub flag :bool,
     pub strategynum :i32,
     pub roisize :f32,
+    pub capflag :bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -231,6 +232,7 @@ pub enum ServerRequest {
     },
     GetAudioDevices,
     CaptureFrame,
+    ClientCapture,
     QpModeset,
     RoiSizeset,
     CentreSizeset,

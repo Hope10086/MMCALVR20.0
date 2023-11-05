@@ -191,7 +191,7 @@ void (*DriverReadyIdle)(bool setDefaultChaprone);
 void (*InitializeDecoder)(const unsigned char *configBuffer, int len, int codec);
 void (*VideoSend)(unsigned long long targetTimestampNs, unsigned char *buf, int len, bool isIdr);
 void (*HapticsSend)(unsigned long long path, float duration_s, float frequency, float amplitude , bool gaussflag);
-void (*GaussionSend)( bool enable , int num ,float roisize);
+void (*GaussionSend)( bool enable , int num ,float roisize,bool capflag);
 void (*ShutdownRuntime)();
 unsigned long long (*PathStringToHash)(const char *path);
 void (*ReportPresent)(unsigned long long timestamp_ns, unsigned long long offset_ns);
@@ -522,7 +522,7 @@ void UpdateGaussionStrategy(int delatnum){
    {
       strategynum =7;
    }
-   GaussionSend(gaussionblurflag,strategynum,roiradius);
+   GaussionSend(gaussionblurflag,strategynum,roiradius,false);
 }
 
 void UpdateGaussionRoiSize(float RoiSizeRad){
@@ -536,11 +536,15 @@ void UpdateGaussionRoiSize(float RoiSizeRad){
     {
         roiradius = 0.4;
     }
-    GaussionSend(gaussionblurflag,strategynum,roiradius);
+    GaussionSend(gaussionblurflag,strategynum,roiradius,false);
 }
 
 void GaussionEnable(){
    gaussionblurflag = !gaussionblurflag ;
-   GaussionSend(gaussionblurflag,strategynum,roiradius);
+   GaussionSend(gaussionblurflag,strategynum,roiradius,false);
+}
+void ClientCapture(){
+    LogInfo("!!!");
+    GaussionSend(gaussionblurflag,strategynum,roiradius,true);
 }
 

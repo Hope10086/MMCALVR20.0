@@ -127,6 +127,7 @@ async fn http_api(
                     ServerRequest::CaptureFrame => unsafe { crate::CaptureFrame() },
                     ServerRequest::InsertIdr => unsafe { crate::RequestIDR() },
                     ServerRequest::QpModeset => unsafe { crate::QpModeset()},
+                    ServerRequest::ClientCapture => unsafe { crate::ClientCapture()},
                     ServerRequest::RoiSizeset => unsafe {crate::RoiSizeset()},
                     ServerRequest::CentreSizeset => unsafe {crate::CentreSizeset()},
                     ServerRequest::CentreSizereset => unsafe {crate::CentreSizereset()},

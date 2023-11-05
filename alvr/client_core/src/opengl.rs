@@ -9,10 +9,14 @@ use glyph_brush_layout::{
     FontId, GlyphPositioner, HorizontalAlign, Layout, SectionGeometry, SectionText, VerticalAlign,
 };
 
+use stb_image_write_rust::ImageWriter::ImageWriter;
 use crate::c_api::{alvr_log};
 
 use std::{
-    time::{Duration, Instant}, ffi::{c_char, c_void, CStr, CString}, env::consts
+    time::{Duration, Instant}, 
+    ffi::{c_char, c_void, CStr, CString},
+    env::consts,
+    io::prelude::*,
 };
 
 #[cfg(target_os = "android")]
@@ -28,6 +32,14 @@ pub unsafe extern "C" fn log_info_message(message: *const c_char) {
     info!("[ALVR GPU:]{message}");
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn png_create(filename: *const c_char ,width:i32 ,height:i32 ,comps: i32,data: *const u8){
+    let filename_cstr = CStr::from_ptr(filename);
+    let filename_str = filename_cstr.to_str().expect("Invalid filename");
+    let c_full_path = CString::new(filename_str).expect("CString conversion failed");
+    let mut writer = ImageWriter::new("output.png");
+    writer.write_png(width, height, comps, data);
+}
 
 pub struct RenderViewInput {
     pub pose: Pose,
@@ -204,6 +216,7 @@ pub fn render_stream(hardware_buffer: *mut std::ffi::c_void, swapchain_indices: 
     #[cfg(target_os = "android")]
     unsafe {
         InfoLog =Some(log_info_message);
+        PngCreate = Some(png_create);
 
     //   let render_time_beagin = Instant::now();                                           
         renderStreamNative(hardware_buffer, swapchain_indices.as_ptr());
@@ -224,11 +237,11 @@ pub fn render_stream(hardware_buffer: *mut std::ffi::c_void, swapchain_indices: 
 }
 
 
-pub fn update_gaussion_message (flag :bool ,strategynum : i32 ,roisize:f32)
+pub fn update_gaussion_message (flag :bool ,strategynum : i32 ,roisize:f32, capflag :bool)
 {
    #[cfg(target_os = "android")]
     unsafe {
-        updategussionflg(flag ,  strategynum,roisize);
+        updategussionflg(flag ,  strategynum,roisize,capflag);
         let  strategy  = strategynum.to_string();
         let  roiradius = roisize.to_string();
         let  eog = ((180.0/3.1415926) *2.0* (roisize *5184.0/1169.54).atan()) 

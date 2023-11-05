@@ -21,6 +21,7 @@ const int HUD_TEXTURE_HEIGHT = 720;
 
 bool GaussionFlag = false;
 bool TDenabled = false;
+bool CaptureFlag = false;
 int GaussionStrategy = 0;
 int SRendercount = 0;
 float ndcroirad = 0.00;
@@ -34,7 +35,7 @@ unsigned long long gaze_targetTimestampNs =0;
 unsigned long long pregaze_targetTimestampNs =0;
 
 void (*InfoLog)( const char *message);
-
+void (*PngCreate)( const char *filename , int width , int height ,int comps , const unsigned char* data);
 //glm::mat4 FixedmvpMatrix[2];
 /// Integer version of ovrRectf
 typedef struct Recti_ {
@@ -648,7 +649,7 @@ void ovrRenderer_Destroy(ovrRenderer *renderer) {
 }
 
 void renderEye(
-    int eye, glm::mat4 mvpMatrix[2], Recti *viewport, ovrRenderer *renderer, bool isLobby) {
+    int eye, glm::mat4 mvpMatrix[2], Recti *viewport, ovrRenderer *renderer,bool isLobby,int eyewidth,int eyeheight) {
     if (isLobby) {
         GL(glUseProgram(renderer->lobbyProgram.streamProgram));
         if (renderer->lobbyProgram.UniformLocation[UNIFORM_VIEW_ID] >=
@@ -760,6 +761,18 @@ void renderEye(
 
         GL(glDrawElements(GL_TRIANGLES, renderer->Panel.IndexCount, GL_UNSIGNED_SHORT, NULL));
 
+        if (CaptureFlag)
+        {
+           Info("Client CaptureBegain");
+           CaptureFlag = false;
+           unsigned char* pixels = new unsigned char[eyewidth * eyeheight * 4];
+            GL(glReadPixels(0, 0,eyewidth,eyeheight, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
+            char filename[256];  //
+            snprintf(filename, sizeof(filename), "%llu.png", m_targetTimestampNs);
+            PngCreate(filename ,eyewidth, eyeheight ,4 ,pixels);
+            delete[] pixels;
+
+        }
         GL(glBindVertexArray(0));
 
         GL(glActiveTexture(GL_TEXTURE0));
@@ -818,12 +831,16 @@ void ovrRenderer_RenderFrame(ovrRenderer *renderer, const FfiViewInput input[2],
         ovrFramebuffer *frameBuffer = &renderer->FrameBuffer[eye];
         ovrFramebuffer_SetCurrent(frameBuffer, input[eye].swapchainIndex);
 
+        int eyewidth = (int)frameBuffer->renderTargets[0]->GetWidth();
+        int eyeheight = (int)frameBuffer->renderTargets[0]->GetHeight();
+
         Recti viewport = {0,
                           0,
-                          (int)frameBuffer->renderTargets[0]->GetWidth(),
-                          (int)frameBuffer->renderTargets[0]->GetHeight()};
+                          eyewidth,
+                          eyeheight};
 
-        renderEye(eye, mvpMatrix, &viewport, renderer, isLobby);
+
+        renderEye(eye, mvpMatrix, &viewport, renderer, isLobby,eyewidth,eyeheight);
 
         ovrFramebuffer_Resolve();
     }
@@ -995,10 +1012,16 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
     // GL(glFinish());
     // GLuint elapsed_time;
     // glGetQueryObjectuiv(newTotalqueryID, GL_QUERY_RESULT_EXT, &elapsed_time);
+     //Info(" Frame  Render Begin");
     // SRendercount++;
 }
 
+void updategussionflg( bool flag , int strategynum ,float roisize , bool capflag)
 {
+        GaussionFlag = flag;
+        GaussionStrategy = strategynum;
+        ndcroirad = roisize;
+        CaptureFlag = capflag;
 }
 
 void updategazecenter( __uint128_t targetTimestampNs ,float headx, float heady, float gazex, float gazey ,float lx,float ly ,float rx ,float ry)
