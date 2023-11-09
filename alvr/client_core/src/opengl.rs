@@ -18,6 +18,13 @@ use std::{
     ffi::{c_char, c_void, CStr, CString},
     env::consts,
     io::prelude::*, fmt::format,
+    slice,
+};
+
+use  image::{
+    ImageBuffer,
+    Rgba,
+    RgbaImage,
 };
 
 #[cfg(target_os = "android")]
@@ -45,8 +52,23 @@ pub unsafe extern "C" fn png_create(filename: *const c_char ,width:i32 ,height:i
     let dir_path =  platform::get_internal_storage_path();
 
     let full_path = format!("{}/{}", &*dir_path, c_full_path.to_str().expect("CString to_str failed"));
-    let mut writer = ImageWriter::new(&*full_path);
-    writer.write_png(width, height, comps, data);
+    info!("[ALVR Capture] path:{}", &*full_path);
+    //let mut writer = ImageWriter::new(&*full_path);
+    // save png by using  image "0.24.6"
+    let pngbuffer :&[u8] = unsafe {
+        slice::from_raw_parts(data, (width *height *4).try_into().unwrap())};
+    let img = ImageBuffer::<Rgba<u8>, _>::from_raw(width as u32, height as u32, pngbuffer).unwrap();
+    let save_result  = img.save(&*full_path);
+    match save_result {
+        Ok(_) => {
+            // Image saved successfully
+            info!("[ALVR Capture] Image saved successfully.");
+        },
+        Err(error) => {
+            // Failed to save the image
+            eprintln!("[ALVR Capture] Failed to save the image: {}", error);
+        },
+    }
 }
 
 pub struct RenderViewInput {

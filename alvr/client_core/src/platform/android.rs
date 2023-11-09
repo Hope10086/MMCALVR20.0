@@ -7,7 +7,7 @@ use alvr_common::{
 };
 use alvr_session::{CodecType, MediacodecDataType};
 use jni::{
-    objects::{GlobalRef, JObject},
+    objects::{GlobalRef, JObject,JByteArray},
     sys::jobject,
     JNIEnv, JavaVM,
 };
@@ -161,7 +161,7 @@ pub fn get_internal_storage_path() ->String
         .l()
         .unwrap(); // 
     let path_jstring = env
-        .call_method(files_dir, "getAbsolutePath", "Ljava/lang/String;", &[])
+        .call_method(files_dir, "getAbsolutePath", "()Ljava/lang/String;", &[])
         .unwrap()
         .l()
         .unwrap(); //
@@ -170,6 +170,7 @@ pub fn get_internal_storage_path() ->String
     let file_path = path_string.to_string_lossy().into_owned();
     file_path
 }
+
 
 // Note: tried and failed to use libc
 pub fn local_ip() -> IpAddr {
@@ -556,3 +557,5 @@ pub fn video_decoder_split(
 
     Ok((enqueuer, dequeuer))
 }
+
+

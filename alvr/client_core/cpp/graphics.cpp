@@ -205,12 +205,13 @@ in lowp vec2 uv;
 in lowp vec4 fragmentColor;
 out lowp vec4 outColor;
 uniform sampler2D Texture0;
+uniform vec2 TEXTURE_SIZE;
 uniform float ndcrad ;
 uniform vec2 gazepoint;
 uniform float Qa; 
 uniform float Qb; 
 void main()
-{       const vec2 TEXTURE_SIZE = vec2(5184.0,2592.0);
+{      // const vec2 TEXTURE_SIZE = vec2(5184.0,2592.0);
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
         vec3 IsROI= ( length(uv.x-gazepoint.x)<ndcradius.x && length(uv.y-gazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
         vec4 RoiValue = texture(Texture0, uv);
@@ -218,11 +219,10 @@ void main()
         float Y = 0.299 * RoiValue.r + 0.587 * RoiValue.g + 0.114 * RoiValue.b;
         float U = 0.492 * (RoiValue.b - Y);
         float V = 0.877 * (RoiValue.r - Y);
+        float Qs = Qa *(1.0 + 1.0/(4.0*Y)) ;
         
-        Y = round(Y * Qa) / Qa;
-        U = round(U * Qb) / Qb;
-        V = round(V * Qb) / Qb;
-
+        float  DelatY = round(Y * Qs) / Qs - Y;
+        Y = Y + Qb* DelatY;
         vec3 NonRoiValue =vec3(Y + 1.13983*V , Y-0.39465*U-0.58060*V , Y+2.03211*U);
         outColor = vec4(RoiValue.rgb* IsROI + NonRoiValue * (1.0-IsROI), RoiValue.a);
 }
@@ -692,26 +692,35 @@ void renderEye(
 
     } else {
         //left and right is different
-        GaussianKernel5  TotalStrategys[8] = { { 1000.0 ,0.0 ,10000.0 },{128.0 ,1.0 ,128.0 },
-                                               { 128.0, 1.0, 96.0 }, { 128.0 ,1.0 ,72.0 },
-                                               { 128.0, 1.0, 64.0 }, { 128.0, 1.0, 56.0 },
-                                               { 128.0, 1.0, 48.0 }, { 128.0 ,1.0, 36.0 } };
+        GaussianKernel5  TotalStrategys[8] = { { 1.0 ,1.0 ,256.0 },
+                                               { 1.0 ,1.0 ,64.0  }, { 2.0 ,1.0 ,64.0 },
+                                               { 2.0, 1.0, 32.0  }, { 3.0 ,1.0 ,32.0 },
+                                               { 2.0, 1.0, 16.0  }, { 3.0, 1.0, 16.0 },
+                                               { 2.0, 1.0, 12.0  }};
         GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
         GaussianKernel5 Strategy;
-        if ( GaussionFlag && GaussionStrategy>=0 && GaussionStrategy<= 7)
+        if (GaussionFlag)
         {
             Strategy = TotalStrategys[GaussionStrategy];
         }
-        else
-        {   Strategy = TotalStrategys[0];
-        }
+        else if ( TDenabled )
+                {
+                    Strategy = TotalStrategys[GaussionStrategy];
+                }
+                else
+                {   Strategy = TotalStrategys[0];
+                }
         GLuint  Qa = GL(glGetUniformLocation(renderer->streamProgram.streamProgram,"Qa"));
         GLuint  Qb = GL(glGetUniformLocation(renderer->streamProgram.streamProgram,"Qb"));
 
         GLuint ndcrad =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"ndcrad"));
         GLuint gazepoint =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"gazepoint"));
 
+        GLuint TEXTURE_SIZE =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"TEXTURE_SIZE"));
+
         GL(glUseProgram(renderer->streamProgram.streamProgram));
+
+        GL(glUniform2f(TEXTURE_SIZE, eyewidth * 2.0, eyeheight * 1.0));
 
         GL(glUniform1f(Qa , Strategy.center));
         GL(glUniform1f(Qb , Strategy.a));
@@ -731,8 +740,7 @@ void renderEye(
         {
             GL(glUniform2f(gazepoint, GazeCenter[1].x,GazeCenter[1].y));
         }
-        if (renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID] >=
-            0) // NOTE: will not be present when multiview path is enabled.
+        if (renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID] >= 0) // NOTE: will not be present when multiview path is enabled.
         {
             GL(glUniform1i(renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID], eye));
         }
@@ -765,7 +773,9 @@ void renderEye(
         {
            Info("Client CaptureBegain");
            CaptureFlag = false;
-           unsigned char* pixels = new unsigned char[eyewidth * eyeheight * 4];
+            // need eyewidth * eyeheight * 4*1 Bytes
+            // uint ，unsigned char in c and u8 in rust  all is 1 byte 
+            unsigned char* pixels = (unsigned char*)malloc(eyewidth * eyeheight * 4);
             GL(glReadPixels(0, 0,eyewidth,eyeheight, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
             char filename[256];  //
             snprintf(filename, sizeof(filename), "%llu.png", m_targetTimestampNs);
@@ -789,19 +799,8 @@ void ovrRenderer_RenderFrame(ovrRenderer *renderer, const FfiViewInput input[2],
         for (int eye = 0; eye < 2; eye++) {
             auto p = input[eye].position;
             auto o = input[eye].orientation;
-            // float posi[3];
-            // posi[0] =-0.032 ;
-            // posi[1] = 0.70 ;
-            // posi[2] = -0.02;
-            // if (eye == 1){ posi[0] = +0.032 ;
-            // }
-            // float ori[4] = {0.0 ,0.0 ,0.0 ,1.0};
-            // auto p1 = posi;
-            // auto o1 =ori;
             auto trans = glm::translate(glm::mat4(1.0), glm::vec3(p[0], p[1], p[2]));
             auto rot = glm::mat4_cast(glm::quat(o[3], o[0], o[1], o[2]));
-            // auto trans = glm::translate(glm::mat4(1.0), glm::vec3(p1[0],p1[1],p1[2]));
-            // auto rot = glm::mat4_cast(glm::quat(o1[3], o1[0], o1[1], o1[2]));
             auto viewInv = glm::inverse(trans * rot);
 
             auto tanl = tan(input[eye].fovLeft);
@@ -821,9 +820,6 @@ void ovrRenderer_RenderFrame(ovrRenderer *renderer, const FfiViewInput input[2],
     } else {
         mvpMatrix[0] = glm::mat4(1.0);
         mvpMatrix[1] = glm::mat4(1.0);
-        //FixedmvpMatrix[eye] = glm::inverse(trans * rot);
-        //mvpMatrix[0] = FixedmvpMatrix[0];
-        //mvpMatrix[1] = FixedmvpMatrix[1];
     }
 
     // Render the eye images.
@@ -1048,8 +1044,9 @@ void updategazecenter( __uint128_t targetTimestampNs ,float headx, float heady, 
     GazeCenter[1].y = ry;
     float headspeed = 1000000*(m_Angle.head_x - pre_Angle.head_x)/(m_targetTimestampNs - pre_targetTimestampNs);
     float gazespeed = 1000000*(m_Angle.gaze_x - pre_Angle.gaze_x)/(gaze_targetTimestampNs - pregaze_targetTimestampNs);
-    if(abs(headspeed) >=100 || abs(gazespeed) >=100){
+    if(abs(headspeed) >=200 || abs(gazespeed) >=200){
         TDenabled = true;
+      //  Info("head speed: %f gazespeed %f",headspeed,gazespeed);
     }
     else{
         TDenabled = false;
