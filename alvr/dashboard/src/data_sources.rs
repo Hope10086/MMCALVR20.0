@@ -2,7 +2,7 @@ use alvr_common::{parking_lot::Mutex, prelude::*, RelaxedAtomic};
 use alvr_events::{Event, EventType};
 use alvr_packets::ServerRequest;
 use alvr_server_io::ServerDataManager;
-use eframe::egui;
+use eframe::{egui};
 use std::{
     env,
     io::ErrorKind,
@@ -175,13 +175,13 @@ impl DataSources {
                                 | ServerRequest::InsertIdr
                                 | ServerRequest::StartRecording
                                 | ServerRequest::StopRecording
-                                | ServerRequest::QpModeset 
+                                | ServerRequest::QpModeset(true) 
+                                | ServerRequest::QpModeset(false) 
                                 | ServerRequest::ClientCapture
-                                | ServerRequest::RoiSizeset
-                                | ServerRequest::CentreSizeset
-                                | ServerRequest::CentreSizereset
-                                | ServerRequest::QpModezero
-                                | ServerRequest::RoiSizezero
+                                | ServerRequest::RoiSizeset(true)
+                                | ServerRequest::RoiSizeset(false)
+                                | ServerRequest::CentreSizeset(true)
+                                | ServerRequest::CentreSizeset(false)
                                 | ServerRequest::COF0set
                                 | ServerRequest::COF1set
                                 | ServerRequest::COF0reset

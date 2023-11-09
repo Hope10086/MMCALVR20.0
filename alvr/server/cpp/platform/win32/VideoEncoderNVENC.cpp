@@ -220,7 +220,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 			macrosize = 16;
 		}
 		int Roi_qpDelta = -20; //51-20=31  // may be changed in switch
-		int nRoi_qpDelta = -Settings::Instance().m_delatQPmode;
+		int nRoi_qpDelta = - Settings::Instance().m_delatQPmode;
 		int Roi_Size = Settings::Instance().m_RoiSize;
 		int countx = Roi_Size*(float(encDesc.Width)/float(2*2592));
 		//int county = Roi_Size*(float(encDesc.Height)/float(1920));

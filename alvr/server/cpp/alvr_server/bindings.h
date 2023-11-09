@@ -176,12 +176,9 @@ extern "C" void SetBattery(unsigned long long deviceID, float gauge_value, bool 
 extern "C" void SetButton(unsigned long long path, FfiButtonValue value);
 
 extern "C" void CaptureFrame();
-extern "C" void QpModeset();
-extern "C" void RoiSizeset();
-extern "C" void CentreSizeset();
-extern "C" void CentreSizereset();
-extern "C" void QpModezero();
-extern "C" void RoiSizezero();
+extern "C" void AllQpChange(int delatqp);
+extern "C" void HQRSizeset( int delathqr);
+extern "C" void CentrSizeset( int delatroi);
 extern "C" void COF0set();
 extern "C" void COF1set();
 extern "C" void COF0reset();

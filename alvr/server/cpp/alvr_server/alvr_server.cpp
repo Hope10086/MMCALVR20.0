@@ -351,55 +351,40 @@ void CaptureFrame() {
 }
 
 
-void QpModeset(){
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->QpModeset();
+void AllQpChange( int delatqp) {
+    Settings::Instance().m_delatQPmode += delatqp;
+        if (Settings::Instance().m_delatQPmode < 0)
+        {
+        Settings::Instance().m_delatQPmode = 0 ;
+        }
+        if (Settings::Instance().m_delatQPmode >30)
+        {
+            Settings::Instance().m_delatQPmode = 30;
+        }
     }
-#endif
+void HQRSizeset( int delathqr) {
+    Settings::Instance().m_RoiSize += delathqr ;
 
+        if (Settings::Instance().m_RoiSize < 0)
+        {
+            Settings::Instance().m_RoiSize = 0 ;
+        }
+        if (Settings::Instance().m_RoiSize  >39)
+        {
+            Settings::Instance().m_RoiSize = 39;
+        }
 }
-
-void RoiSizeset() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->RoiSizeset();
-    }
-#endif
+void CentrSizeset( int delatroi) {
+    Settings::Instance().m_centresize += delatroi ;
+        if (Settings::Instance().m_centresize < 0)
+        {
+            Settings::Instance().m_centresize = 0 ;
+        }
+        if ( Settings::Instance().m_centresize  >39)
+        {
+            Settings::Instance().m_centresize = 39;
+        }
 }
-
-void CentreSizeset() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->CentreSizeset();
-    }
-#endif
-}
-
-void CentreSizereset() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->CentreSizereset();
-    }
-#endif
-}
-
-
-void QpModezero() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->QpModezero();
-    }
-#endif
-}
-void RoiSizezero() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->RoiSizezero();
-    }
-#endif
-}
-
 void COF0set() {
     #ifndef __APPLE__
     if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
@@ -544,7 +529,6 @@ void GaussionEnable(){
    GaussionSend(gaussionblurflag,strategynum,roiradius,false);
 }
 void ClientCapture(){
-    LogInfo("!!!");
     GaussionSend(gaussionblurflag,strategynum,roiradius,true);
 }
 

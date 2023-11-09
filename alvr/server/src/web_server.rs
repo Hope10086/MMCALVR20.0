@@ -126,13 +126,28 @@ async fn http_api(
                     }
                     ServerRequest::CaptureFrame => unsafe { crate::CaptureFrame() },
                     ServerRequest::InsertIdr => unsafe { crate::RequestIDR() },
-                    ServerRequest::QpModeset => unsafe { crate::QpModeset()},
                     ServerRequest::ClientCapture => unsafe { crate::ClientCapture()},
-                    ServerRequest::RoiSizeset => unsafe {crate::RoiSizeset()},
-                    ServerRequest::CentreSizeset => unsafe {crate::CentreSizeset()},
-                    ServerRequest::CentreSizereset => unsafe {crate::CentreSizereset()},
-                    ServerRequest::QpModezero => unsafe {crate::QpModezero()},
-                    ServerRequest::RoiSizezero => unsafe {crate::RoiSizezero()},
+                    ServerRequest::QpModeset( qp_set) => unsafe {
+                        if qp_set  {
+                            crate::AllQpChange(1);
+                        } else {
+                            crate::AllQpChange(-1); 
+                        }
+                    },                                                                          
+                    ServerRequest::RoiSizeset( hqrset) => unsafe {
+                        if hqrset  { 
+                            crate::HQRSizeset(1);
+                        } else {
+                            crate::HQRSizeset(-1);
+                        } 
+                    },
+                    ServerRequest::CentreSizeset( roi_set) => unsafe {
+                        if roi_set {
+                            crate::CentrSizeset(1);
+                        }else {
+                            crate::CentrSizeset(-1);
+                        }
+                    },
                     ServerRequest::COF0set => unsafe {crate::COF0set()},
                     ServerRequest::COF1set => unsafe {crate::COF1set()},
                     ServerRequest::COF0reset => unsafe {crate::COF0reset()},

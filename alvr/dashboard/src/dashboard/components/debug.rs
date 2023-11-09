@@ -20,17 +20,17 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[3].button("Stop recording").clicked() {
             request = Some(ServerRequest::StopRecording);
         }
-        if ui[0].button("QpMode set").clicked() {
-            request = Some(ServerRequest::QpModeset);
+        if ui[0].button("All QpAdd").clicked() {
+            request = Some(ServerRequest::QpModeset(true));
         }
-        if ui[1].button("RoiSize set").clicked() {
-            request = Some(ServerRequest::RoiSizeset);
+        if ui[1].button("All QpSub").clicked() {
+            request = Some(ServerRequest::QpModeset(false));
         }
-        if ui[2].button("QpMode zero").clicked() {
-            request = Some(ServerRequest::QpModezero);
+        if ui[2].button("HQA Add").clicked() {
+            request = Some(ServerRequest::RoiSizeset(true));
         }
-        if ui[3].button("RoiSize zero").clicked() {
-            request = Some(ServerRequest::RoiSizezero);
+        if ui[3].button("HQA Sub").clicked() {
+            request = Some(ServerRequest::RoiSizeset(false));
         }
         if ui[0].button("COF0 set").clicked() {
             request = Some(ServerRequest::COF0set);
@@ -48,11 +48,11 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[0].button("QP Mode").clicked() {
             request = Some(ServerRequest::QPDistribution);
         }
-        if ui[1].button("CentreSize set").clicked() {
-            request = Some(ServerRequest::CentreSizeset);
+        if ui[1].button("ROISize Add").clicked() {
+            request = Some(ServerRequest::CentreSizeset(true));
         }
-        if ui[2].button("CentreSize reset").clicked() {
-            request = Some(ServerRequest::CentreSizereset);
+        if ui[2].button("ROISize Sub").clicked() {
+            request =  Some(ServerRequest::CentreSizeset(false));
         }
         if ui[3].button("GazeVisual").clicked() {
             request = Some(ServerRequest::GazeVisual);

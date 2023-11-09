@@ -84,11 +84,11 @@ class Settings {
     bool m_overrideGripThreshold;
     float m_gripThreshold;
     // Roi Size 
-    int m_RoiSize = 0;
+    int m_RoiSize = 6;
     // CentreSize
     int m_centresize=0;
     // QP mode 
-    int m_delatQPmode = 0;
+    int m_delatQPmode = 13;
     int m_MaxQp = 51;
     //拟合系数delta
     float m_cof0delta=0;
