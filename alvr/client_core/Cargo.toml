@@ -30,8 +30,8 @@ serde = "1"
 serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
 jni = "0.21"
-stb_image_write_rust = { git = "https://github.com/StbRust/stb_image_write_rust.git" }
-image = "0.24.6"
+#stb_image_write_rust = { git = "https://github.com/StbRust/stb_image_write_rust.git" }
+#image = "0.24.6"
 
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = "0.13"

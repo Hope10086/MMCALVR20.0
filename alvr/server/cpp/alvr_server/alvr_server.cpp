@@ -507,6 +507,7 @@ void UpdateGaussionStrategy(int delatnum){
    {
       strategynum =7;
    }
+   
    GaussionSend(gaussionblurflag,strategynum,roiradius,false);
 }
 
@@ -517,9 +518,9 @@ void UpdateGaussionRoiSize(float RoiSizeRad){
     {
        roiradius = 0;
     }
-    if (roiradius > 0.4)
+    if (roiradius > 0.42)
     {
-        roiradius = 0.4;
+        roiradius = 0.42;
     }
     GaussionSend(gaussionblurflag,strategynum,roiradius,false);
 }

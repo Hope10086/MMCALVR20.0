@@ -205,13 +205,13 @@ in lowp vec2 uv;
 in lowp vec4 fragmentColor;
 out lowp vec4 outColor;
 uniform sampler2D Texture0;
-uniform vec2 TEXTURE_SIZE;
+//uniform vec2 TEXTURE_SIZE;
 uniform float ndcrad ;
 uniform vec2 gazepoint;
 uniform float Qa; 
 uniform float Qb; 
 void main()
-{      // const vec2 TEXTURE_SIZE = vec2(5184.0,2592.0);
+{       const vec2 TEXTURE_SIZE = vec2(5184.0,2592.0);
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
         vec3 IsROI= ( length(uv.x-gazepoint.x)<ndcradius.x && length(uv.y-gazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
         vec4 RoiValue = texture(Texture0, uv);
@@ -693,7 +693,7 @@ void renderEye(
     } else {
         //left and right is different
         GaussianKernel5  TotalStrategys[8] = { { 1.0 ,1.0 ,256.0 },
-                                               { 1.0 ,1.0 ,64.0  }, { 2.0 ,1.0 ,64.0 },
+                                               { 2.0 ,1.0 ,64.0  }, { 3.0 ,1.0 ,64.0 },
                                                { 2.0, 1.0, 32.0  }, { 3.0 ,1.0 ,32.0 },
                                                { 2.0, 1.0, 16.0  }, { 3.0, 1.0, 16.0 },
                                                { 2.0, 1.0, 12.0  }};
@@ -716,11 +716,11 @@ void renderEye(
         GLuint ndcrad =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"ndcrad"));
         GLuint gazepoint =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"gazepoint"));
 
-        GLuint TEXTURE_SIZE =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"TEXTURE_SIZE"));
+        // GLuint TEXTURE_SIZE =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"TEXTURE_SIZE"));
 
         GL(glUseProgram(renderer->streamProgram.streamProgram));
 
-        GL(glUniform2f(TEXTURE_SIZE, eyewidth * 2.0, eyeheight * 1.0));
+        // GL(glUniform2f(TEXTURE_SIZE, eyewidth * 2.0, eyeheight * 1.0));
 
         GL(glUniform1f(Qa , Strategy.center));
         GL(glUniform1f(Qb , Strategy.a));
@@ -769,20 +769,23 @@ void renderEye(
 
         GL(glDrawElements(GL_TRIANGLES, renderer->Panel.IndexCount, GL_UNSIGNED_SHORT, NULL));
 
-        if (CaptureFlag)
-        {
-           Info("Client CaptureBegain");
-           CaptureFlag = false;
-            // need eyewidth * eyeheight * 4*1 Bytes
-            // uint ，unsigned char in c and u8 in rust  all is 1 byte 
-            unsigned char* pixels = (unsigned char*)malloc(eyewidth * eyeheight * 4);
-            GL(glReadPixels(0, 0,eyewidth,eyeheight, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
-            char filename[256];  //
-            snprintf(filename, sizeof(filename), "%llu.png", m_targetTimestampNs);
-            PngCreate(filename ,eyewidth, eyeheight ,4 ,pixels);
-            delete[] pixels;
-
-        }
+        // if (CaptureFlag)
+        // {
+        //    Info("Client CaptureBegain");
+        //    CaptureFlag = false;
+        //    GLenum status =GL(glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        //     if (status != GL_FRAMEBUFFER_COMPLETE) {
+        //         Info("glCheckFramebufferStatus error! ");
+        //     }
+        //     // need eyewidth * eyeheight * 4*1 Bytes
+        //     // uint ，unsigned char in c and u8 in rust  all is 1 byte 
+        //     unsigned char* pixels = (unsigned char*)malloc(eyewidth * eyeheight * 4);
+        //     GL(glReadPixels(0, 0,eyewidth,eyeheight, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
+        //     char filename[256];  //
+        //     snprintf(filename, sizeof(filename), "out%llu.png", m_targetTimestampNs);
+        //     PngCreate(filename ,eyewidth, eyeheight ,4 ,pixels);
+        //     delete[] pixels;
+        // }
         GL(glBindVertexArray(0));
 
         GL(glActiveTexture(GL_TEXTURE0));

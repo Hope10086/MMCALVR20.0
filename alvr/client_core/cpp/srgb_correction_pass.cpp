@@ -48,4 +48,18 @@ void SrgbCorrectionPass::Initialize(uint32_t width, uint32_t height) {
 void SrgbCorrectionPass::Render() const {
     mOutputTextureState->ClearDepth();
     mStagingPipeline->Render(*mOutputTextureState);
+    // if (capture)
+    //     {   GLenum status =GL(glCheckFramebufferStatus(GL_FRAMEBUFFER));
+    //         if (status != GL_FRAMEBUFFER_COMPLETE) {
+    //             Info("glCheckFramebufferStatus error! ");
+    //         }
+    //         // need eyewidth * eyeheight * 4*1 Bytes
+    //         // uint ，unsigned char in c and u8 in rust  all is 1 byte 
+    //         unsigned char* pixels = (unsigned char*)malloc(width * height * 4);
+    //         GL(glReadPixels(0, 0,width,height, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
+    //         char filename[256];  //
+    //         snprintf(filename, sizeof(filename), "in%llu.png", m_targetTimestampNs);
+    //         PngCreate(filename ,width, height ,4 ,pixels);
+    //         delete[] pixels;
+    //     }
 }

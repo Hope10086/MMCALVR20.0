@@ -10,22 +10,21 @@ use glyph_brush_layout::{
     FontId, GlyphPositioner, HorizontalAlign, Layout, SectionGeometry, SectionText, VerticalAlign,
 };
 
-use stb_image_write_rust::ImageWriter::ImageWriter;
 use crate::c_api::{alvr_log};
 
 use std::{
     time::{Duration, Instant}, 
     ffi::{c_char, c_void, CStr, CString},
-    env::consts,
-    io::prelude::*, fmt::format,
-    slice,
+    // env::consts,
+    // io::prelude::*, fmt::format,
+    // slice,
 };
 
-use  image::{
-    ImageBuffer,
-    Rgba,
-    RgbaImage,
-};
+// use  image::{
+//     ImageBuffer,
+//     Rgba,
+//     RgbaImage,
+// };
 
 #[cfg(target_os = "android")]
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
@@ -55,20 +54,20 @@ pub unsafe extern "C" fn png_create(filename: *const c_char ,width:i32 ,height:i
     info!("[ALVR Capture] path:{}", &*full_path);
     //let mut writer = ImageWriter::new(&*full_path);
     // save png by using  image "0.24.6"
-    let pngbuffer :&[u8] = unsafe {
-        slice::from_raw_parts(data, (width *height *4).try_into().unwrap())};
-    let img = ImageBuffer::<Rgba<u8>, _>::from_raw(width as u32, height as u32, pngbuffer).unwrap();
-    let save_result  = img.save(&*full_path);
-    match save_result {
-        Ok(_) => {
-            // Image saved successfully
-            info!("[ALVR Capture] Image saved successfully.");
-        },
-        Err(error) => {
-            // Failed to save the image
-            eprintln!("[ALVR Capture] Failed to save the image: {}", error);
-        },
-    }
+    // let pngbuffer :&[u8] = unsafe {
+    //     slice::from_raw_parts(data, (width *height *4).try_into().unwrap())};
+    // let img = ImageBuffer::<Rgba<u8>, _>::from_raw(width as u32, height as u32, pngbuffer).unwrap();
+    // let save_result  = img.save(&*full_path);
+    // match save_result {
+    //     Ok(_) => {
+    //         // Image saved successfully
+    //         info!("[ALVR Capture] Image saved successfully.");
+    //     },
+    //     Err(error) => {
+    //         // Failed to save the image
+    //         eprintln!("[ALVR Capture] Failed to save the image: {}", error);
+    //     },
+    // }
 }
 
 pub struct RenderViewInput {
@@ -129,7 +128,7 @@ pub fn start_stream(
     swapchain_textures: [Vec<u32>; 2],
     foveated_rendering: Option<FoveatedRenderingDesc>,
 ) {
-    #[cfg(target_os = "android")]
+//    #[cfg(target_os = "android")]
     unsafe {
         let config = FfiStreamConfig {
             viewWidth: view_resolution.x,
