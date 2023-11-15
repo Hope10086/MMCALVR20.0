@@ -211,20 +211,9 @@ uniform vec2 gazepoint;
 uniform float Qa; 
 uniform float Qb; 
 void main()
-{       const vec2 TEXTURE_SIZE = vec2(5184.0,2592.0);
-        vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
-        vec3 IsROI= ( length(uv.x-gazepoint.x)<ndcradius.x && length(uv.y-gazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
+{
         vec4 RoiValue = texture(Texture0, uv);
-
-        float Y = 0.299 * RoiValue.r + 0.587 * RoiValue.g + 0.114 * RoiValue.b;
-        float U = 0.492 * (RoiValue.b - Y);
-        float V = 0.877 * (RoiValue.r - Y);
-        float Qs = Qa *(1.0 + 1.0/(4.0*Y)) ;
-        
-        float  DelatY = round(Y * Qs) / Qs - Y;
-        Y = Y + Qb* DelatY;
-        vec3 NonRoiValue =vec3(Y + 1.13983*V , Y-0.39465*U-0.58060*V , Y+2.03211*U);
-        outColor = vec4(RoiValue.rgb* IsROI + NonRoiValue * (1.0-IsROI), RoiValue.a);
+        outColor = RoiValue;
 }
 )glsl";
 
@@ -584,7 +573,7 @@ void ovrRenderer_Create(ovrRenderer *renderer,
             FoveationVars fv = CalculateFoveationVars(ffrData);
             renderer->srgbCorrectionPass->Initialize(fv.optimizedEyeWidth, fv.optimizedEyeHeight);
             // you need to Initialize before set next one 
-            if (false) // shn bool for opening  gaussian
+            if (true) // shn bool for opening  gaussian
             {
               renderer->gaussianBlurPass = std::make_unique<GaussianBlurPass>(renderer->srgbCorrectionPass->GetOutputTexture());
               renderer->gaussianBlurPass->Initialize(fv.optimizedEyeWidth, fv.optimizedEyeHeight);
@@ -603,7 +592,7 @@ void ovrRenderer_Create(ovrRenderer *renderer,
         } else {
             renderer->srgbCorrectionPass->Initialize(width, height);
 
-               if (false) // bool for opening  gaussian
+               if (true) // bool for opening  gaussian
                {
                 renderer->gaussianBlurPass = std::make_unique<GaussianBlurPass>(renderer->srgbCorrectionPass->GetOutputTexture());
                 renderer->gaussianBlurPass->Initialize(width, height);
@@ -992,6 +981,7 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
         GL(glBindTexture(GL_TEXTURE_EXTERNAL_OES, g_ctx.streamTexture->GetGLTexture()));
         GL(glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, (GLeglImageOES)image));
         renderer->srgbCorrectionPass->Render();
+        renderer->gaussianBlurPass->Render(GaussionFlag,TDenabled,GaussionStrategy,ndcroirad,GazeCenter[0],GazeCenter[1]);
 
      //   renderer->gaussianBlurPass->Render(GaussionStrategy, GazeCenter[0], GazeCenter[1]);
         

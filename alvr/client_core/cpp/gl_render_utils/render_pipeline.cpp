@@ -127,25 +127,28 @@ void RenderPipeline::Render(const RenderState &renderState, const void *uniformB
 void RenderPipeline::MyRender( GaussianKernel5 NonRoiStrategy, GazeCenterInfo LeftCenter, GazeCenterInfo RightCenter, float roisize, const RenderState &renderState, const void *uniformBlockData)  {
     
 
-    GLuint  a = GL(glGetUniformLocation(mProgram,"a"));
-    GLuint  b = GL(glGetUniformLocation(mProgram,"b"));
-    GLuint  center = GL(glGetUniformLocation(mProgram,"center"));
+    GLuint  Qa = GL(glGetUniformLocation(mProgram,"Qa"));
+    GLuint  Qb = GL(glGetUniformLocation(mProgram,"Qb"));
 
     GLuint ndcrad =GL (glGetUniformLocation(mProgram,"ndcrad"));
     GLuint lgazepoint =GL (glGetUniformLocation(mProgram,"lgazepoint"));
     GLuint rgazepoint =GL (glGetUniformLocation(mProgram,"rgazepoint"));
-    GL(glUseProgram(mProgram));
 
-    GL(glUniform1f(a,NonRoiStrategy.a));
-    GL(glUniform1f(b,NonRoiStrategy.b));
-    GL(glUniform1f(center,NonRoiStrategy.center));
+    GL(glUseProgram(mProgram));
+    
+    GL(glUniform1f(Qa , NonRoiStrategy.center));
+    GL(glUniform1f(Qb , NonRoiStrategy.a));
     if (roisize >0.2)
-    {
-        GL(glUniform1f(ndcrad,0.2));
-    }
-    else{
-        GL(glUniform1f(ndcrad,roisize));
-    }
+        {
+            GL(glUniform1f(ndcrad,0.2));
+        }
+        else if(roisize >0){
+            GL(glUniform1f(ndcrad,roisize));
+        }
+        else{ GL(glUniform1f(ndcrad,0.00));}
+
+ 
+
     GL(glUniform2f(lgazepoint, LeftCenter.x,LeftCenter.y));
     GL(glUniform2f(rgazepoint, RightCenter.x, RightCenter.y));
 
