@@ -91,8 +91,8 @@ class Settings {
     int m_delatQPmode = 13;
     int m_MaxQp = 51;
     //拟合系数delta
-    float m_cof0delta=0;
-    float m_cof1delta=0;
+    float m_cof0=27.54;
+    float m_cof1=0.01004;
     //拟合模式切换（三种，0：阶跃；1：方形辐射；2：圆形辐射）
     int m_QPDistribution=0;
     //capture 

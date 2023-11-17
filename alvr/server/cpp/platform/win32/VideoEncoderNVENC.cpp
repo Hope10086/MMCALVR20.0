@@ -12,7 +12,6 @@ int Cap_EMPHASIS;
 bool Enable_H264 = false;
 int m_QpModechange = 0;
 int m_RoiSizechange = 0;
-int m_QPMaxchange = 51;
 float m_cof0change=0;
 float m_cof1change=0;
 int m_QPDistribution_change=4;
@@ -27,7 +26,7 @@ FfiAnglespeed m_prewspeed={0,0,0};
 
 //float cof0=0.3836,cof1=26.3290;   //watch: QP=cof0*FOV+cof1
 //float cof0=0.435,cof1=29.9997;   //play: QP=0.435*FOV+29.9997
-float cof0=27.54,cof1=0.01004;
+// float cof0=27.54,cof1=0.01004;
 
 #define QP_Radial 1   // QP=0.3836*FOV+26.3290
 #define QP_Radial_square 1  //
@@ -224,9 +223,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		int Roi_Size = Settings::Instance().m_RoiSize;
 		int countx = Roi_Size*(float(encDesc.Width)/float(2*2592));
 		//int county = Roi_Size*(float(encDesc.Height)/float(1920));
-		int county = countx;
-		//Info("Delta QP Mode: %d  \n", Settings::Instance().m_delatQPmode);
-		//Info("Roi MacroSize(single) = %dX%d \n", countx,county);		
+		int county = countx;	
 		float ZDepth = 2592/(tanf(0.942478)+tanf(0.698132));
 		float angle = (2*atanf((2*Roi_Size+1)*macrosize/ZDepth))*(180/(4*atanf(1)));
 		if (m_QpModechange != Settings::Instance().m_delatQPmode)
@@ -310,13 +307,8 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		float FOV = 0;   //Dgree °
 		int expect_qp=51;
 		int max_qp = Settings::Instance().m_MaxQp;
-		if (m_QPMaxchange != max_qp)
-		{
-			m_QPMaxchange = max_qp;
-			Info("Max Qp = %d\n",max_qp);
-		}
-		float cof0_final=cof0+Settings::Instance().m_cof0delta;   // changed cof0
-		float cof1_final=cof1+Settings::Instance().m_cof1delta;   // changed  cof1
+		float cof0_final=Settings::Instance().m_cof0;   // changed cof0
+		float cof1_final=Settings::Instance().m_cof1;   // changed  cof1
 		if (m_cof0change != cof0_final)
 		{
 			m_cof0change = cof0_final;
@@ -355,7 +347,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 				}
 			}
 		}
-        else
+        else  // No eye movement
 		{
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{

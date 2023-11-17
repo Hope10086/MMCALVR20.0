@@ -32,17 +32,17 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[3].button("HQA Sub").clicked() {
             request = Some(ServerRequest::RoiSizeset(false));
         }
-        if ui[0].button("COF0 set").clicked() {
-            request = Some(ServerRequest::COF0set);
+        if ui[0].button("COF0 Add").clicked() {
+            request = Some(ServerRequest::COF0set(true));
         }
-        if ui[1].button("COF1 set").clicked() {
-            request = Some(ServerRequest::COF1set);
+        if ui[1].button("COF1 Add").clicked() {
+            request = Some(ServerRequest::COF1set(true));
         }
-        if ui[2].button("COF0 reset").clicked() {
-            request = Some(ServerRequest::COF0reset);
+        if ui[2].button("COF0 Sub").clicked() {
+            request = Some(ServerRequest::COF0set(false));
         }
-        if ui[3].button("COF1 reset").clicked() {
-            request = Some(ServerRequest::COF1reset);
+        if ui[3].button("COF1 Sub").clicked() {
+            request = Some(ServerRequest::COF1set(false));
         }
         
         if ui[0].button("QP Mode").clicked() {
@@ -59,10 +59,10 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
             
         }
         if ui[0].button("MaxQP Sub").clicked(){
-            request = Some(ServerRequest::MaxQpSub);
+            request = Some(ServerRequest::MaxQpSet(false));
         } 
         if ui[1].button("MaxQp Add").clicked() {   
-            request = Some(ServerRequest ::MaxQpAdd);
+            request = Some(ServerRequest ::MaxQpSet(true));
         }
         if ui[2].button("TD Mode").clicked() {   
             request = Some(ServerRequest ::TDmode);

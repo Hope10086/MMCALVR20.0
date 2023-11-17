@@ -112,26 +112,6 @@
 						m_captureFrame = false; 
 						//Info("m_captureFrame has been set");						
 					}
-				if(m_cof0set)
-				{
-					m_cof0set=false;
-					Settings::Instance().m_cof0delta = Settings::Instance().m_cof0delta-0.5;
-				}
-				if(m_cof1set)
-				{
-					m_cof1set=false;
-					Settings::Instance().m_cof1delta = Settings::Instance().m_cof1delta-0.5;
-				}
-				if(m_cof0reset)
-				{
-					m_cof0reset=false;
-					Settings::Instance().m_cof0delta=0;
-				}
-				if(m_cof1reset)
-				{
-					m_cof1reset=false;
-					Settings::Instance().m_cof1delta=0;
-				}
 				if(m_QPDistribution)
 				{
 					m_QPDistribution=false;
@@ -180,9 +160,4 @@
 		void CEncoder::CaptureFrame() {
 			m_captureFrame = true;
 		}
-
-		void CEncoder::COF0set() { m_cof0set = true;}
-		void CEncoder::COF1set() { m_cof1set = true;}
-		void CEncoder::COF0reset() {  m_cof0reset = true;}
-		void CEncoder::COF1reset() {  m_cof1reset = true;}
 		void CEncoder::QPDistribution() {  m_QPDistribution = true;}

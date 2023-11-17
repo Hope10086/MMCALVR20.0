@@ -385,37 +385,15 @@ void CentrSizeset( int delatroi) {
             Settings::Instance().m_centresize = 39;
         }
 }
-void COF0set() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->COF0set();
-    }
-#endif
+void COF0set( float delatcof0) {
+   Settings::Instance().m_cof0 +=delatcof0;
+   Info("Cof0 = %lf\n", Settings::Instance().m_cof0);
+}
+void COF1set( float delatcof1) {
+    Settings::Instance().m_cof1 +=delatcof1;
+   Info("Cof1 = %lf\n", Settings::Instance().m_cof1);
 }
 
-void COF1set() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->COF1set();
-    }
-#endif
-}
-
-void COF0reset() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->COF0reset();
-    }
-#endif
-}
-
-void COF1reset() {
-    #ifndef __APPLE__
-    if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
-        g_driver_provider.hmd->m_encoder->COF1reset();
-    }
-#endif
-}
 void QPDistribution() {
     #ifndef __APPLE__
     if (g_driver_provider.hmd && g_driver_provider.hmd->m_encoder) {
@@ -433,30 +411,17 @@ void StopRecordGaze(){
     Settings::Instance().m_recordGaze = false;
 #endif
 }
-void MaxQpSub(){
-    #ifndef __APPLE__
-    if ( Settings::Instance().m_MaxQp > 21)
+void MaxQpSet( int delatMaxqp){
+    Settings::Instance().m_MaxQp += delatMaxqp;
+    if ( Settings::Instance().m_MaxQp < 20)
     {
-        Settings::Instance().m_MaxQp = Settings::Instance().m_MaxQp -1;
+    Settings::Instance().m_MaxQp = 21;
     }
-    else
+    else if ( Settings::Instance().m_MaxQp > 51)
     {
-        Settings::Instance().m_MaxQp = 21;
+    Settings::Instance().m_MaxQp = 51;
     }    
-#endif
-}
-
-void MaxQpAdd(){
-    #ifndef __APPLE__
-    if ( Settings::Instance().m_MaxQp < 51)
-    {
-        Settings::Instance().m_MaxQp = Settings::Instance().m_MaxQp +1;
-    }
-    else
-    {
-        Settings::Instance().m_MaxQp = 51;
-    }    
-#endif
+    Info("MaxQp:%d",Settings::Instance().m_MaxQp);
 }
 
 void TDmode(){
@@ -518,9 +483,9 @@ void UpdateGaussionRoiSize(float RoiSizeRad){
     {
        roiradius = 0;
     }
-    if (roiradius > 0.42)
+    if (roiradius > 0.48)
     {
-        roiradius = 0.42;
+        roiradius = 0.48;
     }
     GaussionSend(gaussionblurflag,strategynum,roiradius,false);
 }

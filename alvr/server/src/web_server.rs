@@ -148,13 +148,26 @@ async fn http_api(
                             crate::CentrSizeset(-1);
                         }
                     },
-                    ServerRequest::COF0set => unsafe {crate::COF0set()},
-                    ServerRequest::COF1set => unsafe {crate::COF1set()},
-                    ServerRequest::COF0reset => unsafe {crate::COF0reset()},
-                    ServerRequest::COF1reset => unsafe {crate::COF1reset()},
+                    ServerRequest::COF0set(cof0flag) => unsafe 
+                    {   if cof0flag {
+                            crate::COF0set(0.5)
+                         } else {
+                            crate::COF0set(-0.5)
+                         }
+                    },
+                    ServerRequest::COF1set(cof1flag) => unsafe 
+                    {   if cof1flag {
+                            crate::COF1set(0.01)
+                        } else {
+                            crate::COF1set(-0.01)
+                        } 
+                    },
                     ServerRequest::QPDistribution => unsafe {crate::QPDistribution()},
-                    ServerRequest::MaxQpSub => unsafe {crate::MaxQpSub()},
-                    ServerRequest::MaxQpAdd => unsafe {crate::MaxQpAdd()},
+                    ServerRequest::MaxQpSet (addflag) => unsafe {
+                        if addflag {
+                            crate::MaxQpSet(1)
+                        } else {crate::MaxQpSet(-1)}
+                    },
                     ServerRequest::GazeVisual=>unsafe {crate::GazeVisual()},
                     ServerRequest::TDmode=>unsafe {crate::TDmode()},
                     ServerRequest::GaussianBlurStrategy(gbstra)=>  unsafe {                                        

@@ -182,13 +182,13 @@ impl DataSources {
                                 | ServerRequest::RoiSizeset(false)
                                 | ServerRequest::CentreSizeset(true)
                                 | ServerRequest::CentreSizeset(false)
-                                | ServerRequest::COF0set
-                                | ServerRequest::COF1set
-                                | ServerRequest::COF0reset
-                                | ServerRequest::COF1reset
+                                | ServerRequest::COF0set(true)
+                                | ServerRequest::COF1set(true)
+                                | ServerRequest::COF0set(false)
+                                | ServerRequest::COF1set(false)
                                 | ServerRequest::QPDistribution
-                                | ServerRequest::MaxQpSub 
-                                | ServerRequest::MaxQpAdd 
+                                | ServerRequest::MaxQpSet(true) 
+                                | ServerRequest::MaxQpSet(false)
                                 | ServerRequest::TDmode
                                 | ServerRequest::GaussianBlurStrategy(false)
                                 | ServerRequest::GaussianBlurStrategy(true)
