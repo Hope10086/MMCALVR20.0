@@ -20,7 +20,7 @@ const string SRGB_CORRECTION_FRAGMENT_SHADER = R"glsl(#version 300 es
         const float DIV12 = 1. / 12.92;
         const float DIV1 = 1. / 1.055;
         const float THRESHOLD = 0.04045;
-        const vec3 GAMMA = vec3(2.2);
+        const vec3 GAMMA = vec3(2.4);
 
         void main()
         {

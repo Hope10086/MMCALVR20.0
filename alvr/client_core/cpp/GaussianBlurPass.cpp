@@ -37,10 +37,12 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
         float Y = 0.299 * RoiValue.r + 0.587 * RoiValue.g + 0.114 * RoiValue.b;
         float U = 0.492 * (RoiValue.b - Y);
         float V = 0.877 * (RoiValue.r - Y);
+
         float Qs = Qa *(1.0 + 1.0/(4.0*Y)) ;
-        
         float  DelatY = round(Y * Qs) / Qs - Y;
         Y = Y + Qb* DelatY;
+
+        
         vec3 NonRoiValue =vec3(Y + 1.13983*V , Y-0.39465*U-0.58060*V , Y+2.03211*U);
         fragColor = vec4(RoiValue.rgb* IsROI + NonRoiValue * (1.0-IsROI), RoiValue.a);
     }
@@ -79,9 +81,9 @@ void GaussianBlurPass::Render(bool GaussionFlag,bool TDenabled,int GaussionStrat
     mOutputTextureState->ClearDepth();
     GaussianKernel5  TotalStrategys[8] = { { 1.0 ,1.0 ,512.0 },
                                             { 2.0 ,1.0 ,64.0  }, { 3.0 ,1.0 ,64.0 },
-                                            { 2.0, 1.0, 32.0  }, { 3.0 ,1.0 ,32.0 },
-                                            { 2.0, 1.0, 16.0  }, { 3.0, 1.0, 16.0 },
-                                            { 2.0, 1.0, 12.0  }};
+                                            { 2.0, 1.0, 48.0  }, { 3.0 ,1.0 ,48.0 },
+                                            { 2.0, 1.0, 32.0  }, { 2.0, 1.0, 32.0 },
+                                            { 2.0, 1.0, 16.0  }};
     GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
     GaussianKernel5 Strategy;
     if (GaussionFlag)
