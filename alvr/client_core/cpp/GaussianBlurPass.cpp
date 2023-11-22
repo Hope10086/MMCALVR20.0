@@ -79,11 +79,23 @@ void GaussianBlurPass::Initialize(uint32_t width, uint32_t height) {
 void GaussianBlurPass::Render(bool GaussionFlag,bool TDenabled,int GaussionStrategy ,float ndcroirad ,GazeCenterInfo LGazeCenter ,GazeCenterInfo RGazeCenter) {
 
     mOutputTextureState->ClearDepth();
-    GaussianKernel5  TotalStrategys[8] = { { 1.0 ,1.0 ,512.0 },
-                                            { 2.0 ,1.0 ,64.0  }, { 3.0 ,1.0 ,64.0 },
-                                            { 2.0, 1.0, 48.0  }, { 3.0 ,1.0 ,48.0 },
-                                            { 2.0, 1.0, 32.0  }, { 2.0, 1.0, 32.0 },
-                                            { 2.0, 1.0, 16.0  }};
+    GaussianKernel5  TotalStrategys[8] = {  { 1.0 ,1.0 ,256.0 },
+                                            { 1.0 ,1.0, 128.0 }, 
+                                            { 1.0 ,1.0, 64.0 }, 
+
+                                            { 2.0 ,1.0 ,64.0 }, 
+                                            { 3.0 ,1.0 ,80.0 }, 
+                                            { 3.0 ,1.0 ,64.0 },
+
+                                            { 2.0, 1.0, 48.0 },
+                                            { 3.0 ,1.0 ,48.0 },
+
+                                            { 2.0, 1.0, 32.0 },
+                                            { 3.0, 1.0, 32.0 },
+                                            { 4.0, 1.0, 32.0 },
+                                            
+                                            { 2.0, 1.0, 16.0 },
+                                            };
     GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
     GaussianKernel5 Strategy;
     if (GaussionFlag)
