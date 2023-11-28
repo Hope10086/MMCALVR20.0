@@ -177,6 +177,7 @@ extern "C" void SetButton(unsigned long long path, FfiButtonValue value);
 
 extern "C" void CaptureFrame();
 extern "C" void AllQpChange(int delatqp);
+extern "C" void ROIQpChange(int Strategy);
 extern "C" void HQRSizeset( int delathqr);
 extern "C" void CentrSizeset( int delatroi);
 extern "C" void COF0set( float delatcof0);

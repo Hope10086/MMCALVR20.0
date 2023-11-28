@@ -141,6 +141,13 @@ async fn http_api(
                             crate::HQRSizeset(-1);
                         } 
                     },
+                    ServerRequest::RoiQpSet( qp) => unsafe {
+                        if qp  {
+                            crate::ROIQpChange(1);
+                        } else {
+                            crate::ROIQpChange(-1);
+                        } 
+                    },
                     ServerRequest::CentreSizeset( roi_set) => unsafe {
                         if roi_set {
                             crate::CentrSizeset(1);

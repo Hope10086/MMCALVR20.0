@@ -180,6 +180,7 @@ const char *g_driverRootDir;
 
 bool gaussionblurflag = false;
 int  strategynum =0 ;
+uint8_t frameindex = 0 ;
 float roiradius =0.00;
 
 void (*LogError)(const char *stringPtr);
@@ -357,11 +358,82 @@ void AllQpChange( int delatqp) {
         {
         Settings::Instance().m_delatQPmode = 0 ;
         }
-        if (Settings::Instance().m_delatQPmode >30)
+        else if (Settings::Instance().m_delatQPmode >30)
         {
             Settings::Instance().m_delatQPmode = 30;
         }
     }
+
+void ROIQpChange( int Strategynum) {
+
+    Settings::Instance().m_RoiQpStraetgy += Strategynum;
+    if (Settings::Instance().m_RoiQpStraetgy < 1)
+    {
+        Settings::Instance().m_RoiQpStraetgy= 1 ;
+    }
+    else if (Settings::Instance().m_RoiQpStraetgy > 16)
+    {
+        Settings::Instance().m_RoiQpStraetgy = 16;
+    }
+
+    switch (Settings::Instance().m_RoiQpStraetgy)
+    {
+    case 1:
+        Settings::Instance().m_delatRoiQP = 30;
+        break;
+    case 2:
+        Settings::Instance().m_delatRoiQP = 0;
+        break;
+    case 3:
+        Settings::Instance().m_delatRoiQP = 28; //Qp =23
+         break;
+    case 4:
+        Settings::Instance().m_delatRoiQP = 12;  //Qp =39
+         break;
+    case 5:
+        Settings::Instance().m_delatRoiQP = 8;  //Qp =43
+         break;
+    case 6:
+        Settings::Instance().m_delatRoiQP = 22; //Qp = 29
+         break;
+    case 7:
+        Settings::Instance().m_delatRoiQP = 10; //Qp = 41
+         break;
+    case 8:
+        Settings::Instance().m_delatRoiQP = 18; //Qp = 33
+         break;
+    case 9:
+        Settings::Instance().m_delatRoiQP = 6; //Qp = 45
+         break;
+    case 10:
+        Settings::Instance().m_delatRoiQP = 14; //Qp = 37
+         break;
+    case 11:
+        Settings::Instance().m_delatRoiQP = 26; //Qp = 25 
+         break;
+    case 12:
+        Settings::Instance().m_delatRoiQP = 20; // Qp = 31
+         break;
+    case 13:
+        Settings::Instance().m_delatRoiQP = 4 ; //Qp = 47
+         break;
+    case 14:
+        Settings::Instance().m_delatRoiQP = 24;// Qp = 27
+         break;
+    case 15:
+        Settings::Instance().m_delatRoiQP = 16; //Qp = 35
+         break;
+    case 16:
+        Settings::Instance().m_delatRoiQP = 2; //Qp = 49
+         break;
+    default:
+        Settings::Instance().m_delatRoiQP = 30;
+        break;
+    }
+   
+    Info("RoiQpStraetgy:%d , ROI QP = %d\n",Settings::Instance().m_RoiQpStraetgy , (51-Settings::Instance().m_delatRoiQP));
+    }
+
 void HQRSizeset( int delathqr) {
     Settings::Instance().m_RoiSize += delathqr ;
 
@@ -468,9 +540,9 @@ void UpdateGaussionStrategy(int delatnum){
    {
       strategynum =0;
    }
-   if  (strategynum >7)
+   if  (strategynum >11)
    {
-      strategynum =7;
+      strategynum =11;
    }
    
    GaussionSend(gaussionblurflag,strategynum,roiradius,false);

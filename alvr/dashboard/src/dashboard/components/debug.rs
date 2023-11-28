@@ -94,6 +94,12 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[2].button("Client Capture").clicked() {
             request = Some(ServerRequest::ClientCapture)
         }
+        if ui[0].button("Roi Qp StrategyAdd").clicked() {
+            request = Some(ServerRequest::RoiQpSet(true))
+        } 
+        if ui[1].button("Roi Qp StrategySub").clicked() {
+            request = Some(ServerRequest::RoiQpSet(false))
+        } 
     });
     
 

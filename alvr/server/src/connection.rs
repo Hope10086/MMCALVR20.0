@@ -233,6 +233,9 @@ fn try_connect( mut client_ips: HashMap<IpAddr, String>) -> IntResult {
                 min_diff = diff;
             }
         }
+        
+        let myfps = 18.0 as f32;
+        //myfps
         best_match
     };
 
@@ -370,6 +373,7 @@ fn try_connect( mut client_ips: HashMap<IpAddr, String>) -> IntResult {
         filler_data: settings.video.encoder_config.filler_data,
         entropy_coding: settings.video.encoder_config.entropy_coding as u32,
         refresh_rate: fps as _,
+        //refresh_rate: 8.0 as _,
         use_10bit_encoder: settings.video.encoder_config.use_10bit,
         enable_vbaq: amf_controls.enable_vbaq,
         use_preproc: amf_controls.use_preproc,

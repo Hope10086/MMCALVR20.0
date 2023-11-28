@@ -380,7 +380,7 @@ pub struct VideoDesc {
     pub emulated_headset_view_resolution: FrameSize,
 
     #[schema(strings(display_name = "Preferred FPS"))]
-    #[schema(gui(slider(min = 60.0, max = 120.0)), suffix = "Hz")]
+    #[schema(gui(slider(min = 2.0, max = 120.0)), suffix = "Hz")]
     #[schema(flag = "steamvr-restart")]
     pub preferred_fps: f32,
 

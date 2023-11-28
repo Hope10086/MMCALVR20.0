@@ -4,7 +4,7 @@
 #include "alvr_server/Logger.h"
 #include "alvr_server/Settings.h"
 #include "alvr_server/Utils.h"
-
+#include<Windows.h>
 #include <wrl/client.h>
 using Microsoft::WRL::ComPtr;
 
@@ -169,8 +169,24 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		    m_pD3DRender->GetContext()->CopySubresourceRegion(pTexture,0,GazePoint[1].x-W/2,GazePoint[1].y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
 	}
 
-   //SK
-
+    //SHN
+	if (false)
+	{
+	 	SYSTEMTIME timestamp;
+	    GetLocalTime(&timestamp);
+		int timestamp_ms = timestamp.wMilliseconds;
+		while(1){
+		
+	    GetLocalTime(&timestamp);
+		int timenow_ms = timestamp.wMilliseconds;
+		if (timenow_ms - timestamp_ms > 10)
+		{   Info("%dms",timenow_ms - timestamp_ms);
+			break;
+			break;
+		}
+		}
+	}
+	
 	// capture pictures sequence
 	if (false /*Settings::Instance().m_capturePicture */)
 	{
@@ -201,9 +217,9 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	//_snwprintf_s(buf, sizeof(buf), (wpath+L"%llu.dds").c_str(),targetTimestampNs);
 	    HRESULT hr = DirectX::SaveDDSTextureToFile(m_pD3DRender->GetContext(), pInputTexture, buf);
         if(FAILED (hr))
-        Info("Failed to save DDS texture  %llu to file",targetTimestampNs);
+		{Info("Failed to save DDS texture  %llu to file",targetTimestampNs);}
 		// Capture one picture
-	    Settings::Instance().m_capturePicture = false;
+	    //Settings::Instance().m_capturePicture = false;
 	}
 	NV_ENC_PIC_PARAMS picParams = {};
 	if (insertIDR) {
@@ -218,7 +234,8 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		{
 			macrosize = 16;
 		}
-		int Roi_qpDelta = -20; //51-20=31  // may be changed in switch
+		// int Roi_qpDelta = -20; //51-20=31  // may be changed in switch
+		int Roi_qpDelta = -Settings::Instance().m_delatRoiQP;  // may be changed in switch
 		int nRoi_qpDelta = - Settings::Instance().m_delatQPmode;
 		int Roi_Size = Settings::Instance().m_RoiSize;
 		int countx = Roi_Size*(float(encDesc.Width)/float(2*2592));

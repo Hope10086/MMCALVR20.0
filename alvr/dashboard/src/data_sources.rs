@@ -180,6 +180,8 @@ impl DataSources {
                                 | ServerRequest::ClientCapture
                                 | ServerRequest::RoiSizeset(true)
                                 | ServerRequest::RoiSizeset(false)
+                                | ServerRequest::RoiQpSet(false)
+                                | ServerRequest::RoiQpSet(true)
                                 | ServerRequest::CentreSizeset(true)
                                 | ServerRequest::CentreSizeset(false)
                                 | ServerRequest::COF0set(true)

@@ -89,6 +89,8 @@ class Settings {
     int m_centresize=0;
     // QP mode 
     int m_delatQPmode = 13;
+    int m_delatRoiQP = 20;
+    int m_RoiQpStraetgy = 1;
     int m_MaxQp = 51;
     //拟合系数delta
     float m_cof0=27.54;

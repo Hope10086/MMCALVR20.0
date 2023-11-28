@@ -235,6 +235,7 @@ pub enum ServerRequest {
     ClientCapture,
     QpModeset(bool),
     RoiSizeset(bool),
+    RoiQpSet(bool),
     CentreSizeset(bool),
     COF0set(bool),
     COF1set(bool),
