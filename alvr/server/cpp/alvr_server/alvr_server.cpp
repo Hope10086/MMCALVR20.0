@@ -136,7 +136,7 @@ class DriverProvider : public vr::IServerTrackedDeviceProvider {
                     id = RIGHT_HAND_ID;
                 }
 
-                HapticsSend(id, haptics.fDurationSeconds, haptics.fFrequency, haptics.fAmplitude, true);
+                HapticsSend(id, haptics.fDurationSeconds, haptics.fFrequency, haptics.fAmplitude);
             }
 #ifdef __linux__
             else if (event.eventType == vr::VREvent_ChaperoneUniverseHasChanged) {
@@ -191,7 +191,7 @@ void (*LogPeriodically)(const char *tag, const char *stringPtr);
 void (*DriverReadyIdle)(bool setDefaultChaprone);
 void (*InitializeDecoder)(const unsigned char *configBuffer, int len, int codec);
 void (*VideoSend)(unsigned long long targetTimestampNs, unsigned char *buf, int len, bool isIdr);
-void (*HapticsSend)(unsigned long long path, float duration_s, float frequency, float amplitude , bool gaussflag);
+void (*HapticsSend)(unsigned long long path, float duration_s, float frequency, float amplitude );
 void (*GaussionSend)( bool enable , int num ,float roisize,bool capflag);
 void (*ShutdownRuntime)();
 unsigned long long (*PathStringToHash)(const char *path);
@@ -388,7 +388,7 @@ void ROIQpChange( int Strategynum) {
         Settings::Instance().m_delatRoiQP = 28; //Qp =23
          break;
     case 4:
-        Settings::Instance().m_delatRoiQP = 12;  //Qp =39
+        Settings::Instance().m_delatRoiQP = 20; // Qp = 31
          break;
     case 5:
         Settings::Instance().m_delatRoiQP = 8;  //Qp =43
@@ -412,7 +412,7 @@ void ROIQpChange( int Strategynum) {
         Settings::Instance().m_delatRoiQP = 26; //Qp = 25 
          break;
     case 12:
-        Settings::Instance().m_delatRoiQP = 20; // Qp = 31
+        Settings::Instance().m_delatRoiQP = 12;  //Qp =39
          break;
     case 13:
         Settings::Instance().m_delatRoiQP = 4 ; //Qp = 47

@@ -410,7 +410,7 @@ pub unsafe extern "C" fn HmdDriverFactory(
         }
     }
 
-    extern "C" fn haptics_send(device_id: u64, duration_s: f32, frequency: f32, amplitude: f32 ,flag : bool) {
+    extern "C" fn haptics_send(device_id: u64, duration_s: f32, frequency: f32, amplitude: f32) {
         if let Some(sender) = &*HAPTICS_SENDER.lock() {
             let haptics = Haptics {
                 device_id,

@@ -92,6 +92,8 @@ class Settings {
     int m_delatRoiQP = 20;
     int m_RoiQpStraetgy = 1;
     int m_MaxQp = 51;
+    int m_FrameRenderIndex = 0;
+    int m_FrameEncodeIndex = 0;
     //拟合系数delta
     float m_cof0=27.54;
     float m_cof1=0.01004;

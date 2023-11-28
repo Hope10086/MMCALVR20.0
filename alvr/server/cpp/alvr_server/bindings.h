@@ -136,8 +136,7 @@ extern "C" void (*VideoSend)(unsigned long long targetTimestampNs,
 extern "C" void (*HapticsSend)(unsigned long long path,
                                float duration_s,
                                float frequency,
-                               float amplitude,
-                               bool gaussflag);
+                               float amplitude);
 extern "C" void (*GaussionSend)( bool enable , int num,float roisize ,bool capflag);
 extern "C" void (*ShutdownRuntime)();
 extern "C" unsigned long long (*PathStringToHash)(const char *path);

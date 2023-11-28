@@ -117,10 +117,11 @@
 					m_QPDistribution=false;
 					Settings::Instance().m_QPDistribution=(Settings::Instance().m_QPDistribution+1)%3;  //三种模式
 				}
-				if (m_FrameRender->GetTexture())
+				if (m_FrameRender->GetTexture()  && Settings::Instance().m_FrameEncodeIndex % 3 ==0)
 				{
 					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1], m_wspeed);
 				}
+				Settings::Instance().m_FrameEncodeIndex++;
 
 				m_encodeFinished.Set();
 			}

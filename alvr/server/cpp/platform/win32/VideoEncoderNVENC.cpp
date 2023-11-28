@@ -5,6 +5,10 @@
 #include "alvr_server/Settings.h"
 #include "alvr_server/Utils.h"
 #include<Windows.h>
+#include <ctime> 
+#include <iostream>
+#include <chrono>
+#include <thread>
 #include <wrl/client.h>
 using Microsoft::WRL::ComPtr;
 
@@ -170,21 +174,37 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	}
 
     //SHN
-	if (false)
+	if (true)
 	{
-	 	SYSTEMTIME timestamp;
-	    GetLocalTime(&timestamp);
-		int timestamp_ms = timestamp.wMilliseconds;
-		while(1){
+	 	// SYSTEMTIME timestamp;
+	    // GetLocalTime(&timestamp);
+		// int timestamp_ms = timestamp.wMilliseconds;
+		// while(1){
 		
-	    GetLocalTime(&timestamp);
-		int timenow_ms = timestamp.wMilliseconds;
-		if (timenow_ms - timestamp_ms > 10)
-		{   Info("%dms",timenow_ms - timestamp_ms);
-			break;
-			break;
-		}
-		}
+	    // GetLocalTime(&timestamp);
+		// int timenow_ms = timestamp.wMilliseconds;
+		// if (timenow_ms - timestamp_ms > 10)
+		// {   Info("%dms",timenow_ms - timestamp_ms);
+		// 	break;
+		// }
+		// }
+		// int i=0;
+		// while (i<1024*128)
+		// {
+		// 	i++;
+		// 	if (i %(1024*32) ==0)
+		// 	{
+		// 		Info("i = %d",i);
+		// 	}
+			
+		// }
+
+		// clock_t now = clock(); 
+
+		// while(clock() - now <5 ); 
+		// std::this_thread::sleep_for(std::chrono::milliseconds(30));
+		// auto now = std::chrono::system_clock::now();
+		// Info("time = %lld", std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count());
 	}
 	
 	// capture pictures sequence

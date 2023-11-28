@@ -87,12 +87,13 @@ void GaussianBlurPass::Render(bool GaussionFlag,bool TDenabled,int GaussionStrat
                                             { 3.0 ,1.0 ,48.0 },  // 2.4
                                             { 1.0 ,1.0, 128.0 },  //0.304
                                             { 2.0, 1.0, 48.0 },  //1.6
+                                            { 1.0 ,1.0 ,256.0 },  //Qp = 23
                                             { 1.0 ,1.0, 64.0 },   //0.599
                                             { 3.0, 1.0, 32.0 },  //3.6
                                             { 2.0, 1.0, 32.0 },  //2.4    
-                                            { 3.0 ,1.0 ,80.0 },  //1.4
+                                            
                                             { 3.0 ,1.0 ,64.0 },  //1.8
-                                            { 4.0, 1.0, 32.0 }   //4.8                                           
+                                            { 1.0, 1.0, 256.0 }   //QP = 31                                         
                                             };
     GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
     GaussianKernel5 Strategy;
