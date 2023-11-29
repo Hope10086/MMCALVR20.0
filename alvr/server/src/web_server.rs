@@ -148,6 +148,20 @@ async fn http_api(
                             crate::ROIQpChange(-1);
                         } 
                     },
+                    ServerRequest::TestList( list) => unsafe {
+                        if list  {
+                            crate::TestSequence(1,0);
+                        } else {
+                            crate::TestSequence(-1,0);
+                        } 
+                    },
+                    ServerRequest::TestNum( num) =>unsafe {
+                        if num  {
+                            crate::TestSequence(0,1);
+                        } else {
+                            crate::TestSequence(0,-1);
+                        }
+                    }
                     ServerRequest::CentreSizeset( roi_set) => unsafe {
                         if roi_set {
                             crate::CentrSizeset(1);

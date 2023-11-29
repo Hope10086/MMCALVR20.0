@@ -79,21 +79,20 @@ void GaussianBlurPass::Initialize(uint32_t width, uint32_t height) {
 void GaussianBlurPass::Render(bool GaussionFlag,bool TDenabled,int GaussionStrategy ,float ndcroirad ,GazeCenterInfo LGazeCenter ,GazeCenterInfo RGazeCenter) {
 
     mOutputTextureState->ClearDepth();
-    GaussianKernel5  TotalStrategys[12] = { { 1.0 ,1.0 ,256.0 }, // Lossless
+    GaussianKernel5  TotalStrategys[12] = { { 0.0 ,1.0 ,256.0 }, // Lossless  0
+                                            { 1.0 ,1.0, 128.0 },  //0.304     1
+                                            { 3.0 ,1.0 ,64.0 },  //1.8        2
+                                            { 2.0 ,1.0 ,64.0 },  //1.2        3
+                                            { 1.0 ,1.0, 64.0 },   //0.599     4
+                                            { 2.0 ,1.0 ,48.0 },  // 2.4       5
 
-                                            { 2.0, 1.0, 16.0 },  //worst quatity
-                                            
-                                            { 2.0 ,1.0 ,64.0 },  //1.2
-                                            { 3.0 ,1.0 ,48.0 },  // 2.4
-                                            { 1.0 ,1.0, 128.0 },  //0.304
-                                            { 2.0, 1.0, 48.0 },  //1.6
-                                            { 1.0 ,1.0 ,256.0 },  //Qp = 23
+                                            { 3.0, 1.0, 48.0 },  //1.6        6
+                                            { 0.0 ,1.0 ,256.0 },  //Qp = 23
                                             { 1.0 ,1.0, 64.0 },   //0.599
                                             { 3.0, 1.0, 32.0 },  //3.6
                                             { 2.0, 1.0, 32.0 },  //2.4    
-                                            
-                                            { 3.0 ,1.0 ,64.0 },  //1.8
-                                            { 1.0, 1.0, 256.0 }   //QP = 31                                         
+                                            { 2.0, 1.0, 16.0 }  //worst quatity
+                                                                                
                                             };
     GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
     GaussianKernel5 Strategy;

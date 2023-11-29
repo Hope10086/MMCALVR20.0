@@ -191,6 +191,10 @@ impl DataSources {
                                 | ServerRequest::QPDistribution
                                 | ServerRequest::MaxQpSet(true) 
                                 | ServerRequest::MaxQpSet(false)
+                                | ServerRequest::TestList(true)
+                                | ServerRequest::TestList(false)
+                                | ServerRequest::TestNum(true)
+                                | ServerRequest::TestNum(false)
                                 | ServerRequest::TDmode
                                 | ServerRequest::GaussianBlurStrategy(false)
                                 | ServerRequest::GaussianBlurStrategy(true)

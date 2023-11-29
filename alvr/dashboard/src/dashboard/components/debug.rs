@@ -100,6 +100,20 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[1].button("Roi Qp StrategySub").clicked() {
             request = Some(ServerRequest::RoiQpSet(false))
         } 
+        if ui[2].button("Test List Add").clicked() {
+            request = Some(ServerRequest::TestList(true))
+        }
+        if ui[3].button("Test List Sub").clicked() {
+            request = Some(ServerRequest::TestList(false))
+        }
+        if ui[0].button("Test Number Add").clicked() {
+            request = Some(ServerRequest::TestNum(true))
+        } 
+        if ui[1].button("Test Number Sub").clicked() {
+            request = Some(ServerRequest::TestNum(false))
+        }
+            
+        
     });
     
 

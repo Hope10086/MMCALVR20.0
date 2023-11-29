@@ -94,6 +94,9 @@ class Settings {
     int m_MaxQp = 51;
     int m_FrameRenderIndex = 0;
     int m_FrameEncodeIndex = 0;
+
+    int m_testnum = 0;
+    int m_testlist = 0;
     //拟合系数delta
     float m_cof0=27.54;
     float m_cof1=0.01004;

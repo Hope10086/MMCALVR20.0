@@ -241,6 +241,8 @@ pub enum ServerRequest {
     COF1set(bool),
     QPDistribution,
     MaxQpSet(bool),
+    TestNum(bool),
+    TestList(bool),
     GazeVisual,
     SpeedThresholdadd,
     SpeedThresholdsub,

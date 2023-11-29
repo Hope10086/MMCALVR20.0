@@ -181,6 +181,7 @@ extern "C" void HQRSizeset( int delathqr);
 extern "C" void CentrSizeset( int delatroi);
 extern "C" void COF0set( float delatcof0);
 extern "C" void COF1set( float delatcof1);
+extern "C" void TestSequence( int DelatTestList , int DelatTestNum);
 extern "C" void QPDistribution();
 extern "C" void RecordGaze();
 extern "C" void StopRecordGaze();
