@@ -243,6 +243,7 @@ pub enum ServerRequest {
     MaxQpSet(bool),
     TestNum(bool),
     TestList(bool),
+    FPSReduce,
     GazeVisual,
     SpeedThresholdadd,
     SpeedThresholdsub,

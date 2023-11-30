@@ -203,6 +203,7 @@ impl DataSources {
                                 | ServerRequest::GaussionBlurRoiSize(true)
                                 | ServerRequest::SpeedThresholdadd
                                 | ServerRequest::SpeedThresholdsub
+                                | ServerRequest::FPSReduce
                                 | ServerRequest::GazeVisual=> {
                                     warn!("Cannot perform action, streamer is not connected.")
                                 }

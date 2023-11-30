@@ -81,11 +81,12 @@ void GaussianBlurPass::Render(bool GaussionFlag,bool TDenabled,int GaussionStrat
     mOutputTextureState->ClearDepth();
     GaussianKernel5  TotalStrategys[12] = { { 0.0 ,1.0 ,256.0 }, // Lossless  0
                                             { 1.0 ,1.0, 128.0 },  //0.304     1
-                                            { 3.0 ,1.0 ,64.0 },  //1.8        2
+                                            { 1.0 ,1.0 ,64.0 },  //1.8        2
                                             { 2.0 ,1.0 ,64.0 },  //1.2        3
-                                            { 1.0 ,1.0, 64.0 },   //0.599     4
-                                            { 2.0 ,1.0 ,48.0 },  // 2.4       5
+                                            { 2.0 ,1.0, 64.0 },   //0.599     4
 
+
+                                            { 2.0 ,1.0 ,48.0 },  // 2.4       5
                                             { 3.0, 1.0, 48.0 },  //1.6        6
                                             { 0.0 ,1.0 ,256.0 },  //Qp = 23
                                             { 1.0 ,1.0, 64.0 },   //0.599

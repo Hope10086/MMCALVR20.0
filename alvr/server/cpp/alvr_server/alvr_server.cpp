@@ -443,22 +443,22 @@ struct TestList
 
 TestList m_Testlist[3][20] = {
         {
-            {37, 0}, {23, 5}, {31, 0}, {31, 3}, {45, 0},
-            {28, 0}, {31, 5}, {31, 1}, {23, 4}, {31, 5},
+            {37, 0}, {23, 5}, {40, 0}, {31, 3}, {46, 0},
+            {28, 0}, {31, 5}, {31, 0}, {23, 4}, {31, 2},
             {23, 2}, {23, 1}, {34, 0}, {23, 3}, {23, 0},
-            {49, 0}, {43, 0}, {31, 4}, {23, 0}, {31, 0}
+            {49, 0}, {43, 0}, {31, 4}, {25, 0}, {31, 1}
         },
         {
-            {23, 3}, {28, 0}, {23, 2}, {37, 0}, {31, 1},
-            {23, 5}, {31, 5}, {31, 0}, {23, 1}, {49, 0},
-            {31, 0}, {45, 0}, {31, 4}, {31, 5}, {23, 0},
+            {23, 3}, {28, 0}, {23, 2}, {37, 0}, {31, 0},
+            {23, 5}, {31, 5}, {40, 0}, {23, 1}, {49, 0},
+            {31, 1}, {46, 0}, {31, 4}, {31, 2}, {25, 0},
             {31, 3}, {23, 4}, {23, 0}, {34, 0}, {43, 0}
         },
         {
-            {23, 5}, {31, 1}, {23, 2}, {31, 5}, {37, 0},
-            {23, 3}, {31, 4}, {23, 4}, {34, 0}, {45, 0},
-            {31, 3}, {31, 0}, {31, 5}, {23, 0}, {28, 0},
-            {49, 0}, {31, 0}, {23, 1}, {23, 0}, {43, 0}
+            {23, 5}, {31, 0}, {23, 2}, {31, 5}, {37, 0},
+            {23, 3}, {31, 4}, {23, 4}, {34, 0}, {46, 0},
+            {31, 3}, {40, 0}, {31, 2}, {23, 0}, {28, 0},
+            {49, 0}, {31, 1}, {23, 1}, {25, 0}, {43, 0}
         }
     };
 
@@ -487,10 +487,10 @@ void TestSequence( int DelatTestList , int DelatTestNum) {
 
     strategynum = m_Testlist[Settings::Instance().m_testlist][Settings::Instance().m_testnum].strategy;
     Settings::Instance().m_delatRoiQP = 51- m_Testlist[Settings::Instance().m_testlist][Settings::Instance().m_testnum].RoiQp;
-
+    GaussionSend(gaussionblurflag,strategynum,roiradius,false);
     Info("List%d Num%d ROI Qp = %d Stratey=%d",Settings::Instance().m_testlist
     ,Settings::Instance().m_testnum 
-    , m_Testlist[Settings::Instance().m_testlist][Settings::Instance().m_testnum].RoiQp
+    , (51 -Settings::Instance().m_delatRoiQP )
     ,strategynum );
 
 }
@@ -630,3 +630,14 @@ void ClientCapture(){
     GaussionSend(gaussionblurflag,strategynum,roiradius,true);
 }
 
+void FPSReduce(){
+    Settings::Instance().m_fpsReduce += 1 ;
+    if (Settings::Instance().m_fpsReduce < 1)
+    {
+        Settings::Instance().m_fpsReduce = 1 ;
+    }
+
+    Settings::Instance().m_fpsReduce =Settings::Instance().m_fpsReduce % 6;
+
+    Info("1/ FPSReduce = %d\n", Settings::Instance().m_fpsReduce);
+}

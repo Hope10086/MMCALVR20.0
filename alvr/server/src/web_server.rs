@@ -190,6 +190,7 @@ async fn http_api(
                         } else {crate::MaxQpSet(-1)}
                     },
                     ServerRequest::GazeVisual=>unsafe {crate::GazeVisual()},
+                    ServerRequest::FPSReduce=>unsafe {crate::GazeVisual()},
                     ServerRequest::TDmode=>unsafe {crate::TDmode()},
                     ServerRequest::GaussianBlurStrategy(gbstra)=>  unsafe {                                        
                         if  gbstra == true {

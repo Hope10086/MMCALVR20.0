@@ -97,6 +97,7 @@ class Settings {
 
     int m_testnum = 0;
     int m_testlist = 0;
+    int m_fpsReduce = 1;
     //拟合系数delta
     float m_cof0=27.54;
     float m_cof1=0.01004;
