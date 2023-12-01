@@ -632,12 +632,13 @@ void ClientCapture(){
 
 void FPSReduce(){
     Settings::Instance().m_fpsReduce += 1 ;
+    Settings::Instance().m_fpsReduce =Settings::Instance().m_fpsReduce % 6;
     if (Settings::Instance().m_fpsReduce < 1)
     {
         Settings::Instance().m_fpsReduce = 1 ;
     }
 
-    Settings::Instance().m_fpsReduce =Settings::Instance().m_fpsReduce % 6;
+ 
 
     Info("1/ FPSReduce = %d\n", Settings::Instance().m_fpsReduce);
 }
