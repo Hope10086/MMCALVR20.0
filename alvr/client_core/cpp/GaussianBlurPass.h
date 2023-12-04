@@ -9,6 +9,13 @@
 #include "gazeinfo.h"
 #include "gpulogger.h"
 
+struct BlockColor
+{
+    float r;
+    float g;
+    float b;
+};
+
 class GaussianBlurPass {
 public:
     GaussianBlurPass(gl_render_utils::Texture *inputTexture);
@@ -23,6 +30,10 @@ private:
     std::unique_ptr<gl_render_utils::Texture> mOutputTexture;
     std::unique_ptr<gl_render_utils::RenderState> mOutputTextureState;
     std::unique_ptr<gl_render_utils::RenderPipeline> mRequantizationPipeline;
+   long long  int m_FrameRenderIndex = 0;
+    int LeftBlock = 0;
+    int RightBlock = 0;
+
 };
 
 

@@ -1037,7 +1037,7 @@ void updategazecenter( __uint128_t targetTimestampNs ,float headx, float heady, 
     GazeCenter[1].y = ry;
     float headspeed = 1000000*(m_Angle.head_x - pre_Angle.head_x)/(m_targetTimestampNs - pre_targetTimestampNs);
     float gazespeed = 1000000*(m_Angle.gaze_x - pre_Angle.gaze_x)/(gaze_targetTimestampNs - pregaze_targetTimestampNs);
-    if(abs(headspeed) >=200 || abs(gazespeed) >=200){
+    if(abs(gazespeed) >=100){
         TDenabled = true;
       //  Info("head speed: %f gazespeed %f",headspeed,gazespeed);
     }
