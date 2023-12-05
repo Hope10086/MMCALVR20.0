@@ -124,7 +124,9 @@ void RenderPipeline::Render(const RenderState &renderState, const void *uniformB
     GL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
 }
 
-void RenderPipeline::MyRender( float rightblockY,float color_r, float color_g, float color_b,int leftblock, int rightblock, GaussianKernel5 NonRoiStrategy, GazeCenterInfo LeftCenter, GazeCenterInfo RightCenter, float roisize, const RenderState &renderState, const void *uniformBlockData)  {
+void RenderPipeline::MyRender(  float rightblockY,float color_r, float color_g, float color_b,int leftblock, int rightblock, GaussianKernel5 NonRoiStrategy,
+                                float leftblock_leftview, float leftblock_rightview, float rightblock_leftview, float rightblock_rightview, 
+                                GazeCenterInfo LeftCenter, GazeCenterInfo RightCenter, float roisize, const RenderState &renderState, const void *uniformBlockData)  {
     
 
     GLuint  Qa = GL(glGetUniformLocation(mProgram,"Qa"));
@@ -138,6 +140,7 @@ void RenderPipeline::MyRender( float rightblockY,float color_r, float color_g, f
     GLuint leftflag  = GL(glGetUniformLocation(mProgram,"leftflag"));
     GLuint rightY =    GL(glGetUniformLocation(mProgram,"righty"));
     GLuint rightcolor =GL(glGetUniformLocation(mProgram,"RightBlockValue"));
+    GLuint blocklocation = GL(glGetUniformLocation(mProgram,"Blocklocation"));
 
     GL(glUseProgram(mProgram));
 
@@ -145,6 +148,7 @@ void RenderPipeline::MyRender( float rightblockY,float color_r, float color_g, f
     GL(glUniform1i(leftflag,  leftblock));
     GL(glUniform1f(rightY , rightblockY));
     GL(glUniform3f(rightcolor, color_r, color_g, color_b));
+    GL(glUniform4f(blocklocation, leftblock_leftview,leftblock_rightview ,rightblock_leftview ,rightblock_rightview));
 
     GL(glUniform1f(Qa , NonRoiStrategy.center));
     GL(glUniform1f(Qb , NonRoiStrategy.a));

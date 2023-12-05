@@ -975,13 +975,13 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
         GL(EGLImageKHR image = eglCreateImageKHR(
                g_ctx.eglDisplay, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID, clientBuffer, nullptr));
  // change GLTexture
-        int width = g_ctx.streamTexture->GetWidth();
+        int width  = g_ctx.streamTexture->GetWidth();
         int height = g_ctx.streamTexture->GetHeight();
      
         GL(glBindTexture(GL_TEXTURE_EXTERNAL_OES, g_ctx.streamTexture->GetGLTexture()));
         GL(glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, (GLeglImageOES)image));
         renderer->srgbCorrectionPass->Render();
-        renderer->gaussianBlurPass->Render(GaussionFlag,TDenabled,GaussionStrategy,ndcroirad,GazeCenter[0],GazeCenter[1]);
+        renderer->gaussianBlurPass->Render(m_Angle,GaussionFlag,TDenabled,GaussionStrategy,ndcroirad,GazeCenter[0],GazeCenter[1]);
 
      //   renderer->gaussianBlurPass->Render(GaussionStrategy, GazeCenter[0], GazeCenter[1]);
         
@@ -1037,9 +1037,9 @@ void updategazecenter( __uint128_t targetTimestampNs ,float headx, float heady, 
     GazeCenter[1].y = ry;
     float headspeed = 1000000*(m_Angle.head_x - pre_Angle.head_x)/(m_targetTimestampNs - pre_targetTimestampNs);
     float gazespeed = 1000000*(m_Angle.gaze_x - pre_Angle.gaze_x)/(gaze_targetTimestampNs - pregaze_targetTimestampNs);
-    if(abs(gazespeed) >=100){
+    if( abs(headspeed) >=100 ||abs(gazespeed) >=100){
         TDenabled = true;
-      //  Info("head speed: %f gazespeed %f",headspeed,gazespeed);
+      //Info("head speed: %f gazespeed %f",headspeed,gazespeed);
     }
     else{
         TDenabled = false;

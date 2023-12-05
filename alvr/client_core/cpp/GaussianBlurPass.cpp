@@ -31,12 +31,13 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
     uniform bool rightflag;
     uniform float righty;
     uniform vec3  RightBlockValue;
+    uniform vec4  Blocklocation;
     void main() {
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
       //  to check current piexl is the Display Block or not
       //  vec3 IsCenterBlock = (( length(uv.x-0.25) < 0.01 && length(uv.y-0.5) < 0.02)||( length(uv.x-0.75) < 0.01 && length(uv.y-0.5) < 0.02))? vec3(1.0):vec3(0.0);
-        vec3 IsLeftBlock = ((leftflag  == true) && (( length(uv.x-0.2501) < 0.01 && length(uv.y-0.45) < 0.02 *1.0)||( length(uv.x-0.6288) < 0.01 && length(uv.y-0.45) < 0.02 *1.0)))? vec3(1.0):vec3(0.0); // left(0.10,0.30)
-        vec3 IsRightBlock =((rightflag == true) && (( length(uv.x-0.3927) < 0.01 && length(uv.y-0.45) < 0.02 *righty)||( length(uv.x-0.7715) < 0.01 && length(uv.y-0.45) < 0.02 *righty)))? vec3(1.0):vec3(0.0); // Right(0.40,0.20)
+        vec3 IsLeftBlock = ((leftflag  == true) && (( length(uv.x-Blocklocation.r) < 0.01 && length(uv.y-0.45) < 0.02 *1.0)||( length(uv.x-Blocklocation.g) < 0.01 && length(uv.y-0.45) < 0.02 *1.0)))? vec3(1.0):vec3(0.0); // left(0.10,0.30)
+        vec3 IsRightBlock =((rightflag == true) && (( length(uv.x-Blocklocation.b) < 0.01 && length(uv.y-0.45) < 0.02 *righty)||( length(uv.x-Blocklocation.a) < 0.01 && length(uv.y-0.45) < 0.02 *righty)))? vec3(1.0):vec3(0.0); // Right(0.40,0.20)
        
         vec3 IsRightROI= ( length(uv.x-lgazepoint.x)<ndcradius.x && length(uv.y-lgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
         vec3 IsLeftROI=  ( length(uv.x-rgazepoint.x)<ndcradius.x && length(uv.y-rgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
@@ -103,7 +104,7 @@ void GaussianBlurPass::Initialize(uint32_t width, uint32_t height) {
         horizontalBlurShader));
 }
 
-void GaussianBlurPass::Render(bool GaussionFlag,bool TDenabled,int GaussionStrategy ,float ndcroirad ,GazeCenterInfo LGazeCenter ,GazeCenterInfo RGazeCenter) {
+void GaussianBlurPass::Render( OriAngle m_Angle ,bool GaussionFlag,bool TDenabled,int GaussionStrategy ,float ndcroirad ,GazeCenterInfo LGazeCenter ,GazeCenterInfo RGazeCenter) {
 
     mOutputTextureState->ClearDepth();
     GaussianKernel5  TotalStrategys[12] = { { 0.0 ,0.0 ,256.0 }, // Lossless  0
@@ -150,54 +151,87 @@ void GaussianBlurPass::Render(bool GaussionFlag,bool TDenabled,int GaussionStrat
         {1.0, 1.0, 1.0,}  //White
      };
      float RightBlockLocationy[5] = {1.0,0.75,1.75,1.25,1.5};
-    // 根据帧索引选择进行显示 两个Block
-    // 按照 FPS=90 计算每5秒内   显示1.5秒左块 1.6秒后 显示0.6秒的右块
-    // 450帧中250 ~ 295 帧显示左块 277 ~ 331 帧显示右块
-    // 450帧中250 ~ 385 帧显示左块 376 ~ 430 帧显示右块
-    if ( (m_FrameRenderIndex % 450) >= 250 &&(m_FrameRenderIndex % 450) < 385)
-    {   LeftBlock = 1;
-    }else  {LeftBlock = 0; }
+   
+    
+     float head_zeroangle = 0.0;  // need to be changed to the real head zero angle
+     float RightBlock_angle = head_zeroangle +60;
+     float LeftBlock_angle  = head_zeroangle -15; // -90~ +90
+    
+    float leftblock_leftview = 0.15;
+    float leftblock_rightview = 0.65;
+    float rightblock_leftview = 0.35;
+    float rightblock_rightview = 0.85;
+    
+    // 投影矩阵 并判断是否需要进行投影
+    if ( (RightBlock_angle -m_Angle.head_x) > -42.0 && (RightBlock_angle -m_Angle.head_x) < 42.0)
+    {   
+        //Info("%lf - %lf - %lf", m_Angle.head_x, RightBlock_angle, (RightBlock_angle -m_Angle.head_x));
+        // RightBlock shoud be shown
+        RightBlock = 1;
+        // 计算两个块在左右眼视图中的归一化坐标 并检查是否是处于合理范围中
+        rightblock_leftview  =0.5*( tanf((RightBlock_angle -m_Angle.head_x) *PI/180.0)+tanf(0.942478))/2.21548;
+        rightblock_rightview =0.5 + 0.5*( tanf((RightBlock_angle -m_Angle.head_x)*PI/180.0)+tanf(0.698132))/2.21548;
+    }
+    else 
+    { RightBlock = 0;}
 
-    if ((m_FrameRenderIndex % 450) >= 394 &&(m_FrameRenderIndex % 450) < 448)
-    {
-        if (m_FrameRenderIndex % 450 == 394  )
-        {   
-            Info("Change rightblock 's color & location!");
-            ColorNum = std::rand() % 9 ;
-            LocationNum = std::rand() % 5; 
-        }
-        if ( m_FrameRenderIndex % 450 == 421 )
-        {   
-            Info("Change rightblock 's color & location!");
-            ColorNum = std::rand() % 9 ;
-        }
-
-        Info("NDC Left Gaze Location in the left view:%d ",int((0.4158-LGazeCenter.x)*5184));
-        RightBlock =1;
-    }else  {RightBlock =0; } 
+    if ( (LeftBlock_angle -m_Angle.head_x) > -42.0 && (LeftBlock_angle -m_Angle.head_x) < 42.0)
+    {   
+       // Info("%lf - %lf - %lf", m_Angle.head_x, LeftBlock_angle, (LeftBlock_angle -m_Angle.head_x));
+        // LeftBlock shoud be shown
+        LeftBlock = 1;
+        leftblock_leftview  =0.5*( tanf((LeftBlock_angle -m_Angle.head_x) *PI/180.0)+tanf(0.942478))/2.21548;
+        leftblock_rightview =0.5 + 0.5*( tanf((LeftBlock_angle -m_Angle.head_x)*PI/180.0)+tanf(0.698132))/2.21548;
+    }
+    else { LeftBlock = 0;}
+    // float block_y = 0.45;
+    // if ( m_Angle.head_y > -40.0 && m_Angle.head_y < 40.0)
+    // {
+    //     block_y = (tanf(m_Angle.head_y *PI/180.0)+tanf(0.733038))/1.739504;
+    // }
     
 
 
+    // 根据帧索引选择进行显示 两个Block
+    // 按照 FPS=90 计算每10秒内  前2秒显示左方块  左侧方块消失的同时显示1.5秒的右块
+    // 900帧中0~ 180 帧显示左块 271 ~ 406 帧显示右块
 
-    // if ( (m_FrameRenderIndex % 900) > 250 &&(m_FrameRenderIndex % 900) < 750)
-    // {   LeftBlock = 1;
-    //     if ((m_FrameRenderIndex % 900) > 340 &&(m_FrameRenderIndex % 900) < 610)
-    //     {
-    //         RightBlock =1;
-    //     }
-    //     else RightBlock =0; 
-    // }
-    // else
-    // {
-    //     LeftBlock = 0;
-    //     RightBlock = 0;
-    // }
+    if ( (m_FrameRenderIndex % 900) >= 0 &&(m_FrameRenderIndex % 900) < 180)
+    {   LeftBlock = LeftBlock*1;
+    }else  {LeftBlock = 0; }
+
+    if ((m_FrameRenderIndex % 900) >= 181 &&(m_FrameRenderIndex % 900) < 316)
+    {
+        if (m_FrameRenderIndex % 900 == 181 )
+        {   
+           // Info("Change rightblock 's color & location!");
+            ColorNum = std::rand() % 9 ;
+            LocationNum = std::rand() % 5; 
+        }
+        if (m_FrameRenderIndex % 900 == 242 )
+        {   
+            //Info("Change rightblock 's color & location!");
+            int ColorNum2 = std::rand() % 9 ;
+            while (ColorNum2 == ColorNum)
+            {
+                ColorNum2 = std::rand() % 9 ;
+            }
+            ColorNum = ColorNum2;
+        }
+
+       // Info("NDC Left Gaze Location in the left view:%d ",int((leftblock_leftview-LGazeCenter.x)*5184));
+        RightBlock =RightBlock*1;
+    }else  {RightBlock =0; } 
+    
     
     // Rendering
     //Info("FrameIndex %d LeftBlock %d RightBlock %d",m_FrameRenderIndex,LeftBlock, RightBlock);
      m_FrameRenderIndex++;
     mRequantizationPipeline->MyRender(RightBlockLocationy[LocationNum],
     Colors[ColorNum].r, Colors[ColorNum].g, Colors[ColorNum].b,
-    LeftBlock, RightBlock, Strategy, LGazeCenter, RGazeCenter, ndcroirad,*mOutputTextureState);
+    LeftBlock, RightBlock, 
+    Strategy, 
+    leftblock_leftview,leftblock_rightview,rightblock_leftview,rightblock_rightview,
+    LGazeCenter, RGazeCenter, ndcroirad,*mOutputTextureState);
    
 }

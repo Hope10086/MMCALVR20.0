@@ -8,6 +8,8 @@
 #include <GLES3/gl3.h>
 #include "gazeinfo.h"
 #include "gpulogger.h"
+#include<math.h>
+#define PI 3.1415926535
 
 struct BlockColor
 {
@@ -21,7 +23,7 @@ public:
     GaussianBlurPass(gl_render_utils::Texture *inputTexture);
 
     void Initialize(uint32_t width, uint32_t height);
-    void Render(bool GaussionFlag,bool TDenabled,int GaussionStrategy ,float ndcroirad,
+    void Render( OriAngle m_Angle ,bool GaussionFlag,bool TDenabled,int GaussionStrategy ,float ndcroirad,
                 GazeCenterInfo LGazeCenter ,GazeCenterInfo RGazeCenter);
     gl_render_utils::Texture *GetOutputTexture() { return mOutputTexture.get(); }
 
