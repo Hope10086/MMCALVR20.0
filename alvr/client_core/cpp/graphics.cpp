@@ -206,10 +206,6 @@ in lowp vec4 fragmentColor;
 out lowp vec4 outColor;
 uniform sampler2D Texture0;
 //uniform vec2 TEXTURE_SIZE;
-uniform float ndcrad ;
-uniform vec2 gazepoint;
-uniform float Qa; 
-uniform float Qb; 
 void main()
 {
         vec4 RoiValue = texture(Texture0, uv);
@@ -680,55 +676,8 @@ void renderEye(
         GL(glBindTexture(GL_TEXTURE_2D, 0));
 
     } else {
-        //left and right is different
-        GaussianKernel5  TotalStrategys[8] = { { 1.0 ,1.0 ,256.0 },
-                                               { 2.0 ,1.0 ,64.0  }, { 3.0 ,1.0 ,64.0 },
-                                               { 2.0, 1.0, 32.0  }, { 3.0 ,1.0 ,32.0 },
-                                               { 2.0, 1.0, 16.0  }, { 3.0, 1.0, 16.0 },
-                                               { 2.0, 1.0, 12.0  }};
-        GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
-        GaussianKernel5 Strategy;
-        if (GaussionFlag)
-        {
-            Strategy = TotalStrategys[GaussionStrategy];
-        }
-        else if ( TDenabled )
-                {
-                    Strategy = TotalStrategys[GaussionStrategy];
-                }
-                else
-                {   Strategy = TotalStrategys[0];
-                }
-        GLuint  Qa = GL(glGetUniformLocation(renderer->streamProgram.streamProgram,"Qa"));
-        GLuint  Qb = GL(glGetUniformLocation(renderer->streamProgram.streamProgram,"Qb"));
-
-        GLuint ndcrad =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"ndcrad"));
-        GLuint gazepoint =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"gazepoint"));
-
-        // GLuint TEXTURE_SIZE =GL (glGetUniformLocation(renderer->streamProgram.streamProgram,"TEXTURE_SIZE"));
-
         GL(glUseProgram(renderer->streamProgram.streamProgram));
 
-        // GL(glUniform2f(TEXTURE_SIZE, eyewidth * 2.0, eyeheight * 1.0));
-
-        GL(glUniform1f(Qa , Strategy.center));
-        GL(glUniform1f(Qb , Strategy.a));
-        if (ndcroirad >0.2)
-        {
-            GL(glUniform1f(ndcrad,0.2));
-        }
-        else if(ndcroirad >0){
-            GL(glUniform1f(ndcrad,ndcroirad));
-        }
-        else{ GL(glUniform1f(ndcrad,0.00));}
-        if (eye == 0)
-        {
-            GL(glUniform2f(gazepoint, GazeCenter[0].x,GazeCenter[0].y));
-        }
-        else
-        {
-            GL(glUniform2f(gazepoint, GazeCenter[1].x,GazeCenter[1].y));
-        }
         if (renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID] >= 0) // NOTE: will not be present when multiview path is enabled.
         {
             GL(glUniform1i(renderer->streamProgram.UniformLocation[UNIFORM_VIEW_ID], eye));

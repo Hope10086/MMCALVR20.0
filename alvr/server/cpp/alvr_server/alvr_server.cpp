@@ -615,9 +615,9 @@ void UpdateGaussionRoiSize(float RoiSizeRad){
     {
        roiradius = 0;
     }
-    if (roiradius > 0.48)
+    if (roiradius > 0.2469)
     {
-        roiradius = 0.48;
+        roiradius = 0.2469;
     }
     GaussionSend(gaussionblurflag,strategynum,roiradius,false);
 }

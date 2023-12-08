@@ -35,14 +35,12 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
     void main() {
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
       //  to check current piexl is the Display Block or not
-      //  vec3 IsCenterBlock = (( length(uv.x-0.25) < 0.01 && length(uv.y-0.5) < 0.02)||( length(uv.x-0.75) < 0.01 && length(uv.y-0.5) < 0.02))? vec3(1.0):vec3(0.0);
         vec3 IsLeftBlock = ((leftflag  == true) && (( length(uv.x-Blocklocation.r) < 0.01 && length(uv.y-0.45) < 0.02 *1.0)||( length(uv.x-Blocklocation.g) < 0.01 && length(uv.y-0.45) < 0.02 *1.0)))? vec3(1.0):vec3(0.0); // left(0.10,0.30)
         vec3 IsRightBlock =((rightflag == true) && (( length(uv.x-Blocklocation.b) < 0.01 && length(uv.y-0.45) < 0.02 *righty)||( length(uv.x-Blocklocation.a) < 0.01 && length(uv.y-0.45) < 0.02 *righty)))? vec3(1.0):vec3(0.0); // Right(0.40,0.20)
-       
-        vec3 IsRightROI= ( length(uv.x-lgazepoint.x)<ndcradius.x && length(uv.y-lgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
-        vec3 IsLeftROI=  ( length(uv.x-rgazepoint.x)<ndcradius.x && length(uv.y-rgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
+
+        vec3 IsLeftROI  = ((( uv.x - lgazepoint.x >= 0.0 && uv.x < 0.5 && uv.x - lgazepoint.x < ndcradius.x)||(uv.x - lgazepoint.x <= 0.0 && lgazepoint.x - uv.x <= 1.40*ndcradius.x)) && length(uv.y-lgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
+        vec3 IsRightROI = ((( uv.x - rgazepoint.x >= 0.0 && uv.x - rgazepoint.x <= 1.40*ndcradius.x)||(uv.x - rgazepoint.x <= 0.0 && uv.x > 0.5 && rgazepoint.x - uv.x < ndcradius.x)) && length(uv.y-rgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
         //  to check current piexl is the Roi or not  but its priority  is lower than the Display Block  
-     // vec3 IsROI= (IsCenterBlock  ==vec3(0.0)&& IsLeftBlock==vec3(0.0) && IsRightBlock ==vec3(0.0))?(IsRightROI+IsLeftROI):vec3(0.0);
         vec3 IsROI= (IsLeftBlock==vec3(0.0) && IsRightBlock ==vec3(0.0))?(IsRightROI+IsLeftROI):vec3(0.0);
         //  sample the input texture and compute the output value
         vec4 RoiValue = texture(Texture0, uv);
@@ -55,9 +53,7 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
         float  DelatY = round(Y * Qs) / Qs - Y;
         Y = Y + Qb* DelatY;
         // the Block Color
-      //  vec3 CenterBlockValue = vec3(0.0, 1.0, 0.0);
         vec3 LeftBlockValue = vec3(1.0, 0.0, 0.0);
-        //vec3 RightBlockValue = vec3(0.0, 0.0, 1.0);
 
         vec3 NonRoiValue =vec3(Y + 1.13983*V , Y-0.39465*U-0.58060*V , Y+2.03211*U);
         // fragColor = vec4( RoiValue.rgb* IsROI 
@@ -107,7 +103,7 @@ void GaussianBlurPass::Initialize(uint32_t width, uint32_t height) {
 void GaussianBlurPass::Render( OriAngle m_Angle ,bool GaussionFlag,bool TDenabled,int GaussionStrategy ,float ndcroirad ,GazeCenterInfo LGazeCenter ,GazeCenterInfo RGazeCenter) {
 
     mOutputTextureState->ClearDepth();
-    GaussianKernel5  TotalStrategys[12] = { { 0.0 ,0.0 ,256.0 }, // Lossless  0
+    GaussianKernel5  TotalStrategys[12] = { { 1.0 ,0.0 ,64.0 }, // Lossless  0
                                             { 1.0 ,1.0, 128.0 },  //0.304     1
                                             { 1.0 ,1.0 ,64.0 },  //1.8        2
                                             { 2.0 ,1.0 ,64.0 },  //1.2        3
@@ -118,11 +114,11 @@ void GaussianBlurPass::Render( OriAngle m_Angle ,bool GaussionFlag,bool TDenable
                                             { 3.0, 1.0, 48.0 },  //1.6        6
                                            
                                             
-                                            { 3.0, 1.0, 32.0 },  //3.6
-                                            { 2.0, 1.0, 32.0 },  //2.4    
-                                            { 2.0, 1.0, 16.0 },  //worst quatity
+                                            { 3.0, 1.0, 32.0 },  //3.6         7
+                                            { 2.0, 1.0, 32.0 },  //2.4         8
+                                            { 2.0, 1.0, 16.0 },  //            9
                                             { 3.0 ,1.0 ,16.0 },   //worst quatity
-                                            { 3.0 ,1.0 ,12.0 }   //worst quatity
+                                            { 0.0 ,1.0 ,256.0 }   //worst quatity
                                                                                 
                                             };
     GazeCenterInfo   DefaultGazeCenter[2] ={ {0.25 , 0.5},{0.75 ,0.5} }; 
@@ -193,22 +189,22 @@ void GaussianBlurPass::Render( OriAngle m_Angle ,bool GaussionFlag,bool TDenable
 
 
     // 根据帧索引选择进行显示 两个Block
-    // 按照 FPS=90 计算每10秒内  前2秒显示左方块  左侧方块消失的同时显示1.5秒的右块
+    // 按照 FPS=90 计算每6秒内  前2秒显示左方块  左侧方块消失的同时显示1.5秒的右块
     // 900帧中0~ 180 帧显示左块 271 ~ 406 帧显示右块
 
-    if ( (m_FrameRenderIndex % 900) >= 0 &&(m_FrameRenderIndex % 900) < 180)
+    if ( (m_FrameRenderIndex % 540) >= 0 &&(m_FrameRenderIndex % 540) < 180)
     {   LeftBlock = LeftBlock*1;
     }else  {LeftBlock = 0; }
 
-    if ((m_FrameRenderIndex % 900) >= 181 &&(m_FrameRenderIndex % 900) < 316)
+    if ((m_FrameRenderIndex % 540) >= 181 &&(m_FrameRenderIndex % 540) < 316)
     {
-        if (m_FrameRenderIndex % 900 == 181 )
+        if (m_FrameRenderIndex % 540 == 181 )
         {   
-           // Info("Change rightblock 's color & location!");
+            //Info("Change rightblock 's color & location!");
             ColorNum = std::rand() % 9 ;
             LocationNum = std::rand() % 5; 
         }
-        if (m_FrameRenderIndex % 900 == 242 )
+        if (m_FrameRenderIndex % 540 == 250 )
         {   
             //Info("Change rightblock 's color & location!");
             int ColorNum2 = std::rand() % 9 ;
