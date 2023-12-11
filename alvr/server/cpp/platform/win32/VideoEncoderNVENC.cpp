@@ -28,11 +28,11 @@ ComPtr<ID3D11Texture2D> GazepointTexture;  //降低可视化时延，只需要cr
 FfiAnglespeed m_prewspeed={0,0,0};
 
 
-//float cof0=0.3836,cof1=26.3290;   //watch: QP=cof0*FOV+cof1
-//float cof0=0.435,cof1=29.9997;   //play: QP=0.435*FOV+29.9997
+//float cof0=0.3836,cof1=26.3290;   //watch: QP=cof0*OAE+cof1
+//float cof0=0.435,cof1=29.9997;   //play: QP=0.435*OAE+29.9997
 // float cof0=27.54,cof1=0.01004;
 
-#define QP_Radial 1   // QP=0.3836*FOV+26.3290
+#define QP_Radial 1   // QP=0.3836*OAE+26.3290
 #define QP_Radial_square 1  //
 
 VideoEncoderNVENC::VideoEncoderNVENC(std::shared_ptr<CD3DRender> pD3DRender
@@ -341,7 +341,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		    hist_rightgazeMac_Vy = rightgazeMac_Vy;
         //
 		float distance= 0;
-		float FOV = 0;   //Dgree °
+		float OAE = 0;   //Dgree °
 		int expect_qp=51;
 		int max_qp = Settings::Instance().m_MaxQp;
 		float cof0_final=Settings::Instance().m_cof0;   // changed cof0
@@ -374,17 +374,47 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 			m_speedthreshold_change=Settings::Instance().m_speedthreshold;
 			Info("Speed Threshold: %f",m_speedthreshold_change);  
 		}
-		if(Settings::Instance().m_tdmode && (m_prewspeed.w_eye >= Settings::Instance().m_speedthreshold))   //Eye movement speed exceeds the threshold
+		if(true)   //Eye movement speed exceeds the threshold
 		{
-			for (int x = 0; x < encDesc.Width/macrosize; x++)
-			{
-				for (int y = 0; y < encDesc.Height/macrosize; y++)
+		for (int x = 0; x < encDesc.Width/macrosize; x++)   
+			{for (int y = 0; y < encDesc.Height/macrosize; y++)
 				{
-					picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 51-51;
+				if (abs(x - leftgazeMac_X) <= centresize && abs(y - leftgazeMac_Y) <= centresize && x < (encDesc.Width/macrosize)/2)  //左眼中心21qp区域
+				{
+					picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
+					continue;																  
 				}
-			}
+				else if(abs(x -rightgazeMac_X) <= centresize && abs(y - rightgazeMac_Y) <= centresize && x >= (encDesc.Width/macrosize)/2 )//右眼中心21qp区域
+				{
+					picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
+					continue;
+				}
+
+				if (x < (encDesc.Width/macrosize)/2)    //左眼
+				{						
+					distance=(((abs(x*macrosize-leftgazeMac_X*macrosize)) > (abs(y*macrosize-leftgazeMac_Y*macrosize))) ? (abs(x*macrosize-leftgazeMac_X*macrosize)) : (abs(y*macrosize-leftgazeMac_Y*macrosize)));
+				}
+				else if(x >= (encDesc.Width/macrosize)/2)   //右眼
+				{
+					distance=(((abs(x*macrosize-rightgazeMac_X*macrosize)) > (abs(y*macrosize-rightgazeMac_Y*macrosize))) ? (abs(x*macrosize-rightgazeMac_X*macrosize)) : (abs(y*macrosize-rightgazeMac_Y*macrosize)));
+				}
+				OAE=2*atanf(distance/ZDepth)*180/(4*atanf(1));
+				float mos = -0.0002*powf(OAE,2)-0.0299*OAE+4.0350;
+                expect_qp = int((-0.1011 - sqrtf(powf(0.1011,2)+0.0132*(4.3152-mos)))/(-0.0066));
+				if(expect_qp<21)  //限制QP范围
+				{
+					expect_qp=21;
+					Info("it is < 21");
+				}
+				if(expect_qp>=max_qp)
+				{
+					expect_qp=max_qp;
+				}
+				picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = expect_qp-51; 
+				}
 		}
-        else  // No eye movement
+		}
+        else  // No eye movement  rapidly
 		{
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{
@@ -412,9 +442,9 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 						{
 							distance=(((abs(x*macrosize-rightgazeMac_X*macrosize)) > (abs(y*macrosize-rightgazeMac_Y*macrosize))) ? (abs(x*macrosize-rightgazeMac_X*macrosize)) : (abs(y*macrosize-rightgazeMac_Y*macrosize)));
 						}
-						FOV=2*atanf(distance/ZDepth)*180/(4*atanf(1));
-						//expect_qp=floor(cof0_final*FOV+cof1_final);    //linear
-						expect_qp=floor(cof0_final*exp(cof1_final*FOV));        //exp
+						OAE=2*atanf(distance/ZDepth)*180/(4*atanf(1));
+						//expect_qp=floor(cof0_final*OAE+cof1_final);    //linear
+						expect_qp=floor(cof0_final*exp(cof1_final*OAE));        //exp
 						if(expect_qp<21)  //限制QP范围
 						{
 							expect_qp=21;
@@ -448,9 +478,9 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 						{
 							distance=sqrt(pow(x*macrosize-rightgazeMac_X*macrosize,2)+pow(y*macrosize-rightgazeMac_Y*macrosize,2));
 						}
-						FOV=2*atanf(distance/ZDepth)*180/(4*atanf(1));
-						//expect_qp=floor(cof0_final*FOV+cof1_final);   //linear
-						expect_qp=floor(cof0_final*exp(cof1_final*FOV));        //exp
+						OAE=2*atanf(distance/ZDepth)*180/(4*atanf(1));
+						//expect_qp=floor(cof0_final*OAE+cof1_final);   //linear
+						expect_qp=floor(cof0_final*exp(cof1_final*OAE));        //exp
 						if(expect_qp<21)  //
 						{
 							expect_qp=21;

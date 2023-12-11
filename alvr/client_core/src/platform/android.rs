@@ -165,7 +165,7 @@ pub fn get_internal_storage_path() ->String
         .unwrap()
         .l()
         .unwrap(); //
-    let path_string = env.get_string((&path_jstring).into()).unwrap(); // 将 JString 转换为 String
+    let path_string = env.get_string((&path_jstring).into()).unwrap(); //  JString turn to  String
     
     let file_path = path_string.to_string_lossy().into_owned();
     file_path

@@ -559,6 +559,7 @@ void MaxQpSet( int delatMaxqp){
 void TDmode(){
     #ifndef __APPLE__
     Settings::Instance().m_tdmode=!Settings::Instance().m_tdmode;
+    Info("TDmode:%d",Settings::Instance().m_tdmode);
 #endif
 }
 
