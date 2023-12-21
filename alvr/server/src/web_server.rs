@@ -127,14 +127,14 @@ async fn http_api(
                     ServerRequest::CaptureFrame => unsafe { crate::CaptureFrame() },
                     ServerRequest::InsertIdr => unsafe { crate::RequestIDR() },
                     ServerRequest::ClientCapture => unsafe { crate::ClientCapture()},
-                    ServerRequest::QpModeset( qp_set) => unsafe {
+                    ServerRequest::NROIQpset( qp_set) => unsafe {
                         if qp_set  {
-                            crate::AllQpChange(1);
+                            crate::nRoiQpChange(1);
                         } else {
-                            crate::AllQpChange(-1); 
+                            crate::nRoiQpChange(-1); 
                         }
                     },                                                                          
-                    ServerRequest::RoiSizeset( hqrset) => unsafe {
+                    ServerRequest::HQASizeset( hqrset) => unsafe {
                         if hqrset  { 
                             crate::HQRSizeset(1);
                         } else {
@@ -162,8 +162,8 @@ async fn http_api(
                             crate::TestSequence(0,-1);
                         }
                     }
-                    ServerRequest::CentreSizeset( roi_set) => unsafe {
-                        if roi_set {
+                    ServerRequest::CentreSizeset( center_set) => unsafe {
+                        if center_set {
                             crate::CentrSizeset(1);
                         }else {
                             crate::CentrSizeset(-1);

@@ -79,6 +79,8 @@ private:
 	FfiEuler m_preeyeEuler;
 	FfiAnglespeed m_wspeed;
 
+	FfiPose m_headpose;
+
 };
 
 void GazeQuatToNDCLocation(FfiQuat LGazeQuat ,FfiQuat RGazeQuat	,FfiGazeOPOffset *LNDCLocat , FfiGazeOPOffset *RNDCLocat);

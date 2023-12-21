@@ -295,19 +295,27 @@ void Hmd::StopStreaming() { vr::VRDriverInput()->UpdateBooleanComponent(m_proxim
 void Hmd::SetViewsConfig(FfiViewsConfig config) {
     this->views_config = config;
 
+   // this->views_config.ipd_m = 0.0005;
+    this->views_config.fov[0] = {-0.733038,0.733038,0.733038,-0.733038};
+    this->views_config.fov[1] = {-0.733038,0.733038,0.733038,-0.733038};
+
     auto left_transform = MATRIX_IDENTITY;
-    left_transform.m[0][3] = -config.ipd_m / 2.0;
+    //left_transform.m[0][3] = -config.ipd_m / 2.0;
+    left_transform.m[0][3] = -0.0005;
     auto right_transform = MATRIX_IDENTITY;
-    right_transform.m[0][3] = config.ipd_m / 2.0;
+    //right_transform.m[0][3] = config.ipd_m / 2.0;
+    right_transform.m[0][3] = 0.0005;
     vr::VRServerDriverHost()->SetDisplayEyeToHead(object_id, left_transform, right_transform);
 
-    auto left_proj = fov_to_projection(config.fov[0]);
-    auto right_proj = fov_to_projection(config.fov[1]);
+    auto left_proj = fov_to_projection(this->views_config.fov[0]);
+    auto right_proj = fov_to_projection(this->views_config.fov[1]);
     
     leftcfov  = config.fov[0];
     rightcfov = config.fov[1];
     Info("Decive LFov %f %f %f %f \n",leftcfov.left,leftcfov.right, leftcfov.up, leftcfov.down);
     Info("Decive RFov %f %f %f %f \n",rightcfov.left,rightcfov.right, rightcfov.up, rightcfov.down);
+    Info("ViewsSet LFov %f %f %f %f\n",this->views_config.fov[0].left,this->views_config.fov[0].right, this->views_config.fov[0].up, this->views_config.fov[0].down);
+    Info("ViewsSet RFov %f %f %f %f\n",this->views_config.fov[1].left,this->views_config.fov[1].right, this->views_config.fov[1].up, this->views_config.fov[0].down);
 
     vr::VRServerDriverHost()->SetDisplayProjectionRaw(object_id, left_proj, right_proj);
 

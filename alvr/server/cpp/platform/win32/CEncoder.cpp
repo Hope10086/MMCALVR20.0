@@ -77,7 +77,7 @@
 		}
 
 		bool CEncoder::CopyToStaging(ID3D11Texture2D *pTexture[][2], vr::VRTextureBounds_t bounds[][2], int layerCount, bool recentering
-			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText,  FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset, FfiAnglespeed wspeed)
+			, uint64_t presentationTime, uint64_t targetTimestampNs, const std::string& message, const std::string& debugText,  FfiGazeOPOffset leftGazeOffset, FfiGazeOPOffset rightGazeOffset, FfiAnglespeed wspeed ,FfiPose headpose)
 		{
 			m_presentationTime = presentationTime;
 			m_targetTimestampNs = targetTimestampNs;
@@ -87,7 +87,9 @@
 			m_GazeOffset[1] = rightGazeOffset;
 
 			m_wspeed=wspeed;
-			//TxtPrint("Frame Render Time %llu ",m_targetTimestampNs);
+			m_headpose=headpose;
+
+			
 			m_FrameRender->Startup();
 			m_FrameRender->RenderFrame(pTexture, bounds, layerCount, recentering, message, debugText, m_GazeOffset[0], m_GazeOffset[1]);
 			return true;
@@ -117,8 +119,36 @@
 					m_QPDistribution=false;
 					Settings::Instance().m_QPDistribution=(Settings::Instance().m_QPDistribution+1)%3;  //三种模式
 				}
-				if (m_FrameRender->GetTexture()  && Settings::Instance().m_FrameEncodeIndex % 1 ==0)
+				if (m_FrameRender->GetTexture()  && Settings::Instance().m_FrameEncodeIndex % 3 !=2)
 				{
+					if (Settings::Instance().m_recordGaze)
+					{
+						TxtPrint("%llu position %lf %lf %lf orientation %lf %lf %lf %lf\n"
+						,m_targetTimestampNs
+						,m_headpose.x
+						,m_headpose.y
+						,m_headpose.z
+						,m_headpose.orientation.x
+						,m_headpose.orientation.y
+						,m_headpose.orientation.z
+						,m_headpose.orientation.w
+						);			
+						int width  = Settings::Instance().m_renderWidth /2;
+						int height = Settings::Instance().m_renderHeight;
+						TxtNDCGaze("%llu %lf %lf %lf %lf %d %d %d %d \n"
+						,m_targetTimestampNs
+						,m_GazeOffset[0].x
+						,m_GazeOffset[0].y
+						,m_GazeOffset[1].x+1
+						,m_GazeOffset[1].y
+						,int(m_GazeOffset[0].x*width)
+						,int(m_GazeOffset[0].y*height)
+						,int((m_GazeOffset[1].x+1)*width)
+						,int((m_GazeOffset[1].y)*height)
+						);
+						ThreadLatency("the last one");
+					}
+					
 					m_videoEncoder->Transmit(m_FrameRender->GetTexture().Get(), m_presentationTime, m_targetTimestampNs, m_scheduler.CheckIDRInsertion(), m_GazeOffset[0], m_GazeOffset[1], m_wspeed);
 				}
 				Settings::Instance().m_FrameEncodeIndex++;

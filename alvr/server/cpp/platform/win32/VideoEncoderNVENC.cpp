@@ -521,10 +521,6 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		}
 		
 		 ParseFrameNals(m_codec, packet.data(), (int)packet.size(), targetTimestampNs, insertIDR);
-		// if (Settings::Instance().m_recordGaze)
-		// {
-		// 	TxtPrint("%llu %lf %lf %lf %lf\n",targetTimestampNs,NDCLeftGaze.x,NDCLeftGaze.y,NDCRightGaze.x+1,NDCRightGaze.y);
-		// }
 	}
 }
 

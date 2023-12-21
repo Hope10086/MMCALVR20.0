@@ -352,7 +352,7 @@ void CaptureFrame() {
 }
 
 
-void AllQpChange( int delatqp) {
+void nRoiQpChange( int delatqp) {
     Settings::Instance().m_delatQPmode += delatqp;
         if (Settings::Instance().m_delatQPmode < 0)
         {

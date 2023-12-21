@@ -13,6 +13,12 @@ struct FfiQuat {
     float z;
     float w;
 };
+struct FfiPose {
+    float x;
+    float y;
+    float z;
+    FfiQuat orientation;
+};
 
 struct FfiHandSkeleton {
     float jointPositions[26][3];
@@ -175,7 +181,7 @@ extern "C" void SetBattery(unsigned long long deviceID, float gauge_value, bool 
 extern "C" void SetButton(unsigned long long path, FfiButtonValue value);
 
 extern "C" void CaptureFrame();
-extern "C" void AllQpChange(int delatqp);
+extern "C" void nRoiQpChange(int delatqp);
 extern "C" void ROIQpChange(int Strategy);
 extern "C" void HQRSizeset( int delathqr);
 extern "C" void CentrSizeset( int delatroi);

@@ -114,6 +114,22 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 	auto pPose = &perEye[0].mHmdPose; // TODO: are both poses the same? Name HMD suggests yes.
     auto m_LeftProjectMat = &perEye[0].mProjection;
     auto m_RightProjectMat = &perEye[1].mProjection;
+	//Info("%f %f %f %f ",m_LeftProjectMat->m[0][0], m_LeftProjectMat->m[0][1], m_LeftProjectMat->m[0][2], m_LeftProjectMat->m[0][3]);
+
+	// if (Settings::Instance().m_FrameRenderIndex% 18000 == 0)
+	// {
+	// Info("%f %f %f %f \n",m_LeftProjectMat->m[0][0], m_LeftProjectMat->m[0][1], m_LeftProjectMat->m[0][2], m_LeftProjectMat->m[0][3]);
+	// Info("%f %f %f %f \n",m_LeftProjectMat->m[1][0], m_LeftProjectMat->m[1][1], m_LeftProjectMat->m[1][2], m_LeftProjectMat->m[1][3]);
+	// Info("%f %f %f %f \n",m_LeftProjectMat->m[2][0], m_LeftProjectMat->m[2][1], m_LeftProjectMat->m[2][2], m_LeftProjectMat->m[2][3]);
+	// Info("%f %f %f %f \n",m_LeftProjectMat->m[3][0], m_LeftProjectMat->m[3][1], m_LeftProjectMat->m[3][2], m_LeftProjectMat->m[3][3]);
+	
+	// Info("%f %f %f %f \n",m_RightProjectMat->m[0][0], m_RightProjectMat->m[0][1], m_RightProjectMat->m[0][2], m_RightProjectMat->m[0][3]);
+	// Info("%f %f %f %f \n",m_RightProjectMat->m[1][0], m_RightProjectMat->m[1][1], m_RightProjectMat->m[1][2], m_RightProjectMat->m[1][3]);
+	// Info("%f %f %f %f \n",m_RightProjectMat->m[2][0], m_RightProjectMat->m[2][1], m_RightProjectMat->m[2][2], m_RightProjectMat->m[2][3]);
+	// Info("%f %f %f %f \n",m_RightProjectMat->m[3][0], m_RightProjectMat->m[3][1], m_RightProjectMat->m[3][2], m_RightProjectMat->m[3][3]);
+	
+	// }
+	
 	
 	if (m_submitLayer == 0) {
 		// Detect FrameIndex of submitted frame by pPose.
@@ -123,10 +139,8 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 		auto pose = m_poseHistory->GetBestPoseMatch(*pPose);
 		if (pose) {
 			// found the frameIndex
-
-//Compare the quaternions of the old and new globals
+            //Compare the quaternions of the old and new globals
 			bool bprint=false;
-
 			if((m_GlobalQuat[0].w != pose->GloabGazeQuat[0].w)||
 			(m_GlobalQuat[0].x != pose->GloabGazeQuat[0].x)||
 			(m_GlobalQuat[0].y != pose->GloabGazeQuat[0].y)||
@@ -154,22 +168,14 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			}
 			m_prevTargetTimestampNs = m_targetTimestampNs;
 			m_targetTimestampNs = pose->targetTimestampNs;
+            m_headpose.orientation.x = pose->motion.orientation.x;
+			m_headpose.orientation.y = pose->motion.orientation.y;
+			m_headpose.orientation.z = pose->motion.orientation.z;
+			m_headpose.orientation.w = pose->motion.orientation.w;
+			m_headpose.x= pose->motion.position[0];
+			m_headpose.y= pose->motion.position[1];
+			m_headpose.z= pose->motion.position[2];
 
-//Txt pose			
-			// if (Settings::Instance().m_capturePicture || Settings::Instance().m_recordGaze)
-			// {
-			// TxtPrint("%llu position %lf %lf %lf orientation %lf %lf %lf %lf\n"
-			// ,m_targetTimestampNs
-			// ,pose->motion.position[0]
-			// ,pose->motion.position[1]
-			// ,pose->motion.position[2]
-			// ,pose->motion.orientation.x
-			// ,pose->motion.orientation.y
-			// ,pose->motion.orientation.z
-			// ,pose->motion.orientation.w
-			// );
-			// }
-			
 			FfiGazeOPOffset LeftGazeDirection ,RightGazeDirection;
 			//  Quat to Vector , Vector to angule,center_offset
      		GazeQuatToNDCLocation(m_GazeQuat[0],m_GazeQuat[1], &m_GazeOffset[0], &m_GazeOffset[1]);
@@ -179,8 +185,8 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// Txt Delta Loaction   
 			if (Settings::Instance().m_recordGaze)
 			{
-			int width  = Settings::Instance().m_renderWidth /2;
-	        int height = Settings::Instance().m_renderHeight;
+				int width  = Settings::Instance().m_renderWidth /2;
+				int height = Settings::Instance().m_renderHeight;
 //local
 				//local gaze  loaction 's delta 
 				FfiGazeOPOffset preLocNDCLocat[2] , nowLocNDCLocat[2];
@@ -237,36 +243,8 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 // List 
 
 
-
-
-//  Printf Txt  speed
-			// if(bprint)
-			// {
-			// 	//SK
-			// 	Info("%llu %llu",m_prevTargetTimestampNs_txt,m_targetTimestampNs_txt);
-			// 	//SK
-			// 	TxtDeltaLocat("%llu speed head %d %d %d Left: local %d %d %d global %d %d %d\n"
-			// 	, m_targetTimestampNs
-			// 	, int (Headspeed_XY.x)
-			// 	, int (Headspeed_XY.y)
-			// 	, int (Headspeed)
-			// 	, int (Leftlocalspeed_XY.x)
-			// 	, int (Leftlocalspeed_XY.y)
-			// 	, int (Leftlocalspeed)
-			// 	, int (Leftglobalspeed_XY.x)
-			// 	, int (Leftglobalspeed_XY.y)
-			// 	, int (Leftglobalspeed)
-			// 	);
-			// 	Txtwspeed("%llu Anglespeed: head %lf Left: local %lf global %lf \n"
-			// 	,m_targetTimestampNs
-			// 	,HeadAngSpeed_angle
-			// 	,LeftLocalSpeed_angle
-			// 	,LeftGlobalSpeed_angle	
-			// 	);
-			// }
-
-// Printf  Txt  offset
-            if(bprint)
+// Printf  Txt  offset  //bprint
+            if(Settings::Instance().m_FrameRenderIndex %3 !=2)
 			{
 				TxtDeltaLocat("%llu variation head %d %d %d Left: local %d %d %d global %d %d %d\n"
 				, m_targetTimestampNs
@@ -286,30 +264,7 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				,LeftLocalDirection
 				,LeftGlobDirection	
 				);
-
-			TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
-			,m_targetTimestampNs
-			,m_GazeOffset[0].x
-			,m_GazeOffset[0].y
-			,m_GazeOffset[1].x+1
-			,m_GazeOffset[1].y
-			,m_GazeOffset[0].x*width
-			,m_GazeOffset[0].y*height
-			,(m_GazeOffset[1].x+1)*width
-			,(m_GazeOffset[1].y)*height
-			);
 			
-			TxtPrint("%llu position %lf %lf %lf orientation %lf %lf %lf %lf\n"
-			,m_targetTimestampNs
-			,pose->motion.position[0]
-			,pose->motion.position[1]
-			,pose->motion.position[2]
-			,pose->motion.orientation.x
-			,pose->motion.orientation.y
-			,pose->motion.orientation.z
-			,pose->motion.orientation.w
-			);
-
 			}
 			}
 		}
@@ -463,9 +418,11 @@ void OvrDirectModeComponent::CopyTexture(uint32_t layerCount) {
 		// Copy entire texture to staging so we can read the pixels to send to remote device.
 		
 		
-		if (Settings::Instance().m_FrameRenderIndex %1 ==0)
+		if (Settings::Instance().m_FrameRenderIndex %3 !=2)
 		{
-		m_pEncoder->CopyToStaging(pTexture, bounds, layerCount,false, presentationTime, submitFrameIndex,"", debugText, m_GazeOffset[0],m_GazeOffset[1], m_wspeed);	
+		//PrintfTxt
+
+		m_pEncoder->CopyToStaging(pTexture, bounds, layerCount,false, presentationTime, submitFrameIndex,"", debugText, m_GazeOffset[0],m_GazeOffset[1], m_wspeed ,m_headpose);	
 		}
 		
 

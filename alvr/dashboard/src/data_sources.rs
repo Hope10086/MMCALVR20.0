@@ -175,11 +175,11 @@ impl DataSources {
                                 | ServerRequest::InsertIdr
                                 | ServerRequest::StartRecording
                                 | ServerRequest::StopRecording
-                                | ServerRequest::QpModeset(true) 
-                                | ServerRequest::QpModeset(false) 
+                                | ServerRequest::NROIQpset(true) 
+                                | ServerRequest::NROIQpset(false) 
                                 | ServerRequest::ClientCapture
-                                | ServerRequest::RoiSizeset(true)
-                                | ServerRequest::RoiSizeset(false)
+                                | ServerRequest::HQASizeset(true)
+                                | ServerRequest::HQASizeset(false)
                                 | ServerRequest::RoiQpSet(false)
                                 | ServerRequest::RoiQpSet(true)
                                 | ServerRequest::CentreSizeset(true)
