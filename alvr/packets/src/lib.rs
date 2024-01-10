@@ -233,7 +233,7 @@ pub enum ServerRequest {
     GetAudioDevices,
     CaptureFrame,
     ClientCapture,
-    QpModeset(bool),
+    AllQpAdd(bool),
     RoiSizeset(bool),
     RoiQpSet(bool),
     CentreSizeset(bool),

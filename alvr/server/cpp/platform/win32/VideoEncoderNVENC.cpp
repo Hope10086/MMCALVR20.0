@@ -374,7 +374,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 			m_speedthreshold_change=Settings::Instance().m_speedthreshold;
 			Info("Speed Threshold: %f",m_speedthreshold_change);  
 		}
-		if(true)   //Eye movement speed exceeds the threshold
+		if(false)   //Eye movement speed exceeds the threshold
 		{
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{for (int y = 0; y < encDesc.Height/macrosize; y++)

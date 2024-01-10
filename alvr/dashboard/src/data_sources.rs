@@ -175,8 +175,8 @@ impl DataSources {
                                 | ServerRequest::InsertIdr
                                 | ServerRequest::StartRecording
                                 | ServerRequest::StopRecording
-                                | ServerRequest::QpModeset(true) 
-                                | ServerRequest::QpModeset(false) 
+                                | ServerRequest::AllQpAdd(true) 
+                                | ServerRequest::AllQpAdd(false) 
                                 | ServerRequest::ClientCapture
                                 | ServerRequest::RoiSizeset(true)
                                 | ServerRequest::RoiSizeset(false)

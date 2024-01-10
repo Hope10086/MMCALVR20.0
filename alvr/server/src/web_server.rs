@@ -127,7 +127,7 @@ async fn http_api(
                     ServerRequest::CaptureFrame => unsafe { crate::CaptureFrame() },
                     ServerRequest::InsertIdr => unsafe { crate::RequestIDR() },
                     ServerRequest::ClientCapture => unsafe { crate::ClientCapture()},
-                    ServerRequest::QpModeset( qp_set) => unsafe {
+                    ServerRequest::AllQpAdd( qp_set) => unsafe {
                         if qp_set  {
                             crate::AllQpChange(1);
                         } else {
