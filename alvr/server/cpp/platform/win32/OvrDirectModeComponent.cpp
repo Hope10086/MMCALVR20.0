@@ -258,13 +258,28 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				, int (LGloGazeLoactDel.y)
 				, int (sqrt(pow(LGloGazeLoactDel.x,2) + pow(LGloGazeLoactDel.y,2)))
 				);
-				Txtwspeed("%llu Angle: head %lf Left: local %lf global %lf \n"
-				,m_targetTimestampNs
-				,LeftheadDirection
-				,LeftLocalDirection
-				,LeftGlobDirection	
-				);
-			
+				// Txtwspeed("%llu Angle: head %lf Left: local %lf global %lf \n"
+				// ,m_targetTimestampNs
+				// ,LeftheadDirection
+				// ,LeftLocalDirection
+				// ,LeftGlobDirection	
+				// );
+				int CYFrameIndex  = 0;
+
+				if (Settings::Instance().m_FrameRenderIndex %3 == 0)
+				{
+					CYFrameIndex = 2*Settings::Instance().m_FrameRenderIndex/3 +1;
+				}
+				else
+				{
+					CYFrameIndex = 2*Settings::Instance().m_FrameRenderIndex/3  +2;
+				}
+				
+				Txtwspeed("~~~CYFrameIndex:%d~~~\n %lf %lf %lf %lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n",
+				 CYFrameIndex,
+				 pPose->m[0][0], pPose->m[0][1], pPose->m[0][2], pPose->m[0][3], 
+				 pPose->m[1][0], pPose->m[1][1], pPose->m[1][2], pPose->m[1][3], 
+				 pPose->m[2][0], pPose->m[2][1], pPose->m[2][2], pPose->m[2][3] );
 			}
 			}
 		}
@@ -542,8 +557,6 @@ void GazeQuatToNDCLocation( FfiQuat LGazeQuat , FfiQuat RGazeQuat ,FfiGazeOPOffs
 					{
 						LeftGazeVector.v[2]=-1;
 					}
-
-
         			 double LeftGazeRad_X = atanf(-1.0*LeftGazeVector.v[0]/LeftGazeVector.v[2]); 
         			 double LeftGazeRad_Y = atanf(-1.0*LeftGazeVector.v[1]/LeftGazeVector.v[2]);
          			 double RightGazeRad_X = atanf(-1.0*RightGazeVector.v[0]/RightGazeVector.v[2]);

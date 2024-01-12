@@ -215,28 +215,46 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
     pose.vecPosition[0] = motion.position[0];
     pose.vecPosition[1] = motion.position[1];
     pose.vecPosition[2] = motion.position[2];
-
-    m_pose = pose;// don't change it
     
-    if (false)  // check out eyegaze if correct
-    {  Info("Source: HMD.cpp OnPoseUpdated\n");
-       Info("targetTimestampNs %llu  \n",targetTimestampNs);
-       Info("LeftEyeGaze: (%f %f %f),(%f %f %f %f)\n"
-       ,LeftGaze.position[0]
-       ,LeftGaze.position[1]
-       ,LeftGaze.position[2]
-       ,LeftGaze.orientation.w
-       ,LeftGaze.orientation.x
-       ,LeftGaze.orientation.y
-       ,LeftGaze.orientation.z
-       );
-    }
-   
 
+    if (true)
+    {
+     auto AutoPose =  vr::DriverPose_t{};
+     AutoPose.poseIsValid = true;
+     AutoPose.result = vr::TrackingResult_Running_OK;
+     AutoPose.deviceIsConnected = true;
+     AutoPose.qWorldFromDriverRotation = HmdQuaternion_Init(1, 0, 0, 0);
+     AutoPose.qDriverFromHeadRotation = HmdQuaternion_Init(1, 0, 0, 0);
+     AutoPose.vecPosition[0] = 0;
+     AutoPose.vecPosition[1] = 1.50;
+     AutoPose.vecPosition[2] = 0;
+     double Rot = (0.1*frameindex)*PI/180  ;
+     //vr::HmdQuaternion_t PoseQuat = HmdQuaternion_Init(std::cos(Rot/2), 0.0, std::sin(Rot/2), 0.0);
+     vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromRotationY(Rot);
+    AutoPose.qRotation = HmdQuaternion_Init(PoseQuat.w, PoseQuat.x, PoseQuat.y, PoseQuat.z);
+    frameindex =  (frameindex + 1)%3600;
+
+
+    m_pose = AutoPose;
+    motion.position[0] = AutoPose.vecPosition[0];
+    motion.position[1] = AutoPose.vecPosition[1];
+    motion.position[2] = AutoPose.vecPosition[2];
+
+    motion.orientation.w = AutoPose.qRotation.w;
+    motion.orientation.x = AutoPose.qRotation.x;
+    motion.orientation.y = AutoPose.qRotation.y;
+    motion.orientation.z = AutoPose.qRotation.z;
+
+    }
+    else 
+    {
+        m_pose = pose;// don't change it
+    }
+  
     m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,LeftGaze.orientation,RightGaze.orientation, GLeftGaze , GRightGaze);
 
     vr::VRServerDriverHost()->TrackedDevicePoseUpdated(
-        this->object_id, pose, sizeof(vr::DriverPose_t));
+        this->object_id, m_pose, sizeof(vr::DriverPose_t));
 
     if (m_viveTrackerProxy)
         m_viveTrackerProxy->update();

@@ -74,6 +74,7 @@ class Hmd : public TrackedDevice, public vr::ITrackedDeviceServerDriver, vr::IVR
     vr::HmdRect2_t m_eyeFoVRight;
 
     std::wstring m_adapterName;
+    int frameindex = 0;
 
 #ifdef _WIN32
     std::shared_ptr<CD3DRender> m_D3DRender;
