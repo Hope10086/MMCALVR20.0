@@ -75,6 +75,10 @@ class Hmd : public TrackedDevice, public vr::ITrackedDeviceServerDriver, vr::IVR
 
     std::wstring m_adapterName;
     int frameindex = 0;
+    double hmd_yaw = 0.0;
+    double hmd_pitch = 0.0;
+    double hmd_roll = 0.0;
+    double DelatRad=(0.1)*PI/180 ;
 
 #ifdef _WIN32
     std::shared_ptr<CD3DRender> m_D3DRender;

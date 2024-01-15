@@ -228,9 +228,22 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
      AutoPose.vecPosition[0] = 0;
      AutoPose.vecPosition[1] = 1.50;
      AutoPose.vecPosition[2] = 0;
-     double Rot = (0.1*frameindex)*PI/180  ;
+     //double Rot = DelatRad*frameindex ;
      //vr::HmdQuaternion_t PoseQuat = HmdQuaternion_Init(std::cos(Rot/2), 0.0, std::sin(Rot/2), 0.0);
-     vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromRotationY(Rot);
+     //vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromRotationZ(Rot);
+
+     if (hmd_yaw >PI/3 && hmd_pitch >PI/3)
+     {
+        hmd_yaw =0;
+        hmd_pitch = 0;
+     }else if ( hmd_yaw >PI/3 && hmd_pitch <PI/3)
+     {
+        hmd_pitch= hmd_pitch +DelatRad;
+     }else if ( hmd_yaw <PI/3 && hmd_pitch <PI/3)
+     {
+        hmd_yaw = hmd_yaw +DelatRad;
+     }
+     vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromYawPitchRoll(hmd_yaw,hmd_pitch,hmd_roll);
     AutoPose.qRotation = HmdQuaternion_Init(PoseQuat.w, PoseQuat.x, PoseQuat.y, PoseQuat.z);
     frameindex =  (frameindex + 1)%3600;
 
