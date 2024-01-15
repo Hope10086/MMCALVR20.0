@@ -140,6 +140,7 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 		if (pose) {
 			// found the frameIndex
             //Compare the quaternions of the old and new globals
+			//Info("we can see stamp:%lld",pose->targetTimestampNs);
 			bool bprint=false;
 			if((m_GlobalQuat[0].w != pose->GloabGazeQuat[0].w)||
 			(m_GlobalQuat[0].x != pose->GloabGazeQuat[0].x)||

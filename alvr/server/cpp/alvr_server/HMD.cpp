@@ -225,27 +225,31 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
      AutoPose.deviceIsConnected = true;
      AutoPose.qWorldFromDriverRotation = HmdQuaternion_Init(1, 0, 0, 0);
      AutoPose.qDriverFromHeadRotation = HmdQuaternion_Init(1, 0, 0, 0);
-     AutoPose.vecPosition[0] = 0;
-     AutoPose.vecPosition[1] = 1.50;
-     AutoPose.vecPosition[2] = 0;
-     //double Rot = DelatRad*frameindex ;
-     //vr::HmdQuaternion_t PoseQuat = HmdQuaternion_Init(std::cos(Rot/2), 0.0, std::sin(Rot/2), 0.0);
-     //vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromRotationZ(Rot);
 
-     if (hmd_yaw >PI/3 && hmd_pitch >PI/3)
-     {
-        hmd_yaw =0;
-        hmd_pitch = 0;
-     }else if ( hmd_yaw >PI/3 && hmd_pitch <PI/3)
-     {
-        hmd_pitch= hmd_pitch +DelatRad;
-     }else if ( hmd_yaw <PI/3 && hmd_pitch <PI/3)
-     {
-        hmd_yaw = hmd_yaw +DelatRad;
-     }
-     vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromYawPitchRoll(hmd_yaw,hmd_pitch,hmd_roll);
+    //  double Rot = 0.1*DelatRad*frameindex ;
+    //  vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromRotationX(Rot);
+     
+     
+     // xuanzhuan
+    //  if (hmd_yaw >PI/3 && hmd_pitch >PI/3)
+    //  {
+    //     hmd_yaw =0;
+    //     hmd_pitch = 0;
+    //  }else if ( hmd_yaw >PI/3 && hmd_pitch <PI/3)
+    //  {
+    //     hmd_pitch= hmd_pitch +DelatRad;
+    //  }else if ( hmd_yaw <PI/3 && hmd_pitch <PI/3)
+    //  {
+    //     hmd_yaw = hmd_yaw +DelatRad;
+    //  }
+    //vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromYawPitchRoll(hmd_yaw,hmd_pitch,hmd_roll);
+    
+    vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromYawPitchRoll(0,0,0);
     AutoPose.qRotation = HmdQuaternion_Init(PoseQuat.w, PoseQuat.x, PoseQuat.y, PoseQuat.z);
-    frameindex =  (frameindex + 1)%3600;
+
+    AutoPose.vecPosition[0] = -0.001*frameindex;
+    AutoPose.vecPosition[1] = 1.50;
+    AutoPose.vecPosition[2] = 0;
 
 
     m_pose = AutoPose;
@@ -257,7 +261,7 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
     motion.orientation.x = AutoPose.qRotation.x;
     motion.orientation.y = AutoPose.qRotation.y;
     motion.orientation.z = AutoPose.qRotation.z;
-
+    frameindex =  (frameindex + 1)%3600;
     }
     else 
     {
