@@ -262,7 +262,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		//int county = Roi_Size*(float(encDesc.Height)/float(1920));
 		int county = countx;	
 		float ZDepth = 2592/(tanf(0.942478)+tanf(0.698132));
-		float angle = (2*atanf((2*Roi_Size+1)*macrosize/ZDepth))*(180/(4*atanf(1)));
+		float angle = (atanf((Roi_Size+0.5)*macrosize/ZDepth))*(180/(4*atanf(1)));
 		if (m_QpModechange != Settings::Instance().m_delatQPmode)
 		{
 			m_QpModechange = Settings::Instance().m_delatQPmode;
@@ -374,7 +374,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 			m_speedthreshold_change=Settings::Instance().m_speedthreshold;
 			Info("Speed Threshold: %f",m_speedthreshold_change);  
 		}
-		if(true)   //Eye movement speed exceeds the threshold
+		if(false)   //Eye movement speed exceeds the threshold
 		{
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{for (int y = 0; y < encDesc.Height/macrosize; y++)
@@ -414,7 +414,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 				}
 		}
 		}
-        else  // No eye movement  rapidly
+        else        // No eye movement  rapidly
 		{
 		for (int x = 0; x < encDesc.Width/macrosize; x++)   
 			{
