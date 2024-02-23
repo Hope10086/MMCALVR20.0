@@ -226,8 +226,8 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
      AutoPose.qWorldFromDriverRotation = HmdQuaternion_Init(1, 0, 0, 0);
      AutoPose.qDriverFromHeadRotation = HmdQuaternion_Init(1, 0, 0, 0);
 
-    //  double Rot = 0.1*DelatRad*frameindex ;
-    //  vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromRotationX(Rot);
+    //   double Rot = 2.5*DelatRad*frameindex ;
+    //   vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromRotationY(Rot);
      
      
      // xuanzhuan
@@ -247,9 +247,9 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
     vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromYawPitchRoll(0,0,0);
     AutoPose.qRotation = HmdQuaternion_Init(PoseQuat.w, PoseQuat.x, PoseQuat.y, PoseQuat.z);
 
-    AutoPose.vecPosition[0] = -0.001*frameindex;
-    AutoPose.vecPosition[1] = 1.50;
-    AutoPose.vecPosition[2] = 0;
+    AutoPose.vecPosition[0] = -2.5+0.5*frameindex;
+    AutoPose.vecPosition[1] = 4.5;
+    AutoPose.vecPosition[2] = 5.0;
 
 
     m_pose = AutoPose;
@@ -261,7 +261,7 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
     motion.orientation.x = AutoPose.qRotation.x;
     motion.orientation.y = AutoPose.qRotation.y;
     motion.orientation.z = AutoPose.qRotation.z;
-    frameindex =  (frameindex + 1)%3600;
+    frameindex =  (frameindex + 1)%360;
     }
     else 
     {
