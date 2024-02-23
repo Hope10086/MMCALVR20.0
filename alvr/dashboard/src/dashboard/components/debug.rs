@@ -21,10 +21,10 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
             request = Some(ServerRequest::StopRecording);
         }
         if ui[0].button("All QpAdd").clicked() {
-            request = Some(ServerRequest::QpModeset(true));
+            request = Some(ServerRequest::AllQpAdd(true));
         }
         if ui[1].button("All QpSub").clicked() {
-            request = Some(ServerRequest::QpModeset(false));
+            request = Some(ServerRequest::AllQpAdd(false));
         }
         if ui[2].button("HQA Add").clicked() {
             request = Some(ServerRequest::RoiSizeset(true));
@@ -67,7 +67,7 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[2].button("TD Mode").clicked() {   
             request = Some(ServerRequest ::TDmode);
         }
-        if ui[3].button(" Enable Gaussion").clicked() {
+        if ui[3].button("Enable Gaussion").clicked() {
             request = Some(ServerRequest::GaussionBlurEnble);
         }
 
