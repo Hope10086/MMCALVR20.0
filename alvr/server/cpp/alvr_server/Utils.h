@@ -82,20 +82,20 @@ inline void HmdMatrix_SetIdentity(vr::HmdMatrix34_t *pMatrix)
 	pMatrix->m[2][3] = 0.f;
 }
 
-inline void HmdMatrix_QuatToMat(double w, double x, double y, double z, vr::HmdMatrix34_t *pMatrix)
+inline void HmdMatrix_QuatToMat(double w, double x, double y, double z,double m_x,double m_y, double m_z, vr::HmdMatrix34_t *pMatrix)
 {
 	pMatrix->m[0][0] = (float)(1.0f - 2.0f * y * y - 2.0f * z * z);
 	pMatrix->m[0][1] = (float)(2.0f * x * y - 2.0f * z * w);
 	pMatrix->m[0][2] = (float)(2.0f * x * z + 2.0f * y * w);
-	pMatrix->m[0][3] = (float)(0.0f);
+	pMatrix->m[0][3] = (float)(1.0f * m_x);
 	pMatrix->m[1][0] = (float)(2.0f * x * y + 2.0f * z * w);
 	pMatrix->m[1][1] = (float)(1.0f - 2.0f * x * x - 2.0f * z * z);
 	pMatrix->m[1][2] = (float)(2.0f * y * z - 2.0f * x * w);
-	pMatrix->m[1][3] = (float)(0.0f);
+	pMatrix->m[1][3] = (float)(1.0f * m_y);
 	pMatrix->m[2][0] = (float)(2.0f * x * z - 2.0f * y * w);
 	pMatrix->m[2][1] = (float)(2.0f * y * z + 2.0f * x * w);
 	pMatrix->m[2][2] = (float)(1.0f - 2.0f * x * x - 2.0f * y * y);
-	pMatrix->m[2][3] = (float)(0.0f);
+	pMatrix->m[2][3] = (float)(1.0f * m_z);
 }
 
 inline vr::HmdQuaternion_t EulerAngleToQuaternion(const double *yaw_pitch_roll)

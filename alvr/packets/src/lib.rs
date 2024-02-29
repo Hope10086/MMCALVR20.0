@@ -260,4 +260,5 @@ pub enum ServerRequest {
     GaussianBlurStrategy(bool),
     GaussionBlurEnble,
     GaussionBlurRoiSize(bool),
+    HmdPoseOffset(Pose,bool,bool),
 }
