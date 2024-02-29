@@ -203,7 +203,7 @@ extern "C" void UpdateGaussionStrategy(int delatnum);
 extern "C" void GaussionEnable();
 extern "C" void UpdateGaussionRoiSize(float RoiSizeRad);
 extern "C" void ClientCapture();
-
+extern "C" void HmdPoseOffset(const FfiPose *poseoffset,bool positionlock, bool roationlock);
 
 // NalParsing.cpp
 void ParseFrameNals(

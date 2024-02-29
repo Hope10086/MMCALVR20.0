@@ -215,44 +215,98 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
     pose.vecPosition[0] = motion.position[0];
     pose.vecPosition[1] = motion.position[1];
     pose.vecPosition[2] = motion.position[2];
+    // Pose Offset's value
+    FfiPose HmdOffset = Settings::Instance().m_poseoffset;
+    vr::HmdQuaternion_t PoseOffsetQuat = HmdQuaternion_Init(
+    HmdOffset.orientation.w, 
+    HmdOffset.orientation.x, 
+    HmdOffset.orientation.y, 
+    HmdOffset.orientation.z); 
     
-
-    if (true)
-    {
-     auto AutoPose =  vr::DriverPose_t{};
+    auto AutoPose =  vr::DriverPose_t{};
      AutoPose.poseIsValid = true;
      AutoPose.result = vr::TrackingResult_Running_OK;
      AutoPose.deviceIsConnected = true;
      AutoPose.qWorldFromDriverRotation = HmdQuaternion_Init(1, 0, 0, 0);
      AutoPose.qDriverFromHeadRotation = HmdQuaternion_Init(1, 0, 0, 0);
 
-    //   double Rot = 2.5*DelatRad*frameindex ;
-    //   vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromRotationY(Rot);
-     
-     
-     // xuanzhuan
-    //  if (hmd_yaw >PI/3 && hmd_pitch >PI/3)
-    //  {
-    //     hmd_yaw =0;
-    //     hmd_pitch = 0;
-    //  }else if ( hmd_yaw >PI/3 && hmd_pitch <PI/3)
-    //  {
-    //     hmd_pitch= hmd_pitch +DelatRad;
-    //  }else if ( hmd_yaw <PI/3 && hmd_pitch <PI/3)
-    //  {
-    //     hmd_yaw = hmd_yaw +DelatRad;
-    //  }
-    //vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromYawPitchRoll(hmd_yaw,hmd_pitch,hmd_roll);
-    
-    vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromYawPitchRoll(0,0,0);
-    AutoPose.qRotation = HmdQuaternion_Init(PoseQuat.w, PoseQuat.x, PoseQuat.y, PoseQuat.z);
-
-    AutoPose.vecPosition[0] = -2.5+0.5*frameindex;
-    AutoPose.vecPosition[1] = 4.5;
-    AutoPose.vecPosition[2] = 5.0;
-
-
+    if (Settings::Instance().m_enable_lockpositon && Settings::Instance().m_enable_lockrotation)
+    {  // Translation and rotation  both is locking
+     AutoPose.qRotation      = PoseOffsetQuat;
+     AutoPose.vecPosition[0] = HmdOffset.x + 0.0;
+     AutoPose.vecPosition[1] = HmdOffset.y + 1.0;
+     AutoPose.vecPosition[2] = HmdOffset.z + 2.0;
+     m_pose = AutoPose;
+    }
+    else if (Settings::Instance().m_enable_lockpositon && !Settings::Instance().m_enable_lockrotation )
+    {
+    // Translation is locking but Rotation is not locking
+    AutoPose.qRotation      = pose.qRotation * PoseOffsetQuat;
+    AutoPose.vecPosition[0] = HmdOffset.x + 0.0;
+    AutoPose.vecPosition[1] = HmdOffset.y + 1.0;
+    AutoPose.vecPosition[2] = HmdOffset.z + 2.0;
     m_pose = AutoPose;
+    }
+    else if (!Settings::Instance().m_enable_lockpositon && Settings::Instance().m_enable_lockrotation)
+    {
+    // Rotation is locking but Translation is not locking
+    AutoPose.qRotation      =  PoseOffsetQuat;
+    AutoPose.vecPosition[0] = HmdOffset.x + pose.vecPosition[0];
+    AutoPose.vecPosition[1] = HmdOffset.y + pose.vecPosition[1];
+    AutoPose.vecPosition[2] = HmdOffset.z + pose.vecPosition[2];
+    m_pose = AutoPose;
+    }
+    else
+    {
+    AutoPose.qRotation      = pose.qRotation * PoseOffsetQuat;
+    AutoPose.vecPosition[0] = HmdOffset.x + pose.vecPosition[0];
+    AutoPose.vecPosition[1] = HmdOffset.y + pose.vecPosition[1];
+    AutoPose.vecPosition[2] = HmdOffset.z + pose.vecPosition[2];
+    m_pose = AutoPose;
+    }
+    
+//     if (true)
+//     {
+
+//     //double Rot = 2.0*DelatRad*frameindex ;
+//     // double Rot = -900.0*DelatRad;
+
+//     vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromRotationY(0) * PoseOffsetQuat;
+
+     
+//      // xuanzhuan
+//     //  if (hmd_yaw >PI/3 && hmd_pitch >PI/3)
+//     //  {
+//     //     hmd_yaw =0;
+//     //     hmd_pitch = 0;
+//     //  }else if ( hmd_yaw >PI/3 && hmd_pitch <PI/3)
+//     //  {
+//     //     hmd_pitch= hmd_pitch +DelatRad;
+//     //  }else if ( hmd_yaw <PI/3 && hmd_pitch <PI/3)
+//     //  {
+//     //     hmd_yaw = hmd_yaw +DelatRad;
+//     //  }
+//     //vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromYawPitchRoll(hmd_yaw,hmd_pitch,hmd_roll);
+    
+//    // vr::HmdQuaternion_t PoseQuat= vrmath::quaternionFromYawPitchRoll(0,0,0);
+//     AutoPose.qRotation = HmdQuaternion_Init(PoseQuat.w, PoseQuat.x, PoseQuat.y, PoseQuat.z);
+
+//     AutoPose.vecPosition[0] = HmdOffset.x + 0.0;
+//     AutoPose.vecPosition[1] = HmdOffset.y + 1.0;
+//     AutoPose.vecPosition[2] = HmdOffset.z + 2.0;
+
+
+//     m_pose = AutoPose;
+
+    
+//     }
+//     else 
+//     {
+//         m_pose = pose;// don't change it
+//     }
+    
+    frameindex =  (frameindex + 1)%30000;
+    
     motion.position[0] = AutoPose.vecPosition[0];
     motion.position[1] = AutoPose.vecPosition[1];
     motion.position[2] = AutoPose.vecPosition[2];
@@ -261,12 +315,6 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
     motion.orientation.x = AutoPose.qRotation.x;
     motion.orientation.y = AutoPose.qRotation.y;
     motion.orientation.z = AutoPose.qRotation.z;
-    frameindex =  (frameindex + 1)%360;
-    }
-    else 
-    {
-        m_pose = pose;// don't change it
-    }
   
     m_poseHistory->OnPoseUpdated(targetTimestampNs, motion,LeftGaze.orientation,RightGaze.orientation, GLeftGaze , GRightGaze);
 

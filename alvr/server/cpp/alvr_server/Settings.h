@@ -112,4 +112,7 @@ class Settings {
 
     bool m_tdmode = false;
     float m_speedthreshold=100;
+    FfiPose m_poseoffset;
+    bool m_enable_lockpositon;
+    bool m_enable_lockrotation;
 };

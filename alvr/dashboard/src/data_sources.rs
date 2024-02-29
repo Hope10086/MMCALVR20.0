@@ -3,6 +3,7 @@ use alvr_events::{Event, EventType};
 use alvr_packets::ServerRequest;
 use alvr_server_io::ServerDataManager;
 use eframe::{egui};
+use  alvr_common::{Pose,glam::{Vec3,Quat}};
 use std::{
     env,
     io::ErrorKind,
@@ -93,7 +94,6 @@ impl DataSources {
                 while running.value() {
                     while let Ok(request) = requests_receiver.try_recv() {
                         debug!("Dashboard request: {request:?}");
-
                         if let DataSource::Local(data_manager) = &mut *data_source.lock() {
                             match request {
                                 ServerRequest::Log(_) => (),
@@ -170,6 +170,9 @@ impl DataSources {
                                             EventType::DriversList(list),
                                         )
                                     }
+                                }
+                                ServerRequest::HmdPoseOffset(_pose_offset,_position_lock,_roation_lock) =>{
+
                                 }
                                 ServerRequest::CaptureFrame
                                 | ServerRequest::InsertIdr

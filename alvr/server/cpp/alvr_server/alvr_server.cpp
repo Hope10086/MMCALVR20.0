@@ -292,6 +292,12 @@ void SetTracking(unsigned long long targetTimestampNs,
 
 }
 
+
+void HmdPoseOffset(const FfiPose *poseoffset ,bool positionlock, bool roationlock){
+    Settings::Instance().m_poseoffset = *poseoffset;
+    Settings::Instance().m_enable_lockpositon = positionlock;
+    Settings::Instance().m_enable_lockrotation = roationlock;
+}
 void VideoErrorReportReceive() {
     if (g_driver_provider.hmd) {
         g_driver_provider.hmd->m_encoder->OnPacketLoss();

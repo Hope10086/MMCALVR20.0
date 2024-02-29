@@ -1,7 +1,15 @@
+use alvr_common::{glam::{Quat, Vec3}, log::info, Pose};
 use alvr_packets::ServerRequest;
-use eframe::egui::Ui;
+use eframe::egui::{Ui,Slider};
 
-pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
+
+pub fn debug_tab_ui(ui: &mut Ui, 
+    position_offset: &mut Vec3, 
+    rotation_offset: &mut Vec3 ,
+    _position_lock :&mut bool,
+    _roation_lock :&mut bool,
+    _pose_offset_enable :&mut bool) 
+    -> Option<ServerRequest> {
     let mut request = None;
 
     ui.columns(4, |ui| {
@@ -115,10 +123,49 @@ pub fn debug_tab_ui(ui: &mut Ui) -> Option<ServerRequest> {
         if ui[1].button("Test Number Sub").clicked() {
             request = Some(ServerRequest::TestNum(false))
         }
-            
+        // let mut _position_lock = false;
+        // let mut _roation_lock = false;
+        // let mut _pose_offset_enable = false;
+        if ui[2].button("position lock").clicked() {
+            *_position_lock = !*_position_lock;
+        }
+        if ui[3].button("rotation lock").clicked() {
+            *_roation_lock = !*_roation_lock;
+        }
+        //let mut position_offset= Vec3::new(0.0,0.0,0.0);
+        ui[0].label("Hmd's Pose Offset:");
+        if ui[1].button("Enable Offset Set").clicked() {
+            *_pose_offset_enable =!*_pose_offset_enable;
+        }
+        ui[0].add(Slider::new(&mut position_offset.x, -10.0..=10.0).text("Translate X:(m)"));
+        ui[0].add(Slider::new(&mut position_offset.y, -10.0..=10.0).text("Translate Y:(m)"));
+        ui[0].add(Slider::new(&mut position_offset.z, -10.0..=10.0).text("Translate Z:(m)"));
+
+       // let mut rotation_offset =Vec3::new(0.0,0.0,0.0);
+        ui[0].add(Slider::new(&mut rotation_offset.x, -180.0..=180.0).text("Rotation X:(deg)"));
+        ui[0].add(Slider::new(&mut rotation_offset.y, -180.0..=180.0).text("Rotation Y:(deg)"));
+        ui[0].add(Slider::new(&mut rotation_offset.z, -180.0..=180.0).text("Rotation Z:(deg)"));
+        let deg_to_pi = std::f32::consts::PI / 180.0;
+        let quat_fromx = Quat::from_rotation_x(rotation_offset.x * deg_to_pi);
+        let quat_fromy = Quat::from_rotation_y(rotation_offset.y * deg_to_pi);
+        let quat_fromz = Quat::from_rotation_z(rotation_offset.z * deg_to_pi);
         
+        let quat_offset =quat_fromx*quat_fromy*quat_fromz ;
+        let pose_offset = Pose {
+            orientation: quat_offset,
+            position: position_offset.clone(),
+        };
+        if *_pose_offset_enable {
+            request = Some(ServerRequest::HmdPoseOffset(pose_offset,*_position_lock,*_roation_lock));
+        }
+
+
+        
+
     });
-    
+
+  //  ui.add(eframe::egui::Slider::new(&mut age, 0..=120).text("age"));
+
 
     request
 }

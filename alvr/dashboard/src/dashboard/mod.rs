@@ -6,7 +6,7 @@ use self::components::{
     SetupWizard, SetupWizardRequest,
 };
 use crate::{dashboard::components::StatisticsTab, theme, DataSources};
-use alvr_common::RelaxedAtomic;
+use alvr_common::{glam::Vec3, RelaxedAtomic};
 use alvr_events::EventType;
 use alvr_packets::{PathValuePair, ServerRequest};
 use alvr_session::SessionDesc;
@@ -75,6 +75,11 @@ pub struct Dashboard {
     setup_wizard: SetupWizard,
     setup_wizard_open: bool,
     session: SessionDesc,
+    position_offset: Vec3,
+    rotation_offset: Vec3,
+    _position_lock :bool,
+    _roation_lock :bool,
+    _pose_offset_enable :bool,
 }
 
 impl Dashboard {
@@ -110,6 +115,11 @@ impl Dashboard {
             setup_wizard: SetupWizard::new(),
             setup_wizard_open: false,
             session: SessionDesc::default(),
+            position_offset: Vec3::new(0.0, 0.0, 0.0),
+            rotation_offset: Vec3::new(0.0, 0.0, 0.0),
+            _position_lock :false,
+            _roation_lock :false,
+            _pose_offset_enable :false,
         }
     }
 }
@@ -300,9 +310,16 @@ impl eframe::App for Dashboard {
                             }
                             Tab::Logs => self.logs_tab.ui(ui),
                             Tab::Debug => {
-                                if let Some(request) = components::debug_tab_ui(ui) {
+                                if let Some(request) = 
+                                components::debug_tab_ui(ui,
+                                    &mut self.position_offset, 
+                                    &mut self.rotation_offset ,
+                                    &mut self._position_lock,
+                                    &mut self._roation_lock ,
+                                    &mut self._pose_offset_enable) {
                                     requests.push(request);
                                 }
+                                
                             }
                             Tab::About => components::about_tab_ui(ui),
                         })
