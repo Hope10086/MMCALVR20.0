@@ -64,7 +64,7 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
         //                 ,RoiValue.a);
 
         fragColor = vec4( RoiValue.rgb* IsROI + NonRoiValue * (1.0-IsROI -IsRightBlock -IsLeftBlock) ,RoiValue.a)
-                   +vec4( LeftBlockValue * IsLeftBlock + RightBlockValue * IsRightBlock , 1.0);
+                   +vec4( LeftBlockValue * IsLeftBlock + RightBlockValue * IsRightBlock , 0.0);
     }
 )glsl";
  } 
