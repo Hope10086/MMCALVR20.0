@@ -171,6 +171,8 @@ impl DataSources {
                                         )
                                     }
                                 }
+                                ServerRequest::HmdPoseOffset(_pose_offset,_position_lock,_roation_lock) =>{
+                                }
                                 ServerRequest::CaptureFrame
                                 | ServerRequest::InsertIdr
                                 | ServerRequest::StartRecording

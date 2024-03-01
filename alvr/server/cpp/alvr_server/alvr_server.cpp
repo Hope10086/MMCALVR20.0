@@ -267,30 +267,10 @@ void SetTracking(unsigned long long targetTimestampNs,
                     controllerPoseTimeOffsetS, deviceMotions[i], rightHand, controllersTracked);
             }
         }
-    }
-        // 计算每个时间戳的EyeGazeVector
-        //    vr::HmdQuaternionf_t leftgazeQuat = HmdQuaternion_Init(
-        //    lefteyegaze.orientation.w,
-        //    lefteyegaze.orientation.x,
-        //    lefteyegaze.orientation.y,
-        //    lefteyegaze.orientation.z);
-        //   vr::HmdQuaternionf_t righteyeQuat = HmdQuaternion_Init(
-        //   righteyegaze.orientation.w,
-        //   righteyegaze.orientation.x,
-        //   righteyegaze.orientation.y,
-        //   righteyegaze.orientation.z);
-
-        //   vr::HmdVector3d_t z_Aix;
-        //   z_Aix.v[0] = z_Aix.v[1] = 0.0;
-        //   z_Aix.v[3] = 1.0; //Z 轴向量
-        //   vr::HmdVector3d_t leftgazevector = quaternionRotateVector(leftgazeQuat,z_Aix,false);
-        //   vr::HmdVector3d_t rightgazevector = quaternionRotateVector(righteyeQuat,z_Aix,false);          
-        //   Info("LeftGazeVector: %lf %lf %lf"
-        //   ,leftgazevector.v[0]
-        //   ,leftgazevector.v[1]
-        //   ,leftgazevector.v[2]);  
+    } 
 
 }
+
 
 void VideoErrorReportReceive() {
     if (g_driver_provider.hmd) {
@@ -642,4 +622,11 @@ void FPSReduce(){
  
 
     Info("1/ FPSReduce = %d\n", Settings::Instance().m_fpsReduce);
+}
+
+
+void HmdPoseOffset(const FfiPose *poseoffset ,bool positionlock, bool roationlock){
+    Settings::Instance().m_poseoffset = *poseoffset;
+    Settings::Instance().m_enable_lockpositon = positionlock;
+    Settings::Instance().m_enable_lockrotation = roationlock;
 }
