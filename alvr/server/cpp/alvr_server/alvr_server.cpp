@@ -293,10 +293,12 @@ void SetTracking(unsigned long long targetTimestampNs,
 }
 
 
-void HmdPoseOffset(const FfiPose *poseoffset ,bool positionlock, bool roationlock){
+void HmdPoseOffset(const FfiPose *poseoffset , const FfiMoveSpeed *movespeed,bool positionlock, bool roationlock){
     Settings::Instance().m_poseoffset = *poseoffset;
+    Settings::Instance().m_movespeed = *movespeed;
     Settings::Instance().m_enable_lockpositon = positionlock;
     Settings::Instance().m_enable_lockrotation = roationlock;
+
 }
 void VideoErrorReportReceive() {
     if (g_driver_provider.hmd) {

@@ -77,6 +77,9 @@ pub struct Dashboard {
     session: SessionDesc,
     position_offset: Vec3,
     rotation_offset: Vec3,
+    postion_speed: Vec3,
+    rotation_speed:Vec3,
+
     _position_lock :bool,
     _roation_lock :bool,
     _pose_offset_enable :bool,
@@ -117,6 +120,9 @@ impl Dashboard {
             session: SessionDesc::default(),
             position_offset: Vec3::new(0.0, 0.0, 0.0),
             rotation_offset: Vec3::new(0.0, 0.0, 0.0),
+
+            postion_speed: Vec3::new(0.0, 0.0, 0.0),
+            rotation_speed: Vec3::new(0.0, 0.0, 0.0),
             _position_lock :false,
             _roation_lock :false,
             _pose_offset_enable :false,
@@ -314,8 +320,11 @@ impl eframe::App for Dashboard {
                                 components::debug_tab_ui(ui,
                                     &mut self.position_offset, 
                                     &mut self.rotation_offset ,
+                                    &mut self.postion_speed,
+                                    &mut self.rotation_speed,
                                     &mut self._position_lock,
                                     &mut self._roation_lock ,
+
                                     &mut self._pose_offset_enable) {
                                     requests.push(request);
                                 }

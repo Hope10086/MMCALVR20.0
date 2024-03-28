@@ -230,32 +230,43 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
      AutoPose.qWorldFromDriverRotation = HmdQuaternion_Init(1, 0, 0, 0);
      AutoPose.qDriverFromHeadRotation = HmdQuaternion_Init(1, 0, 0, 0);
 
+     double RotX = DelatRad * frameindex * Settings::Instance().m_movespeed.speed_roate_x ;
+     double RotY = DelatRad * frameindex * Settings::Instance().m_movespeed.speed_roate_y ;
+     double RotZ = DelatRad * frameindex * Settings::Instance().m_movespeed.speed_roate_z ;
+     vr::HmdQuaternion_t  AutoRotation =  vrmath::quaternionFromRotationX(RotX) 
+                                        * vrmath::quaternionFromRotationY(RotY) 
+                                        * vrmath::quaternionFromRotationZ(RotZ);
+
     if (Settings::Instance().m_enable_lockpositon && Settings::Instance().m_enable_lockrotation)
     {  // Translation and rotation  both is locking
-     AutoPose.qRotation      = PoseOffsetQuat;
-     AutoPose.vecPosition[0] = HmdOffset.x + 0.0;
-     AutoPose.vecPosition[1] = HmdOffset.y + 1.0;
-     AutoPose.vecPosition[2] = HmdOffset.z + 2.0;
+     AutoPose.qRotation      = PoseOffsetQuat*AutoRotation;
+    AutoPose.vecPosition[0] = HmdOffset.x + 0.0 + frameindex*0.01*Settings::Instance().m_movespeed.speed_postion_x;
+    AutoPose.vecPosition[1] = HmdOffset.y + 0.8 + frameindex*0.01*Settings::Instance().m_movespeed.speed_postion_y;
+    AutoPose.vecPosition[2] = HmdOffset.z + 2.0 + frameindex*0.01*Settings::Instance().m_movespeed.speed_postion_z;
      m_pose = AutoPose;
     }
     else if (Settings::Instance().m_enable_lockpositon && !Settings::Instance().m_enable_lockrotation )
     {
     // Translation is locking but Rotation is not locking
-    AutoPose.qRotation      = pose.qRotation * PoseOffsetQuat;
-    AutoPose.vecPosition[0] = HmdOffset.x + 0.0;
-    AutoPose.vecPosition[1] = HmdOffset.y + 1.0;
-    AutoPose.vecPosition[2] = HmdOffset.z + 2.0;
+    // new：Translation is locking but Rotation didn't change
+    AutoPose.qRotation      = PoseOffsetQuat;
+    AutoPose.vecPosition[0] = HmdOffset.x + 0.0 + frameindex*0.01*Settings::Instance().m_movespeed.speed_postion_x;
+    AutoPose.vecPosition[1] = HmdOffset.y + 0.8 + frameindex*0.01*Settings::Instance().m_movespeed.speed_postion_y;
+    AutoPose.vecPosition[2] = HmdOffset.z + 2.0 + frameindex*0.01*Settings::Instance().m_movespeed.speed_postion_z;
     m_pose = AutoPose;
     }
     else if (!Settings::Instance().m_enable_lockpositon && Settings::Instance().m_enable_lockrotation)
     {
     // Rotation is locking but Translation is not locking
-    AutoPose.qRotation      =  PoseOffsetQuat;
-    AutoPose.vecPosition[0] = HmdOffset.x + pose.vecPosition[0];
-    AutoPose.vecPosition[1] = HmdOffset.y + pose.vecPosition[1];
-    AutoPose.vecPosition[2] = HmdOffset.z + pose.vecPosition[2];
+    // new：Rotation is locking but Translation didn't change
+
+     AutoPose.qRotation      = PoseOffsetQuat *AutoRotation;
+    AutoPose.vecPosition[0] = HmdOffset.x ;
+    AutoPose.vecPosition[1] = HmdOffset.y ;
+    AutoPose.vecPosition[2] = HmdOffset.z ;
     m_pose = AutoPose;
     }
+
     else
     {
     AutoPose.qRotation      = pose.qRotation * PoseOffsetQuat;
@@ -305,7 +316,7 @@ void Hmd::OnPoseUpdated(uint64_t targetTimestampNs, FfiDeviceMotion motion, FfiE
 //         m_pose = pose;// don't change it
 //     }
     
-    frameindex =  (frameindex + 1)%30000;
+    frameindex =  (frameindex + 1)%3600;
     
     motion.position[0] = AutoPose.vecPosition[0];
     motion.position[1] = AutoPose.vecPosition[1];

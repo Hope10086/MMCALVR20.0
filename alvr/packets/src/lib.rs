@@ -1,5 +1,5 @@
 use alvr_common::{
-    glam::{UVec2, Vec2},
+    glam::{UVec2, Vec2, Vec3},
     DeviceMotion, Fov, LogEntry, LogSeverity, Pose,
 };
 use alvr_session::{CodecType, SessionDesc};
@@ -260,5 +260,5 @@ pub enum ServerRequest {
     GaussianBlurStrategy(bool),
     GaussionBlurEnble,
     GaussionBlurRoiSize(bool),
-    HmdPoseOffset(Pose,bool,bool),
+    HmdPoseOffset(Pose,Vec3,Vec3,bool,bool),
 }

@@ -1,5 +1,5 @@
 use crate::{
-    FfiPose, FfiQuat, DECODER_CONFIG, FILESYSTEM_LAYOUT, SERVER_DATA_MANAGER, VIDEO_MIRROR_SENDER, VIDEO_RECORDING_FILE
+    FfiMoveSpeed, FfiPose, FfiQuat, DECODER_CONFIG, FILESYSTEM_LAYOUT, SERVER_DATA_MANAGER, VIDEO_MIRROR_SENDER, VIDEO_RECORDING_FILE
 };
 use alvr_common::{log, prelude::*};
 use alvr_events::{Event, EventType};
@@ -123,7 +123,7 @@ async fn http_api(
                             alvr_events::send_event(EventType::AudioDevices(list));
                         }
                     }
-                    ServerRequest::HmdPoseOffset(PoseOffset,position_lock,roation_lock) =>unsafe {
+                    ServerRequest::HmdPoseOffset(PoseOffset, posionspeed,rotationspeed,position_lock,roation_lock) =>unsafe {
                         
                     let ffipose_offset = FfiPose{
                         x:PoseOffset.position.x,
@@ -136,7 +136,16 @@ async fn http_api(
                             w:PoseOffset.orientation.w,
                         },
                     };
-                    crate::HmdPoseOffset(&ffipose_offset,position_lock,roation_lock);
+                    let ffimove_fpeed = FfiMoveSpeed{
+                        speed_postion_x: posionspeed.x,
+                        speed_postion_y: posionspeed.y,
+                        speed_postion_z: posionspeed.z,
+                        speed_roate_x: rotationspeed.x,
+                        speed_roate_y: rotationspeed.y,
+                        speed_roate_z: rotationspeed.z,
+                    };
+
+                    crate::HmdPoseOffset(&ffipose_offset,&ffimove_fpeed,position_lock,roation_lock);
                     },
                     ServerRequest::CaptureFrame => unsafe { crate::CaptureFrame() },
                     ServerRequest::InsertIdr => unsafe { crate::RequestIDR() },

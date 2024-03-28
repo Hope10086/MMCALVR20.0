@@ -5,7 +5,11 @@ use eframe::egui::{Ui,Slider};
 
 pub fn debug_tab_ui(ui: &mut Ui, 
     position_offset: &mut Vec3, 
-    rotation_offset: &mut Vec3 ,
+    rotation_offset: &mut Vec3,
+
+    position_speed: &mut Vec3,
+    rotation_speed: &mut Vec3,
+
     _position_lock :&mut bool,
     _roation_lock :&mut bool,
     _pose_offset_enable :&mut bool) 
@@ -134,17 +138,35 @@ pub fn debug_tab_ui(ui: &mut Ui,
         }
         //let mut position_offset= Vec3::new(0.0,0.0,0.0);
         ui[0].label("Hmd's Pose Offset:");
+        ui[0].label("——————————————————");
         if ui[1].button("Enable Offset Set").clicked() {
             *_pose_offset_enable =!*_pose_offset_enable;
+        }
+        if ui[2].button("We can change speed").clicked() {
+            
         }
         ui[0].add(Slider::new(&mut position_offset.x, -10.0..=10.0).text("Translate X:(m)"));
         ui[0].add(Slider::new(&mut position_offset.y, -10.0..=10.0).text("Translate Y:(m)"));
         ui[0].add(Slider::new(&mut position_offset.z, -10.0..=10.0).text("Translate Z:(m)"));
 
+        ui[2].add(Slider::new(&mut position_speed.x, -50.0..=50.0).text("Xspeed  cm / frame"));
+        ui[2].add(Slider::new(&mut position_speed.y, -50.0..=50.0).text("Yspeed  cm / frame"));
+        ui[2].add(Slider::new(&mut position_speed.z, -50.0..=50.0).text("Zspeed  cm / frame"));
+
+        
+
        // let mut rotation_offset =Vec3::new(0.0,0.0,0.0);
         ui[0].add(Slider::new(&mut rotation_offset.x, -180.0..=180.0).text("Rotation X:(deg)"));
         ui[0].add(Slider::new(&mut rotation_offset.y, -180.0..=180.0).text("Rotation Y:(deg)"));
         ui[0].add(Slider::new(&mut rotation_offset.z, -180.0..=180.0).text("Rotation Z:(deg)"));
+
+        ui[2].add(Slider::new(&mut rotation_speed.x, -5.0..=5.0).text("RotXspeed  deg / frame"));
+        ui[2].add(Slider::new(&mut rotation_speed.y, -5.0..=5.0).text("RotYspeed  deg / frame"));
+        ui[2].add(Slider::new(&mut rotation_speed.z, -5.0..=5.0).text("RotZspeed  deg / frame"));
+        
+
+
+
         let deg_to_pi = std::f32::consts::PI / 180.0;
         let quat_fromx = Quat::from_rotation_x(rotation_offset.x * deg_to_pi);
         let quat_fromy = Quat::from_rotation_y(rotation_offset.y * deg_to_pi);
@@ -156,7 +178,7 @@ pub fn debug_tab_ui(ui: &mut Ui,
             position: position_offset.clone(),
         };
         if *_pose_offset_enable {
-            request = Some(ServerRequest::HmdPoseOffset(pose_offset,*_position_lock,*_roation_lock));
+            request = Some(ServerRequest::HmdPoseOffset(pose_offset,*position_speed,*rotation_speed ,*_position_lock,*_roation_lock));
         }
 
 

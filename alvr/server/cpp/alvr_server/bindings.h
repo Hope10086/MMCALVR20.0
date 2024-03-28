@@ -32,6 +32,16 @@ struct FfiDeviceMotion {
     float linearVelocity[3];
     float angularVelocity[3];
 };
+struct FfiMoveSpeed
+{
+    float speed_postion_x;
+    float speed_postion_y;
+    float speed_postion_z;
+
+    float speed_roate_x;
+    float speed_roate_y;
+    float speed_roate_z;   
+};
 
 struct FfiEyeGaze
 {
@@ -47,7 +57,7 @@ struct FfiEuler
 {
     float Yaw;
     float Pitch;
-    float  Roll;
+    float Roll;
 };
 struct FfiAnglespeed
    {
@@ -203,7 +213,7 @@ extern "C" void UpdateGaussionStrategy(int delatnum);
 extern "C" void GaussionEnable();
 extern "C" void UpdateGaussionRoiSize(float RoiSizeRad);
 extern "C" void ClientCapture();
-extern "C" void HmdPoseOffset(const FfiPose *poseoffset,bool positionlock, bool roationlock);
+extern "C" void HmdPoseOffset(const FfiPose *poseoffset, const FfiMoveSpeed *movespeed  , bool positionlock, bool roationlock);
 
 // NalParsing.cpp
 void ParseFrameNals(
