@@ -144,7 +144,7 @@ pub fn debug_tab_ui(ui: &mut Ui,
         ui[0].label("Hmd's Pose Offset:");
         ui[0].label("----------------------------------");
         if ui[0].button("Enable Offset Set").clicked() {
-            *_pose_offset_enable =!*_pose_offset_enable;
+            *_pose_offset_enable = true;
         }
         ui[0].add(Slider::new(&mut position_offset.x, -10.0..=10.0).text("Translate X:(m)"));
         ui[0].add(Slider::new(&mut position_offset.y, -10.0..=10.0).text("Translate Y:(m)"));
@@ -166,6 +166,7 @@ pub fn debug_tab_ui(ui: &mut Ui,
         };
         if *_pose_offset_enable {
             request = Some(ServerRequest::HmdPoseOffset(pose_offset,*_position_lock,*_roation_lock));
+            *_pose_offset_enable = false;
         }
 
 
