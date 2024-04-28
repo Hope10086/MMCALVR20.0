@@ -173,6 +173,7 @@ impl DataSources {
                                 }
                                 ServerRequest::HmdPoseOffset(_pose_offset,_position_lock,_roation_lock) =>{
                                 }
+                                ServerRequest::EyeMoveModeSet(_t)=>{}
                                 ServerRequest::CaptureFrame
                                 | ServerRequest::InsertIdr
                                 | ServerRequest::StartRecording
@@ -203,6 +204,7 @@ impl DataSources {
                                 | ServerRequest::GaussionBlurEnble
                                 | ServerRequest::GaussionBlurRoiSize(false)
                                 | ServerRequest::GaussionBlurRoiSize(true)
+                                
                                 | ServerRequest::SpeedThresholdadd
                                 | ServerRequest::SpeedThresholdsub
                                 | ServerRequest::FPSReduce

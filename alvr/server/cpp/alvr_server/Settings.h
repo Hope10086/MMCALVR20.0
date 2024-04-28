@@ -115,4 +115,5 @@ class Settings {
     FfiPose m_poseoffset;
     bool m_enable_lockpositon;
     bool m_enable_lockrotation;
+    float m_eyespeedthre=1000.0;
 };

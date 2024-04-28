@@ -143,7 +143,7 @@ extern "C" void (*HapticsSend)(unsigned long long path,
                                float duration_s,
                                float frequency,
                                float amplitude);
-extern "C" void (*GaussionSend)( bool enable , int num,float roisize ,bool capflag);
+extern "C" void (*ControlInfoSend)( bool enable , int num,float roisize ,bool capflag ,float EyeSpeedThre);
 extern "C" void (*ShutdownRuntime)();
 extern "C" unsigned long long (*PathStringToHash)(const char *path);
 extern "C" void (*ReportPresent)(unsigned long long timestamp_ns, unsigned long long offset_ns);
@@ -204,6 +204,8 @@ extern "C" void GaussionEnable();
 extern "C" void UpdateGaussionRoiSize(float RoiSizeRad);
 extern "C" void ClientCapture();
 extern "C" void HmdPoseOffset(const FfiPose *poseoffset ,bool positionlock, bool roationlock);
+extern "C" void EyeMovementModeSet(float t);
+
 
 // NalParsing.cpp
 void ParseFrameNals(

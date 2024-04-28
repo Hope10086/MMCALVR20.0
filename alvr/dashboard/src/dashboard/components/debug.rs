@@ -1,13 +1,16 @@
 use alvr_common::{glam::{Quat, Vec3}, log::info, Pose};
 use alvr_packets::ServerRequest;
-use eframe::egui::{Ui,Slider};
+use eframe::{egui::{Slider, Ui}, emath::Numeric};
 
 pub fn debug_tab_ui(ui: &mut Ui, 
     position_offset: &mut Vec3, 
     rotation_offset: &mut Vec3 ,
     _position_lock :&mut bool,
     _roation_lock :&mut bool,
-    _pose_offset_enable :&mut bool) 
+    _pose_offset_enable :&mut bool,
+    _eyemovementset_enable :&mut bool,
+    eyemovement_speed: &mut Vec3,
+) 
     -> Option<ServerRequest> {
     let mut request = None;
 
@@ -116,6 +119,7 @@ pub fn debug_tab_ui(ui: &mut Ui,
         if ui[3].button("Test List Sub").clicked() {
             request = Some(ServerRequest::TestList(false))
         }
+
         if ui[0].button("Test Number Add").clicked() {
             request = Some(ServerRequest::TestNum(true))
         } 
@@ -123,17 +127,23 @@ pub fn debug_tab_ui(ui: &mut Ui,
             request = Some(ServerRequest::TestNum(false))
         }
 
-
-        if ui[2].button("position lock").clicked() {
+        if ui[0].button("EyeMoveModeSet").clicked() {
+            *_eyemovementset_enable =! *_eyemovementset_enable;
+        } 
+        ui[1].add(Slider::new(&mut eyemovement_speed.x, 0.0..=  1024.0).text("Eye Move Speed (°/s)"));
+        if *_eyemovementset_enable {
+            request = Some(ServerRequest::EyeMoveModeSet(eyemovement_speed.x.clone()))
+        }
+        if ui[0].button("position lock").clicked() {
             *_position_lock = !*_position_lock;
         }
-        if ui[3].button("rotation lock").clicked() {
+        if ui[0].button("rotation lock").clicked() {
             *_roation_lock = !*_roation_lock;
         }
         //let mut position_offset= Vec3::new(0.0,0.0,0.0);
         ui[0].label("Hmd's Pose Offset:");
         ui[0].label("----------------------------------");
-        if ui[1].button("Enable Offset Set").clicked() {
+        if ui[0].button("Enable Offset Set").clicked() {
             *_pose_offset_enable =!*_pose_offset_enable;
         }
         ui[0].add(Slider::new(&mut position_offset.x, -10.0..=10.0).text("Translate X:(m)"));
@@ -157,8 +167,9 @@ pub fn debug_tab_ui(ui: &mut Ui,
         if *_pose_offset_enable {
             request = Some(ServerRequest::HmdPoseOffset(pose_offset,*_position_lock,*_roation_lock));
         }
-            
-        
+
+
+              
     });
     
 

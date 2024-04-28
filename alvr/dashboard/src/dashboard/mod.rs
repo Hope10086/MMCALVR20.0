@@ -80,6 +80,8 @@ pub struct Dashboard {
     _position_lock :bool,
     _roation_lock :bool,
     _pose_offset_enable :bool,
+    _eyemovementset_enable: bool,
+    eyemovespeed: Vec3,
 }
 
 impl Dashboard {
@@ -120,6 +122,8 @@ impl Dashboard {
             _position_lock :false,
             _roation_lock :false,
             _pose_offset_enable :false,
+            _eyemovementset_enable: false,
+            eyemovespeed:Vec3::new(1024.0, 0.0, 0.0),
         }
     }
 }
@@ -316,7 +320,10 @@ impl eframe::App for Dashboard {
                                     &mut self.rotation_offset ,
                                     &mut self._position_lock,
                                     &mut self._roation_lock ,
-                                    &mut self._pose_offset_enable) {
+                                    &mut self._pose_offset_enable,
+                                    &mut self._eyemovementset_enable,
+                                    &mut self.eyemovespeed
+                                ) {
                                     requests.push(request);
                                 }
                             }

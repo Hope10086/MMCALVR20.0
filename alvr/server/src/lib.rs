@@ -33,7 +33,7 @@ use alvr_common::{
 use alvr_events::EventType;
 use alvr_filesystem::{self as afs, Layout};
 use alvr_packets::{
-    ClientListAction, DecoderInitializationConfig, Haptics, ServerControlPacket, VideoPacketHeader, Gaussion,
+    ClientListAction, DecoderInitializationConfig, Haptics, ServerControlPacket, VideoPacketHeader, ControlInfo,
 };
 use alvr_server_io::ServerDataManager;
 use alvr_session::CodecType;
@@ -83,6 +83,16 @@ pub struct VideoPacket {
     pub header: VideoPacketHeader,
     pub payload: Vec<u8>,
 }
+// pub struct AuxInfoPacket{
+//     pub gaussinfo:ControlInfo,
+// }
+// impl AuxInfoPacket{
+//     pub fn new(gaussinfo:ControlInfo)->Self{
+//         Self{
+//             gaussinfo,
+//         }
+//     }
+// }
 
 static CONTROL_CHANNEL_SENDER: Lazy<Mutex<Option<mpsc::UnboundedSender<ServerControlPacket>>>> =
     Lazy::new(|| Mutex::new(None));
@@ -90,7 +100,7 @@ static VIDEO_SENDER: Lazy<Mutex<Option<mpsc::Sender<VideoPacket>>>> =
     Lazy::new(|| Mutex::new(None));
 static HAPTICS_SENDER: Lazy<Mutex<Option<mpsc::UnboundedSender<Haptics>>>> =
     Lazy::new(|| Mutex::new(None));
-static GAUSSION_SENDER: Lazy<Mutex<Option<mpsc::UnboundedSender<Gaussion>>>> =
+static CONTROLINFO_SENDER: Lazy<Mutex<Option<mpsc::UnboundedSender<ControlInfo>>>> =
     Lazy::new(|| Mutex::new(None));
 static VIDEO_MIRROR_SENDER: Lazy<Mutex<Option<broadcast::Sender<Vec<u8>>>>> =
     Lazy::new(|| Mutex::new(None));
@@ -125,6 +135,12 @@ fn to_ffi_quat(quat: Quat) -> FfiQuat {
         y: quat.y,
         z: quat.z,
         w: quat.w,
+    }
+}
+
+pub fn controlinfo_send(m_controlinfo:ControlInfo) {
+    if let Some(sender) = &*CONTROLINFO_SENDER.lock(){
+       sender.send(m_controlinfo).ok();
     }
 }
 
@@ -422,19 +438,24 @@ pub unsafe extern "C" fn HmdDriverFactory(
             sender.send(haptics).ok();
         }
     }
-    extern "C" fn gaussion_send(gaussflag : bool , strategynum:i32 , roisize:f32 , capfalg:bool) {
-         if let Some(sender) = &*GAUSSION_SENDER.lock(){
+  unsafe extern "C" fn controlinfo_send(gaussflag : bool , strategynum:i32 , roisize:f32 , capfalg:bool,eyespeed:f32) {
+         if let Some(sender) = &*CONTROLINFO_SENDER.lock(){
 
-            let gaussioninfo = Gaussion{
+            let controlinfo = ControlInfo{
                 flag: gaussflag,
                 strategynum,
                 roisize,
                 capflag:capfalg,
+                eyespeedt:eyespeed,
             };
-            sender.send(gaussioninfo).ok();
+            sender.send(controlinfo).ok();
 
          }
+         
    }
+
+
+
     
     pub extern "C" fn driver_ready_idle(set_default_chap: bool) {
         IS_ALIVE.set(true);
@@ -534,7 +555,7 @@ pub unsafe extern "C" fn HmdDriverFactory(
     InitializeDecoder = Some(initialize_decoder);
     VideoSend = Some(video_send);
     HapticsSend = Some(haptics_send);
-    GaussionSend = Some(gaussion_send);
+    ControlInfoSend = Some(controlinfo_send);
     ShutdownRuntime = Some(_shutdown_runtime);
     PathStringToHash = Some(path_string_to_hash);
     ReportPresent = Some(report_present);

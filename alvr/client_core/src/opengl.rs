@@ -266,17 +266,17 @@ pub fn render_stream(hardware_buffer: *mut std::ffi::c_void, swapchain_indices: 
 }
 
 
-pub fn update_gaussion_message (flag :bool ,strategynum : i32 ,roisize:f32, capflag :bool)
+pub fn update_controlinfo (flag :bool ,strategynum : i32 ,roisize:f32, capflag :bool,eyespeedt:f32)
 {
    #[cfg(target_os = "android")]
     unsafe {
-        updategussionflg(flag ,  strategynum,roisize,capflag);
+        updatecontrolinfo(flag ,  strategynum,roisize,capflag,eyespeedt);
         let globalflag = flag.to_string();
         let  strategy  = strategynum.to_string();
         let  roiradius = roisize.to_string();
         let  eog = ((180.0/3.1415926) *2.0* (roisize *5184.0/1169.54).atan()) 
                                                     .to_string();
-        let gaussionset = CString::new(format!("(GlobalFlag:{},Strategy:{}, ROI radius:{} EOA: {}°)",globalflag, strategy, roiradius ,eog)).expect("gaussionset failed");
+        let gaussionset = CString::new(format!("(GlobalFlag:{},Strategy:{}, ROI radius:{} EOA: {}° EyeSpeedT:{}°/s)",globalflag, strategy, roiradius ,eog,eyespeedt.to_string())).expect("gaussionset failed");
 
         alvr_log(crate::c_api::AlvrLogLevel::Info,
             gaussionset.as_ptr() );

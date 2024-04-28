@@ -759,10 +759,10 @@ pub fn entry_point() {
                             )
                             .unwrap();
                     }
-                    ClientCoreEvent::Gaussion { flag, strategynum ,roisize,capflag
+                    ClientCoreEvent::ControlInfoUpdate { flag, strategynum ,roisize,capflag,eyespeedt
                     } => {
 
-                        alvr_client_core::opengl::update_gaussion_message(flag ,strategynum,roisize,capflag);
+                        alvr_client_core::opengl::update_controlinfo(flag ,strategynum,roisize,capflag,eyespeedt);
 
                     }
                     _ => panic!(),

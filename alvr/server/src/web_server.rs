@@ -1,6 +1,4 @@
-use crate::{FfiPose, FfiQuat,
-    DECODER_CONFIG, FILESYSTEM_LAYOUT, SERVER_DATA_MANAGER, VIDEO_MIRROR_SENDER,
-    VIDEO_RECORDING_FILE,
+use crate::{FfiPose, FfiQuat, DECODER_CONFIG, FILESYSTEM_LAYOUT, SERVER_DATA_MANAGER, VIDEO_MIRROR_SENDER, VIDEO_RECORDING_FILE
 };
 use alvr_common::{log, prelude::*};
 use alvr_events::{Event, EventType};
@@ -124,6 +122,9 @@ async fn http_api(
                             alvr_events::send_event(EventType::AudioDevices(list));
                         }
                     }
+                    ServerRequest::EyeMoveModeSet(t)=>unsafe {
+                        crate::EyeMovementModeSet(t);
+                    }
                     ServerRequest::HmdPoseOffset(PoseOffset,position_lock,roation_lock) =>unsafe {
 
                         let ffipose_offset = FfiPose{
@@ -212,7 +213,7 @@ async fn http_api(
                             crate::UpdateGaussionStrategy(1);
                         }
                         else {
-                            crate::UpdateGaussionStrategy(-1)
+                            crate::UpdateGaussionStrategy(-1);
                         }
                     },
                     ServerRequest::GaussionBlurRoiSize(gbroi) => unsafe {

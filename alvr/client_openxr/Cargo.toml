@@ -19,12 +19,14 @@ glow = "0.12"
 khronos-egl = { version = "4", features = ["dynamic"] }
 openxr = { git = "https://github.com/zarik5/openxrs" }
 # openxr = { path = "../../../../openxrs/openxr" }
-
+# https://github.com/Hope10086/openxrs
+# https://github.com/zarik5/openxrs
 [target.'cfg(target_os = "android")'.dependencies]
 # note: git version fixes spammy log. upgrade to registry when a new version comes out
 android-activity = { git = "https://github.com/zarik5/android-activity", features = [
     "native-activity",
 ] }
+##
 jni = "0.21"
 libc = "0.2"
 ndk-context = "0.1"

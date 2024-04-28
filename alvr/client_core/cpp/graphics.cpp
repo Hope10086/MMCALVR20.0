@@ -22,6 +22,7 @@ const int HUD_TEXTURE_HEIGHT = 720;
 bool GaussionFlag = false;
 bool TDenabled = false;
 bool CaptureFlag = false;
+float EyeSpeedT = 1000.0;
 int GaussionStrategy = 0;
 int SRendercount = 0;
 float ndcroirad = 0.00;
@@ -954,12 +955,13 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
     // SRendercount++;
 }
 
-void updategussionflg( bool flag , int strategynum ,float roisize , bool capflag)
+void updatecontrolinfo( bool flag , int strategynum ,float roisize , bool capflag,float eyespeedt)
 {
         GaussionFlag = flag;
         GaussionStrategy = strategynum;
         ndcroirad = roisize;
         CaptureFlag = capflag;
+        EyeSpeedT = eyespeedt;
 }
 
 void updategazecenter( __uint128_t targetTimestampNs ,float headx, float heady, float gazex, float gazey ,float lx,float ly ,float rx ,float ry)
@@ -986,7 +988,7 @@ void updategazecenter( __uint128_t targetTimestampNs ,float headx, float heady, 
     GazeCenter[1].y = ry;
     float headspeed = 1000000*(m_Angle.head_x - pre_Angle.head_x)/(m_targetTimestampNs - pre_targetTimestampNs);
     float gazespeed = 1000000*(m_Angle.gaze_x - pre_Angle.gaze_x)/(gaze_targetTimestampNs - pregaze_targetTimestampNs);
-    if( abs(headspeed) >=100 ||abs(gazespeed) >=100){
+    if( abs(headspeed) >=EyeSpeedT ||abs(gazespeed) >=EyeSpeedT){
         TDenabled = true;
       //Info("head speed: %f gazespeed %f",headspeed,gazespeed);
     }

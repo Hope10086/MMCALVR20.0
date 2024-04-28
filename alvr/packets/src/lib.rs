@@ -16,7 +16,7 @@ pub const HAPTICS: u16 = 1;
 pub const AUDIO: u16 = 2;
 pub const VIDEO: u16 = 3;
 pub const STATISTICS: u16 = 4;
-pub const GAUSSION : u16 = 5;
+pub const CONTROLINFO : u16 = 5;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct VideoStreamingCapabilities {
@@ -127,11 +127,12 @@ pub struct Haptics {
     pub amplitude: f32,
 }
 #[derive(Serialize, Deserialize)]
-pub struct  Gaussion{
+pub struct  ControlInfo{
     pub flag :bool,
     pub strategynum :i32,
     pub roisize :f32,
     pub capflag :bool,
+    pub eyespeedt:f32,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -261,4 +262,5 @@ pub enum ServerRequest {
     GaussionBlurEnble,
     GaussionBlurRoiSize(bool),
     HmdPoseOffset(Pose,bool,bool),
+    EyeMoveModeSet(f32),
 }

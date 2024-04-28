@@ -88,11 +88,12 @@ pub enum ClientCoreEvent {
         timestamp: Duration,
         nal: Vec<u8>,
     },
-    Gaussion{
+    ControlInfoUpdate {
         flag :bool,
         strategynum :i32,
         roisize : f32,
         capflag : bool,
+        eyespeedt:f32,
     },
 }
 

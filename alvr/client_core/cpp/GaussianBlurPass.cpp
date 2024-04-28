@@ -225,7 +225,7 @@ void GaussianBlurPass::Render( OriAngle m_Angle ,bool GaussionFlag,bool TDenable
      m_FrameRenderIndex++;
     mRequantizationPipeline->MyRender(RightBlockLocationy[LocationNum],
     Colors[ColorNum].r, Colors[ColorNum].g, Colors[ColorNum].b,
-    LeftBlock, RightBlock, 
+    false, false, 
     Strategy, 
     leftblock_leftview,leftblock_rightview,rightblock_leftview,rightblock_rightview,
     LGazeCenter, RGazeCenter, ndcroirad,*mOutputTextureState);

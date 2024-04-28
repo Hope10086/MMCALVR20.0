@@ -182,7 +182,7 @@ bool gaussionblurflag = false;
 int  strategynum =0 ;
 uint8_t frameindex = 0 ;
 float roiradius =0.00;
-
+float eyespeedt =1000.0;
 void (*LogError)(const char *stringPtr);
 void (*LogWarn)(const char *stringPtr);
 void (*LogInfo)(const char *stringPtr);
@@ -192,7 +192,7 @@ void (*DriverReadyIdle)(bool setDefaultChaprone);
 void (*InitializeDecoder)(const unsigned char *configBuffer, int len, int codec);
 void (*VideoSend)(unsigned long long targetTimestampNs, unsigned char *buf, int len, bool isIdr);
 void (*HapticsSend)(unsigned long long path, float duration_s, float frequency, float amplitude );
-void (*GaussionSend)( bool enable , int num ,float roisize,bool capflag);
+void (*ControlInfoSend)( bool enable , int num ,float roisize,bool capflag,float EyeSpeedThre);
 void (*ShutdownRuntime)();
 unsigned long long (*PathStringToHash)(const char *path);
 void (*ReportPresent)(unsigned long long timestamp_ns, unsigned long long offset_ns);
@@ -467,7 +467,7 @@ void TestSequence( int DelatTestList , int DelatTestNum) {
 
     strategynum = m_Testlist[Settings::Instance().m_testlist][Settings::Instance().m_testnum].strategy;
     Settings::Instance().m_delatRoiQP = 51- m_Testlist[Settings::Instance().m_testlist][Settings::Instance().m_testnum].RoiQp;
-    GaussionSend(gaussionblurflag,strategynum,roiradius,false);
+    ControlInfoSend(gaussionblurflag,strategynum,roiradius,false,eyespeedt);
     Info("List%d Num%d ROI Qp = %d Stratey=%d",Settings::Instance().m_testlist
     ,Settings::Instance().m_testnum 
     , (51 -Settings::Instance().m_delatRoiQP )
@@ -586,7 +586,7 @@ void UpdateGaussionStrategy(int delatnum){
       strategynum =11;
    }
    
-   GaussionSend(gaussionblurflag,strategynum,roiradius,false);
+   ControlInfoSend(gaussionblurflag,strategynum,roiradius,false,eyespeedt);
 }
 
 void UpdateGaussionRoiSize(float RoiSizeRad){
@@ -600,15 +600,15 @@ void UpdateGaussionRoiSize(float RoiSizeRad){
     {
         roiradius = 0.2469;
     }
-    GaussionSend(gaussionblurflag,strategynum,roiradius,false);
+    ControlInfoSend(gaussionblurflag,strategynum,roiradius,false,eyespeedt);
 }
 
 void GaussionEnable(){
    gaussionblurflag = !gaussionblurflag ;
-   GaussionSend(gaussionblurflag,strategynum,roiradius,false);
+   ControlInfoSend(gaussionblurflag,strategynum,roiradius,false,eyespeedt);
 }
 void ClientCapture(){
-    GaussionSend(gaussionblurflag,strategynum,roiradius,true);
+    ControlInfoSend(gaussionblurflag,strategynum,roiradius,true,eyespeedt);
 }
 
 void FPSReduce(){
@@ -629,4 +629,9 @@ void HmdPoseOffset(const FfiPose *poseoffset ,bool positionlock, bool roationloc
     Settings::Instance().m_poseoffset = *poseoffset;
     Settings::Instance().m_enable_lockpositon = positionlock;
     Settings::Instance().m_enable_lockrotation = roationlock;
+}
+void EyeMovementModeSet(float t)
+{
+    eyespeedt=t;
+    ControlInfoSend(gaussionblurflag,strategynum,roiradius,false,eyespeedt);
 }

@@ -7,7 +7,7 @@ use crate::{
     statistics::StatisticsManager,
     tracking::{self, TrackingManager},
     FfiButtonValue, FfiFov, FfiViewsConfig, VideoPacket, BITRATE_MANAGER, CONTROL_CHANNEL_SENDER,
-    DECODER_CONFIG, DISCONNECT_CLIENT_NOTIFIER, HAPTICS_SENDER, IS_ALIVE, RESTART_NOTIFIER,GAUSSION_SENDER,
+    DECODER_CONFIG, DISCONNECT_CLIENT_NOTIFIER, HAPTICS_SENDER, IS_ALIVE, RESTART_NOTIFIER,CONTROLINFO_SENDER,
     SERVER_DATA_MANAGER, STATISTICS_MANAGER, VIDEO_RECORDING_FILE, VIDEO_SENDER, bindings::{FfiEyeGaze, FfiQuat},
 };
 use alvr_audio::AudioDevice;
@@ -22,7 +22,7 @@ use alvr_common::{
 use alvr_events::{ButtonEvent, EventType, HapticsEvent, TrackingEvent};
 use alvr_packets::{
     ButtonValue, ClientConnectionResult, ClientControlPacket, ClientListAction, ClientStatistics,
-    ServerControlPacket, StreamConfigPacket, Tracking, AUDIO, HAPTICS, STATISTICS, TRACKING, VIDEO, GAUSSION,
+    ServerControlPacket, StreamConfigPacket, Tracking, AUDIO, HAPTICS, STATISTICS, TRACKING, VIDEO, CONTROLINFO,
 };
 use alvr_session::{CodecType, ControllersEmulationMode, FrameSize, OpenvrConfig};
 use alvr_sockets::{
@@ -744,10 +744,10 @@ async fn connection_pipeline(
     };
 
     let gaussion_send_loop = {
-        let mut socket_sender = stream_socket.request_stream(GAUSSION).await?;
+        let mut socket_sender = stream_socket.request_stream(CONTROLINFO).await?;
         async move {
             let(data_sender, mut data_receiver) = tmpsc::unbounded_channel();
-             *GAUSSION_SENDER.lock() = Some(data_sender);
+             *CONTROLINFO_SENDER.lock() = Some(data_sender);
 
              while let Some(gaussioninfo) = data_receiver.recv().await
              {socket_sender.send(&gaussioninfo, vec![]).await.ok();

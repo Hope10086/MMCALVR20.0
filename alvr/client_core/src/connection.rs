@@ -12,9 +12,9 @@ use crate::{
 use alvr_audio::AudioDevice;
 use alvr_common::{glam::{UVec2, bool}, prelude::*, ALVR_VERSION, HEAD_ID};
 use alvr_packets::{
-    BatteryPacket, ClientConnectionResult, ClientControlPacket, Haptics,Gaussion, ServerControlPacket,
+    BatteryPacket, ClientConnectionResult, ClientControlPacket, Haptics,ControlInfo, ServerControlPacket,
     StreamConfigPacket, VideoPacketHeader, VideoStreamingCapabilities, AUDIO, HAPTICS, STATISTICS,
-    TRACKING, VIDEO, GAUSSION, 
+    TRACKING, VIDEO, CONTROLINFO, 
 };
 use alvr_session::{settings_schema::Switch, SessionDesc};
 use alvr_sockets::{
@@ -413,16 +413,17 @@ async fn stream_pipeline(
     let gaussion_receive_loop = {
 
         let mut receiver = stream_socket
-                .subscribe_to_stream::<Gaussion>(GAUSSION)
+                .subscribe_to_stream::<ControlInfo>(CONTROLINFO)
                 .await?;
         async move {
             loop {
-                let gaussioninfo = receiver.recv_header_only().await?;
-                EVENT_QUEUE.lock().push_back(ClientCoreEvent::Gaussion {
-                     flag: (gaussioninfo.flag), 
-                     strategynum: (gaussioninfo.strategynum),
-                     roisize :( gaussioninfo.roisize),
-                     capflag:(gaussioninfo.capflag)
+                let m_controlinfo = receiver.recv_header_only().await?;
+                EVENT_QUEUE.lock().push_back(ClientCoreEvent::ControlInfoUpdate {
+                     flag: (m_controlinfo.flag), 
+                     strategynum: (m_controlinfo.strategynum),
+                     roisize :( m_controlinfo.roisize),
+                     capflag:(m_controlinfo.capflag),
+                     eyespeedt:(m_controlinfo.eyespeedt),
                      });
             }
         }
