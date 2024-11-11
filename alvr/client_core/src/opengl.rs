@@ -372,6 +372,7 @@ pub fn calculate_gazecenter( target_timestamp :Duration, rawfacedata: FaceData ,
         let local_eye_gazes = to_local_eyes(
             rawheadpose,
             rawfacedata.eye_gazes);
+        //let local_eye_gazes = rawfacedata.eye_gazes;
         let local_gazecenter = get_gaze_center(rawfov, local_eye_gazes);
         let head_angle = get_ori_angle(Some(rawheadpose.orientation));
         let safegaze = get_safe_gaze(rawfacedata.eye_gazes);

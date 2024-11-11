@@ -35,9 +35,10 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
     void main() {
         vec2  ndcradius = vec2( ndcrad, ndcrad *2.0);
       //  to check current piexl is the Display Block or not
-        vec3 IsLeftBlock = ((leftflag  == true) && (( length(uv.x-Blocklocation.r) < 0.01 && length(uv.y-0.45) < 0.02 *1.0)||( length(uv.x-Blocklocation.g) < 0.01 && length(uv.y-0.45) < 0.02 *1.0)))? vec3(1.0):vec3(0.0); // left(0.10,0.30)
-        vec3 IsRightBlock =((rightflag == true) && (( length(uv.x-Blocklocation.b) < 0.01 && length(uv.y-0.45) < 0.02 *righty)||( length(uv.x-Blocklocation.a) < 0.01 && length(uv.y-0.45) < 0.02 *righty)))? vec3(1.0):vec3(0.0); // Right(0.40,0.20)
-
+        // vec3 IsLeftBlock = ((leftflag  == true) && (( length(uv.x-Blocklocation.r) < 0.01 && length(uv.y-0.45) < 0.02 *1.0)||( length(uv.x-Blocklocation.g) < 0.01 && length(uv.y-0.45) < 0.02 *1.0)))? vec3(1.0):vec3(0.0); // left(0.10,0.30)
+        // vec3 IsRightBlock =((rightflag == true) && (( length(uv.x-Blocklocation.b) < 0.01 && length(uv.y-0.45) < 0.02 *righty)||( length(uv.x-Blocklocation.a) < 0.01 && length(uv.y-0.45) < 0.02 *righty)))? vec3(1.0):vec3(0.0); // Right(0.40,0.20)
+        vec3 IsLeftBlock = vec3(0.0);
+        vec3 IsRightBlock = vec3(0.0);
         vec3 IsLeftROI  = ((( uv.x - lgazepoint.x >= 0.0 && uv.x < 0.5 && uv.x - lgazepoint.x < ndcradius.x)||(uv.x - lgazepoint.x <= 0.0 && lgazepoint.x - uv.x <= 1.40*ndcradius.x)) && length(uv.y-lgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
         vec3 IsRightROI = ((( uv.x - rgazepoint.x >= 0.0 && uv.x - rgazepoint.x <= 1.40*ndcradius.x)||(uv.x - rgazepoint.x <= 0.0 && uv.x > 0.5 && rgazepoint.x - uv.x < ndcradius.x)) && length(uv.y-rgazepoint.y)<ndcradius.y)? vec3(1.0):vec3(0.0);
         //  to check current piexl is the Roi or not  but its priority  is lower than the Display Block  
