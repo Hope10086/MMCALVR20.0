@@ -55,6 +55,9 @@ const string HORIZONTAL_BLUR_SHADER = R"glsl(
         // the Block Color
         vec3 LeftBlockValue = vec3(1.0, 0.0, 0.0);
 
+        LeftBlockValue = vec3(0.0, 0.0, 0.0);
+        RightBlockValue = vec3(0.0, 0.0, 0.0);
+
         vec3 NonRoiValue =vec3(Y + 1.13983*V , Y-0.39465*U-0.58060*V , Y+2.03211*U);
         // fragColor = vec4( RoiValue.rgb* IsROI 
         //                 + NonRoiValue * (1.0-IsROI) 
