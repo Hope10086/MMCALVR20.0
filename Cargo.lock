@@ -3295,19 +3295,19 @@ dependencies = [
 
 [[package]]
 name = "openxr"
-version = "0.17.1"
-source = "git+https://github.com/zarik5/openxrs#2f5eb99f84213e766cc205026a6e09557a3420d3"
+version = "0.19.0"
+source = "git+https://github.com/zarik5/openxrs#d8ea5553d52c4bbaefe2537b8d70b8752f73694d"
 dependencies = [
  "libc",
- "libloading 0.7.4",
+ "libloading 0.8.0",
  "ndk-context",
  "openxr-sys",
 ]
 
 [[package]]
 name = "openxr-sys"
-version = "0.9.3"
-source = "git+https://github.com/zarik5/openxrs#2f5eb99f84213e766cc205026a6e09557a3420d3"
+version = "0.11.0"
+source = "git+https://github.com/zarik5/openxrs#d8ea5553d52c4bbaefe2537b8d70b8752f73694d"
 dependencies = [
  "libc",
 ]
