@@ -930,9 +930,9 @@ void renderStreamNative(void *streamHardwareBuffer, const unsigned int swapchain
      
         GL(glBindTexture(GL_TEXTURE_EXTERNAL_OES, g_ctx.streamTexture->GetGLTexture()));
         GL(glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, (GLeglImageOES)image));
+//先做的色彩校正再模糊
         renderer->srgbCorrectionPass->Render();
         renderer->gaussianBlurPass->Render(m_Angle,GaussionFlag,TDenabled,GaussionStrategy,ndcroirad,GazeCenter[0],GazeCenter[1]);
-
      //   renderer->gaussianBlurPass->Render(GaussionStrategy, GazeCenter[0], GazeCenter[1]);
         
         if (renderer->enableFFR) {

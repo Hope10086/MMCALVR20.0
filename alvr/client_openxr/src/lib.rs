@@ -810,6 +810,7 @@ pub fn entry_point() {
             let display_time;
             let views;
             let view_resolution;
+            //如果串流状态打开 则渲染解码后的云端视角画面，否则渲染本地3D房间画面
             if is_streaming.value() {
                 let frame_poll_deadline = Instant::now()
                     + Duration::from_secs_f32(

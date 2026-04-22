@@ -145,7 +145,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	D3D11_TEXTURE2D_DESC encDesc;
 	pTexture->GetDesc(&encDesc);
 
-	//SK
+	//SHN
 	if (Settings::Instance().m_gazevisual )
 	{
             UINT W = encDesc.Width/64;
@@ -173,39 +173,6 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		    m_pD3DRender->GetContext()->CopySubresourceRegion(pTexture,0,GazePoint[1].x-W/2,GazePoint[1].y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
 	}
 
-    //SHN
-	if (true)
-	{
-	 	// SYSTEMTIME timestamp;
-	    // GetLocalTime(&timestamp);
-		// int timestamp_ms = timestamp.wMilliseconds;
-		// while(1){
-		
-	    // GetLocalTime(&timestamp);
-		// int timenow_ms = timestamp.wMilliseconds;
-		// if (timenow_ms - timestamp_ms > 10)
-		// {   Info("%dms",timenow_ms - timestamp_ms);
-		// 	break;
-		// }
-		// }
-		// int i=0;
-		// while (i<1024*128)
-		// {
-		// 	i++;
-		// 	if (i %(1024*32) ==0)
-		// 	{
-		// 		Info("i = %d",i);
-		// 	}
-			
-		// }
-
-		// clock_t now = clock(); 
-
-		// while(clock() - now <5 ); 
-		// std::this_thread::sleep_for(std::chrono::milliseconds(30));
-		// auto now = std::chrono::system_clock::now();
-		// Info("time = %lld", std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count());
-	}
 	
 	// capture pictures sequence
 	if (false /*Settings::Instance().m_capturePicture */)
@@ -692,9 +659,6 @@ void VideoEncoderNVENC::FillEncodeConfig(NV_ENC_INITIALIZE_PARAMS &initializePar
 		{
 			Enable_H264 = true;
 		}
-
-
-		
 	}
 	
 	if (Settings::Instance().m_nvencAdaptiveQuantizationMode == SpatialAQ) {

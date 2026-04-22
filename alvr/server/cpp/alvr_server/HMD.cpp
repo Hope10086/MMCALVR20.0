@@ -319,11 +319,11 @@ void Hmd::StartStreaming() {
                   "Failed to initialize CEncoder:",
                   e.what());
         }
-        m_encoder->Start();
+        m_encoder->Start();//CEncoder线程启动，利用多态特性通过基类指针 调用派生类CEncoder的Run()函数
 
-        m_directModeComponent->SetEncoder(m_encoder);
+        m_directModeComponent->SetEncoder(m_encoder);//将这个编码线程类传递给OvrDirectComponent
 
-        m_encoder->OnStreamStart();
+        m_encoder->OnStreamStart();//插入一个立即刷新帧的功能
 #elif __APPLE__
         m_encoder = std::make_shared<CEncoder>();
 #else
