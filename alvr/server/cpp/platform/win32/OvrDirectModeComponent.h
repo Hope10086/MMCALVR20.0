@@ -66,6 +66,7 @@ private:
 	uint64_t m_targetTimestampNs_txt;
 	uint64_t m_prevTargetTimestampNs_txt;
 	FfiGazeOPOffset m_GazeOffset[2];
+	double m_LeftGlobalSpeed_angle;
 	FfiGazeOPOffset HisGloGazeLoactDel[2];
 	FfiQuat m_GazeQuat[2];
 	FfiQuat m_preGazeQuat[2];

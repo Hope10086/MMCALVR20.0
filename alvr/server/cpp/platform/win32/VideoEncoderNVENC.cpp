@@ -145,7 +145,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 	D3D11_TEXTURE2D_DESC encDesc;
 	pTexture->GetDesc(&encDesc);
 
-	//SHN
+	//SK
 	if (Settings::Instance().m_gazevisual )
 	{
             UINT W = encDesc.Width/64;
@@ -173,6 +173,39 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		    m_pD3DRender->GetContext()->CopySubresourceRegion(pTexture,0,GazePoint[1].x-W/2,GazePoint[1].y-H/2,0,GazepointTexture.Get(),0,&sourceRegion);
 	}
 
+    //SHN
+	if (true)
+	{
+	 	// SYSTEMTIME timestamp;
+	    // GetLocalTime(&timestamp);
+		// int timestamp_ms = timestamp.wMilliseconds;
+		// while(1){
+		
+	    // GetLocalTime(&timestamp);
+		// int timenow_ms = timestamp.wMilliseconds;
+		// if (timenow_ms - timestamp_ms > 10)
+		// {   Info("%dms",timenow_ms - timestamp_ms);
+		// 	break;
+		// }
+		// }
+		// int i=0;
+		// while (i<1024*128)
+		// {
+		// 	i++;
+		// 	if (i %(1024*32) ==0)
+		// 	{
+		// 		Info("i = %d",i);
+		// 	}
+			
+		// }
+
+		// clock_t now = clock(); 
+
+		// while(clock() - now <5 ); 
+		// std::this_thread::sleep_for(std::chrono::milliseconds(30));
+		// auto now = std::chrono::system_clock::now();
+		// Info("time = %lld", std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count());
+	}
 	
 	// capture pictures sequence
 	if (false /*Settings::Instance().m_capturePicture */)
@@ -233,7 +266,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 		if (m_QpModechange != Settings::Instance().m_delatQPmode)
 		{
 			m_QpModechange = Settings::Instance().m_delatQPmode;
-			Info("Roi QP = %d Roi QP =%d \n", 51+Roi_qpDelta, 51+nRoi_qpDelta);
+			Info("Roi QP = %d NRoi QP =%d \n", 51+Roi_qpDelta, 51+nRoi_qpDelta);
 		}
 		if (m_RoiSizechange != Settings::Instance().m_RoiSize)
 		{
@@ -426,16 +459,16 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 				   }
                    else if(Settings::Instance().m_QPDistribution==2)    //圆形辐射
 				   {
-						if (abs(x - leftgazeMac_X) <= centresize && abs(y - leftgazeMac_Y) <= centresize && x < (encDesc.Width/macrosize)/2)  //左眼中心21qp区域
-						{
-							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
-							continue;																  
-						}
-						else if(abs(x -rightgazeMac_X) <= centresize && abs(y - rightgazeMac_Y) <= centresize && x >= (encDesc.Width/macrosize)/2 )//右眼中心21qp区域
-						{
-							picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
-							continue;
-						}
+						// if (abs(x - leftgazeMac_X) <= centresize && abs(y - leftgazeMac_Y) <= centresize && x < (encDesc.Width/macrosize)/2)  //左眼中心21qp区域
+						// {
+						// 	picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
+						// 	continue;																  
+						// }
+						// else if(abs(x -rightgazeMac_X) <= centresize && abs(y - rightgazeMac_Y) <= centresize && x >= (encDesc.Width/macrosize)/2 )//右眼中心21qp区域
+						// {
+						// 	picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = 21-51; 		
+						// 	continue;
+						// }
 
 						if (x < (encDesc.Width/macrosize)/2)    //
 						{						
@@ -445,32 +478,56 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, uint64_t presentatio
 						{
 							distance=sqrt(pow(x*macrosize-rightgazeMac_X*macrosize,2)+pow(y*macrosize-rightgazeMac_Y*macrosize,2));
 						}
-						OAE=2*atanf(distance/ZDepth)*180/(4*atanf(1));
-						//expect_qp=floor(cof0_final*OAE+cof1_final);   //linear
-						expect_qp=floor(cof0_final*exp(cof1_final*OAE));        //exp
-						if(expect_qp<21)  //
+						// OAE=2*atanf(distance/ZDepth)*180/(4*atanf(1));
+						// //expect_qp=floor(cof0_final*OAE+cof1_final);   //linear
+						// expect_qp=floor(cof0_final*exp(cof1_final*OAE));        //exp
+						// if(expect_qp<21)  //
+						// {
+						// 	expect_qp=21;
+						// }
+						// if(expect_qp>= max_qp)
+						// {
+						// 	expect_qp= max_qp;
+						// }
+						// picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = expect_qp-51; 
+						double AE_Radian = atanf(distance/ZDepth);    
+						double AE = AE_Radian * 180.0 / M_PI;         
+						// //〖∆Q〗_audiences  = 0.0011*〖AE〗^2+0.0710*AE+ 0.1160
+						// double deltaQ = 0.0011 * pow(AE, 2) + 0.0710 * AE + 0.1160;
+						//〖∆Q〗_Players  = 0.0006*〖AE〗^2+0.0751*AE+0.5306
+						double deltaQ = 0.0006 * pow(AE, 2) + 0.0751 * AE + 0.5306;
+						double Q = 0; 
+						if (deltaQ >= 5)
 						{
-							expect_qp=21;
+							Q = 0;
 						}
-						if(expect_qp>= max_qp)
+						else
 						{
-							expect_qp= max_qp;
+							Q = 5 - deltaQ;
 						}
-						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = expect_qp-51; 
+						int QP = -0.7470 * pow(Q, 3) + 5.7743 * pow(Q, 2) - 18.7671 * Q + 64.0968; 
+						if (QP > 45)
+						{
+							QP = 45;
+						}
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = QP - 51;
 				   }
 				   else if(Settings::Instance().m_QPDistribution==0)  //阶跃（只有ROI_QP和NROI_QP两个值）
 				   {
 					  if (abs(x - leftgazeMac_X) <= countx && abs(y - leftgazeMac_Y) <= county   && x < (encDesc.Width/macrosize)/2)  //左眼
 					{
-						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = Roi_qpDelta; 																		  
+						//picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = Roi_qpDelta;
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] =  -20; 		 //sk																  
 					}
 					  else if (abs(x -rightgazeMac_X) <= countx && abs(y - rightgazeMac_Y) <= county && x >= (encDesc.Width/macrosize)/2 )  //右眼
 					{						
-						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = Roi_qpDelta; 	
+						//picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = Roi_qpDelta; 	
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] =  -20;      //sk
 					}				
 					  else
 					 {
-						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = nRoi_qpDelta;
+						//picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] = nRoi_qpDelta;
+						picParams.qpDeltaMap[y * (encDesc.Width/macrosize) + x] =  -20;      //sk
 					 }
 				   }
 				}
@@ -659,6 +716,9 @@ void VideoEncoderNVENC::FillEncodeConfig(NV_ENC_INITIALIZE_PARAMS &initializePar
 		{
 			Enable_H264 = true;
 		}
+
+
+		
 	}
 	
 	if (Settings::Instance().m_nvencAdaptiveQuantizationMode == SpatialAQ) {

@@ -125,7 +125,7 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 			// found the frameIndex
 
 //Compare the quaternions of the old and new globals
-			bool bprint=false;
+			bool bprint=true;
 
 			if((m_GlobalQuat[0].w != pose->GloabGazeQuat[0].w)||
 			(m_GlobalQuat[0].x != pose->GloabGazeQuat[0].x)||
@@ -150,25 +150,13 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 				m_preGlobalQuat[1] = m_GlobalQuat[1];
 				m_GlobalQuat[0] = pose->GloabGazeQuat[0];
 				m_GlobalQuat[1] = pose->GloabGazeQuat[1];
-				bprint=true;
+				//bprint=true;
 			}
 			m_prevTargetTimestampNs = m_targetTimestampNs;
 			m_targetTimestampNs = pose->targetTimestampNs;
 
 //Txt pose			
-			// if (Settings::Instance().m_capturePicture || Settings::Instance().m_recordGaze)
-			// {
-			// TxtPrint("%llu position %lf %lf %lf orientation %lf %lf %lf %lf\n"
-			// ,m_targetTimestampNs
-			// ,pose->motion.position[0]
-			// ,pose->motion.position[1]
-			// ,pose->motion.position[2]
-			// ,pose->motion.orientation.x
-			// ,pose->motion.orientation.y
-			// ,pose->motion.orientation.z
-			// ,pose->motion.orientation.w
-			// );
-			// }
+
 			
 			FfiGazeOPOffset LeftGazeDirection ,RightGazeDirection;
 			//  Quat to Vector , Vector to angule,center_offset
@@ -233,82 +221,62 @@ void OvrDirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 //Angle speed
 				double HeadAngSpeed_angle = calspeed(LeftheadDirection);
 				double LeftLocalSpeed_angle = calspeed(LeftLocalDirection);
-				double LeftGlobalSpeed_angle = calspeed(LeftGlobDirection);
+				m_LeftGlobalSpeed_angle = calspeed(LeftGlobDirection);
 // List 
 
-
-
-
-//  Printf Txt  speed
-			// if(bprint)
-			// {
-			// 	//SK
-			// 	Info("%llu %llu",m_prevTargetTimestampNs_txt,m_targetTimestampNs_txt);
-			// 	//SK
-			// 	TxtDeltaLocat("%llu speed head %d %d %d Left: local %d %d %d global %d %d %d\n"
-			// 	, m_targetTimestampNs
-			// 	, int (Headspeed_XY.x)
-			// 	, int (Headspeed_XY.y)
-			// 	, int (Headspeed)
-			// 	, int (Leftlocalspeed_XY.x)
-			// 	, int (Leftlocalspeed_XY.y)
-			// 	, int (Leftlocalspeed)
-			// 	, int (Leftglobalspeed_XY.x)
-			// 	, int (Leftglobalspeed_XY.y)
-			// 	, int (Leftglobalspeed)
-			// 	);
-			// 	Txtwspeed("%llu Anglespeed: head %lf Left: local %lf global %lf \n"
-			// 	,m_targetTimestampNs
-			// 	,HeadAngSpeed_angle
-			// 	,LeftLocalSpeed_angle
-			// 	,LeftGlobalSpeed_angle	
-			// 	);
-			// }
-
-// Printf  Txt  offset
+// Printf  Txt
             if(bprint)
 			{
-				TxtDeltaLocat("%llu variation head %d %d %d Left: local %d %d %d global %d %d %d\n"
-				, m_targetTimestampNs
-				, int (LHeadGazeLoactDel.x)
-				, int (LHeadGazeLoactDel.y)
-				, int (sqrt(pow(LHeadGazeLoactDel.x,2) + pow(LHeadGazeLoactDel.y,2)))
-				, int (LLocGazeLoactDel.x)
-				, int (LLocGazeLoactDel.y)
-				, int (sqrt(pow(LLocGazeLoactDel.x,2) + pow(LLocGazeLoactDel.y,2)))
-				, int (LGloGazeLoactDel.x)
-				, int (LGloGazeLoactDel.y)
-				, int (sqrt(pow(LGloGazeLoactDel.x,2) + pow(LGloGazeLoactDel.y,2)))
+				Txtwspeed("%lf\n"
+				,m_LeftGlobalSpeed_angle
 				);
-				Txtwspeed("%llu Angle: head %lf Left: local %lf global %lf \n"
-				,m_targetTimestampNs
-				,LeftheadDirection
-				,LeftLocalDirection
-				,LeftGlobDirection	
+				TxtNDCGaze("%lf %lf %lf %lf\n"
+				,m_GazeOffset[0].x*width
+				,m_GazeOffset[0].y*height
+				,(m_GazeOffset[1].x+1)*width
+				,(m_GazeOffset[1].y)*height
 				);
+				// TxtDeltaLocat("%llu variation head %d %d %d Left: local %d %d %d global %d %d %d\n"
+				// , m_targetTimestampNs
+				// , int (LHeadGazeLoactDel.x)
+				// , int (LHeadGazeLoactDel.y)
+				// , int (sqrt(pow(LHeadGazeLoactDel.x,2) + pow(LHeadGazeLoactDel.y,2)))
+				// , int (LLocGazeLoactDel.x)
+				// , int (LLocGazeLoactDel.y)
+				// , int (sqrt(pow(LLocGazeLoactDel.x,2) + pow(LLocGazeLoactDel.y,2)))
+				// , int (LGloGazeLoactDel.x)
+				// , int (LGloGazeLoactDel.y)
+				// , int (sqrt(pow(LGloGazeLoactDel.x,2) + pow(LGloGazeLoactDel.y,2)))
+				// );
+				// Txtwspeed("%llu Angle: head %lf Left: local %lf global %lf \n"
+				// ,m_targetTimestampNs
+				// ,LeftheadDirection
+				// ,LeftLocalDirection
+				// ,LeftGlobDirection	
+				// );
 
-			TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
-			,m_targetTimestampNs
-			,m_GazeOffset[0].x
-			,m_GazeOffset[0].y
-			,m_GazeOffset[1].x+1
-			,m_GazeOffset[1].y
-			,m_GazeOffset[0].x*width
-			,m_GazeOffset[0].y*height
-			,(m_GazeOffset[1].x+1)*width
-			,(m_GazeOffset[1].y)*height
-			);
+			// TxtNDCGaze("%llu %lf %lf %lf %lf %lf %lf %lf %lf \n"
+			// ,m_targetTimestampNs
+			// ,m_GazeOffset[0].x
+			// ,m_GazeOffset[0].y
+			// ,m_GazeOffset[1].x+1
+			// ,m_GazeOffset[1].y
+			// ,m_GazeOffset[0].x*width
+			// ,m_GazeOffset[0].y*height
+			// ,(m_GazeOffset[1].x+1)*width
+			// ,(m_GazeOffset[1].y)*height
+			// );
 			
-			TxtPrint("%llu position %lf %lf %lf orientation %lf %lf %lf %lf\n"
-			,m_targetTimestampNs
-			,pose->motion.position[0]
-			,pose->motion.position[1]
-			,pose->motion.position[2]
-			,pose->motion.orientation.x
-			,pose->motion.orientation.y
-			,pose->motion.orientation.z
-			,pose->motion.orientation.w
-			);
+			// TxtPrint("%llu position %lf %lf %lf orientation %lf %lf %lf %lf\n"
+			// ,m_targetTimestampNs
+			// ,pose->motion.position[0]
+			// ,pose->motion.position[1]
+			// ,pose->motion.position[2]
+			// ,pose->motion.orientation.x
+			// ,pose->motion.orientation.y
+			// ,pose->motion.orientation.z
+			// ,pose->motion.orientation.w
+			// );
 
 			}
 			}
